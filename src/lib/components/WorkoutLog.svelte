@@ -2,23 +2,34 @@
   import { schedule } from '../stores/scheduleStore';
   
   export let selectedDate = null;
+  export let proposedDuration = 30;
   export let onComplete = () => {};
   
-  let duration = 30;
+  let duration = proposedDuration;
   
+  // Update duration when proposedDuration changes
+  $: if (proposedDuration) {
+    duration = proposedDuration;
+  }
+
   // Get recent workouts (last 7 days)
   $: recentWorkouts = $schedule
-    .filter(day => day.completed)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 7);
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 7)
+    .map(workout => ({
+      date: workout.date,
+      workouts: [{
+        duration: workout.duration,
+        timestamp: workout.created_at
+      }]
+    }));
 
   async function handleSubmit() {
     if (duration > 0) {
-      schedule.logWorkout(new Date(selectedDate), duration);
+      await schedule.logWorkout(new Date(selectedDate), duration);
       duration = 30; // Reset to default
+      onComplete(); // Call this after successful submission
     }
-    
-    onComplete(); // Call this after successful submission
   }
 
   function formatDate(date) {
@@ -31,6 +42,9 @@
       minute: '2-digit' 
     });
   }
+
+  // Format date for input value
+  $: formattedDate = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : '';
 </script>
 
 <div class="workout-log">
@@ -43,7 +57,7 @@
         <input
           id="workout-date"
           type="date"
-          bind:value={selectedDate}
+          bind:value={formattedDate}
           max={new Date().toISOString().split('T')[0]}
         />
       </div>
@@ -59,7 +73,7 @@
         />
       </div>
 
-      <button type="submit" class="submit-button">
+      <button type="submit" class="submit-button" disabled={!formattedDate}>
         Log Workout
       </button>
     </form>

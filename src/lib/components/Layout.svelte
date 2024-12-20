@@ -12,20 +12,39 @@
 
   let showWorkoutModal = false;
   let selectedDate = null;
+  let proposedDuration = 30;
 
-
+  function handleWorkoutClick(event) {
+    const { date, proposedDuration: duration } = event.detail;
+    selectedDate = date;
+    proposedDuration = duration;
+    showWorkoutModal = true;
+  }
 
   function openWorkoutLog(date = null) {
     selectedDate = date;
+    proposedDuration = 30; // Reset to default when manually opening
     showWorkoutModal = true;
+  }
+
+  function closeModal() {
+    showWorkoutModal = false;
+    selectedDate = null;
+    proposedDuration = 30;
+  }
+
+  function handleKeydown(event) {
+    if (event.key === 'Escape' && showWorkoutModal) {
+      closeModal();
+    }
   }
 
   onMount(() => {
     schedule.initialize();
   });
-
-  
 </script>
+
+<svelte:window on:keydown={handleKeydown}/>
 
 <div class="min-h-screen bg-background">
   <div class="border-b">
@@ -62,7 +81,7 @@
         <div class="col-span-2 space-y-6">
           <!-- Progress Chart - Now Larger -->
           <div class="rounded-lg border bg-card p-6 h-[500px]">
-            <ProgressChart onWorkoutClick={openWorkoutLog} />
+            <ProgressChart on:workoutClick={handleWorkoutClick} />
           </div>
         </div>
 
@@ -85,18 +104,28 @@
   </footer>
 
   {#if showWorkoutModal}
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-      <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
-        <div class="flex justify-between items-center">
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" on:click={closeModal}>
+      <div 
+        class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg max-h-[90vh] overflow-y-auto"
+        on:click|stopPropagation
+      >
+        <div class="flex justify-between items-center sticky top-0 bg-background pb-4 border-b">
           <h2 class="text-lg font-semibold">Log Workout</h2>
-          <Button variant="ghost" class="h-8 w-8 p-0" on:click={() => showWorkoutModal = false}>
+          <Button 
+            variant="ghost" 
+            class="h-8 w-8 p-0" 
+            on:click={closeModal}
+          >
             ✕
           </Button>
         </div>
-        <WorkoutLog 
-          selectedDate={selectedDate}
-          onComplete={() => showWorkoutModal = false}
-        />
+        <div class="overflow-y-auto">
+          <WorkoutLog 
+            selectedDate={selectedDate}
+            proposedDuration={proposedDuration}
+            onComplete={closeModal}
+          />
+        </div>
       </div>
     </div>
   {/if}
@@ -117,5 +146,17 @@
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
       Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  :global(.modal-content) {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  :global(.modal-header) {
+    position: sticky;
+    top: 0;
+    background: var(--background);
+    z-index: 1;
   }
 </style>

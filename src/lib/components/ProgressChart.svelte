@@ -6,6 +6,9 @@
   import { calculateSigmoidal } from '../utils/sigmoidal';
   import { Button } from "$lib/components/UI/button";
   import { timeFormat } from 'd3-time-format';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
 
   let chartContainer;
   let currentPage = 0;
@@ -153,6 +156,15 @@
     .domain([0, d3.max(dailyWorkouts, d =>  Math.max(d.total, 100)) || 100])
     .range([height, 0]);
 
+  function handleWorkoutClick(workout) {
+    if (workout.proposed > 0) {
+      dispatch('workoutClick', {
+        date: workout.date.toISOString(),
+        proposedDuration: workout.proposed
+      });
+    }
+  }
+
   function updateChart() {
     if (!svg || !dailyWorkouts.length) return;
 
@@ -184,7 +196,7 @@
       .attr('x', -barWidth / 2)
       .attr('fill', 'var(--success-color)');
 
-    // Add proposed workout bars
+    // Add proposed workout bars with click interaction
     dayGroups.filter(d => d.proposed > 0)
       .append('rect')
       .attr('class', 'proposed-rect')
@@ -195,7 +207,9 @@
       .attr('fill', 'transparent')
       .attr('stroke', 'var(--border-color)')
       .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '4,4');
+      .attr('stroke-dasharray', '4,4')
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => handleWorkoutClick(d));
 
     // X-axis with dates
     const formatDate = timeFormat('%a, %m/%d');
@@ -278,8 +292,6 @@
       svg = null;
     };
   });
-
-  export let onWorkoutClick = (date) => {};
 </script>
 
 <div class="chart-container">
@@ -339,6 +351,11 @@
     stroke: var(--border-color);
     stroke-width: 1.5;
     stroke-dasharray: 4,4;
+    transition: fill 0.2s ease-in-out;
+  }
+
+  :global(.proposed-rect:hover) {
+    fill: rgba(40, 167, 69, 0.1); /* Light green background on hover */
   }
 
   :global(.x-axis), :global(.y-axis) {
