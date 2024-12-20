@@ -30,25 +30,21 @@
       <Auth />
     {:else}
       <div class="grid-layout">
-        <section class="calendar-section">
-          <Calendar />
-        </section>
-
-        <section class="controls-section">
-          <ControlsPanel />
-        </section>
-
-        <section class="analytics-section">
-          <AnalyticsPanel />
-        </section>
-
-        <section class="chart-section">
-          <ProgressChart />
-        </section>
-
-        <section class="log-section">
+        <div class="log">
           <WorkoutLog />
-        </section>
+        </div>
+        <div class="calendar">
+          <Calendar />
+        </div>
+        <div class="controls">
+          <ControlsPanel />
+        </div>
+        <div class="chart">
+          <ProgressChart />
+        </div>
+        <div class="analytics">
+          <AnalyticsPanel />
+        </div>
       </div>
     {/if}
   </main>
@@ -92,31 +88,17 @@
     display: grid;
     gap: 2rem;
     grid-template-areas:
-      "calendar calendar controls"
-      "analytics chart chart"
-      "log chart chart";
-    grid-template-columns: 1fr 2fr 1fr;
+      "log log"
+      "calendar controls"
+      "chart analytics";
+    grid-template-columns: 1fr 300px;
   }
 
-  .calendar-section {
-    grid-area: calendar;
-  }
-
-  .controls-section {
-    grid-area: controls;
-  }
-
-  .analytics-section {
-    grid-area: analytics;
-  }
-
-  .chart-section {
-    grid-area: chart;
-  }
-
-  .log-section {
-    grid-area: log;
-  }
+  .calendar { grid-area: calendar; }
+  .controls { grid-area: controls; }
+  .chart { grid-area: chart; }
+  .analytics { grid-area: analytics; }
+  .log { grid-area: log; }
 
   footer {
     text-align: center;
@@ -133,11 +115,11 @@
   @media (max-width: 1200px) {
     .grid-layout {
       grid-template-areas:
+        "log"
         "calendar"
         "controls"
-        "analytics"
         "chart"
-        "log";
+        "analytics";
       grid-template-columns: 1fr;
     }
 

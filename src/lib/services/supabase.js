@@ -20,9 +20,16 @@ export async function saveWorkout(workout) {
 }
 
 export async function getWorkouts() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
   const { data, error } = await supabase
     .from('workouts')
     .select('*')
+    .eq('user_id', user.id)
     .order('date', { ascending: false });
 
   if (error) throw error;
