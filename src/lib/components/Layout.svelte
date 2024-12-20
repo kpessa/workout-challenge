@@ -13,17 +13,30 @@
   let showWorkoutModal = false;
   let selectedDate = null;
   let proposedDuration = 30;
+  let editMode = false;
+  let workoutId = null;
 
   function handleWorkoutClick(event) {
-    const { date, proposedDuration: duration } = event.detail;
-    selectedDate = date;
-    proposedDuration = duration;
+    selectedDate = event.detail.date;
+    proposedDuration = event.detail.proposedDuration;
+    editMode = false;
+    workoutId = null;
+    showWorkoutModal = true;
+  }
+
+  function handleEditWorkout(event) {
+    console.log('Editing workout with data:', event.detail);
+    selectedDate = event.detail.date;
+    proposedDuration = event.detail.duration;
+    workoutId = event.detail.id;
+    editMode = true;
     showWorkoutModal = true;
   }
 
   function openWorkoutLog(date = null) {
     selectedDate = date;
     proposedDuration = 30; // Reset to default when manually opening
+    editMode = false;
     showWorkoutModal = true;
   }
 
@@ -31,6 +44,8 @@
     showWorkoutModal = false;
     selectedDate = null;
     proposedDuration = 30;
+    editMode = false;
+    workoutId = null;
   }
 
   function handleKeydown(event) {
@@ -81,7 +96,10 @@
         <div class="col-span-2 space-y-6">
           <!-- Progress Chart - Now Larger -->
           <div class="rounded-lg border bg-card p-6 h-[500px]">
-            <ProgressChart on:workoutClick={handleWorkoutClick} />
+            <ProgressChart 
+              on:workoutClick={handleWorkoutClick}
+              on:editWorkout={handleEditWorkout}
+            />
           </div>
         </div>
 
@@ -110,7 +128,7 @@
         on:click|stopPropagation
       >
         <div class="flex justify-between items-center sticky top-0 bg-background pb-4 border-b">
-          <h2 class="text-lg font-semibold">Log Workout</h2>
+          <h2 class="text-lg font-semibold">{editMode ? 'Edit Workout' : 'Log Workout'}</h2>
           <Button 
             variant="ghost" 
             class="h-8 w-8 p-0" 
@@ -123,6 +141,8 @@
           <WorkoutLog 
             selectedDate={selectedDate}
             proposedDuration={proposedDuration}
+            editMode={editMode}
+            workoutId={workoutId}
             onComplete={closeModal}
           />
         </div>

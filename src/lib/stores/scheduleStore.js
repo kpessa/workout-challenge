@@ -55,8 +55,16 @@ function createScheduleStore() {
           const workouts = await getWorkouts();
           console.log('Fetched workouts from database:', workouts);
           
-          // Simply set the store to the fetched workouts
-          store.set(workouts);
+          // Ensure all necessary fields are included
+          const processedWorkouts = workouts.map(workout => ({
+            id: workout.id,
+            date: workout.date,
+            duration: workout.duration,
+            created_at: workout.created_at,
+            user_id: workout.user_id
+          }));
+          
+          store.set(processedWorkouts);
         }
       } catch (error) {
         logError(error, 'Initializing schedule');
@@ -77,6 +85,66 @@ function createScheduleStore() {
         // Local state will be updated via the real-time subscription
       } catch (error) {
         logError(error, 'Logging workout');
+        throw error;
+      }
+    },
+
+    updateWorkout: async (date, duration) => {
+      try {
+        validateWorkout(date, duration);
+        
+        // Update in Supabase
+        const { data, error } = await supabase
+          .from('workouts')
+          .update({ duration })
+          .eq('date', date.toISOString());
+
+        if (error) throw error;
+
+        // Update local state
+        store.update(workouts => workouts.map(workout => 
+          workout.date === date.toISOString()
+            ? { ...workout, duration }
+            : workout
+        ));
+
+      } catch (error) {
+        logError(error, 'Updating workout');
+        throw error;
+      }
+    },
+
+    deleteWorkout: async (date, workoutId) => {
+      try {
+        if (!workoutId) {
+          console.error('No workout ID provided for deletion');
+          throw new Error('No workout ID provided for deletion');
+        }
+
+        console.log('Deleting workout:', { id: workoutId });
+        
+        // Delete from Supabase using only the workout ID
+        const { error } = await supabase
+          .from('workouts')
+          .delete()
+          .eq('id', workoutId);
+
+        if (error) {
+          console.error('Error deleting workout:', error);
+          throw error;
+        }
+
+        console.log('Successfully deleted workout from database');
+
+        // Update local state
+        store.update(workouts => {
+          const updatedWorkouts = workouts.filter(workout => workout.id !== workoutId);
+          console.log('Updated workouts after deletion:', updatedWorkouts);
+          return updatedWorkouts;
+        });
+
+      } catch (error) {
+        console.error('Error in deleteWorkout:', error);
         throw error;
       }
     }

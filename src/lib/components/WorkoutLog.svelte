@@ -1,14 +1,17 @@
 <script>
   import { schedule } from '../stores/scheduleStore';
+  import { Button } from "$lib/components/UI/button";
   
   export let selectedDate = null;
   export let proposedDuration = 30;
   export let onComplete = () => {};
+  export let editMode = false;
+  export let workoutId = null;
   
-  let duration = proposedDuration;
+  let duration = editMode ? proposedDuration : 30;
   
-  // Update duration when proposedDuration changes
-  $: if (proposedDuration) {
+  // Update duration when proposedDuration changes and not in edit mode
+  $: if (proposedDuration && !editMode) {
     duration = proposedDuration;
   }
 
@@ -19,16 +22,46 @@
     .map(workout => ({
       date: workout.date,
       workouts: [{
+        id: workout.id,
         duration: workout.duration,
         timestamp: workout.created_at
       }]
     }));
 
   async function handleSubmit() {
-    if (duration > 0) {
-      await schedule.logWorkout(new Date(selectedDate), duration);
-      duration = 30; // Reset to default
-      onComplete(); // Call this after successful submission
+    try {
+      if (duration > 0) {
+        if (editMode && workoutId) {
+          console.log('Updating workout:', { id: workoutId, duration });
+          await schedule.updateWorkout(new Date(selectedDate), duration, workoutId);
+        } else {
+          console.log('Logging new workout:', { date: selectedDate, duration });
+          await schedule.logWorkout(new Date(selectedDate), duration);
+        }
+        onComplete(); // Close modal
+      }
+    } catch (error) {
+      console.error('Error submitting workout:', error);
+      alert('Failed to save workout. Please try again.');
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      if (!workoutId) {
+        console.error('No workout ID provided for deletion');
+        throw new Error('No workout ID provided for deletion');
+      }
+
+      if (confirm('Are you sure you want to delete this workout?')) {
+        console.log('Deleting workout with ID:', workoutId);
+        await schedule.deleteWorkout(null, workoutId);
+        console.log('Workout deleted successfully');
+        onComplete(); // Close modal
+      }
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      alert('Failed to delete workout. Please try again.');
     }
   }
 
@@ -49,7 +82,7 @@
 
 <div class="workout-log">
   <div class="log-section">
-    <h2>Log Workout</h2>
+    <h2>{editMode ? 'Edit Workout' : 'Log Workout'}</h2>
     
     <form on:submit|preventDefault={handleSubmit} class="log-form">
       <div class="form-group">
@@ -59,6 +92,7 @@
           type="date"
           bind:value={formattedDate}
           max={new Date().toISOString().split('T')[0]}
+          disabled={editMode}
         />
       </div>
 
@@ -73,9 +107,21 @@
         />
       </div>
 
-      <button type="submit" class="submit-button" disabled={!formattedDate}>
-        Log Workout
-      </button>
+      <div class="button-group">
+        <button type="submit" class="submit-button" disabled={!formattedDate}>
+          {editMode ? 'Update Workout' : 'Log Workout'}
+        </button>
+
+        {#if editMode}
+          <button 
+            type="button" 
+            class="delete-button" 
+            on:click={handleDelete}
+          >
+            Delete Workout
+          </button>
+        {/if}
+      </div>
     </form>
   </div>
 
@@ -148,18 +194,42 @@
     color: inherit;
   }
 
-  .submit-button {
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .submit-button, .delete-button {
     padding: 0.75rem;
-    background: #4CAF50;
-    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    flex: 1;
+  }
+
+  .submit-button {
+    background: #4CAF50;
+    color: white;
   }
 
   .submit-button:hover {
     background: #45a049;
+  }
+
+  .delete-button {
+    background: #dc3545;
+    color: white;
+  }
+
+  .delete-button:hover {
+    background: #c82333;
+  }
+
+  .submit-button:disabled, .delete-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 
   .recent-workouts {
