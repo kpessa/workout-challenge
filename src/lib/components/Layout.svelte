@@ -6,6 +6,8 @@
   import AnalyticsPanel from './AnalyticsPanel.svelte';
   import { schedule } from '../stores/scheduleStore';
   import { onMount } from 'svelte';
+  import Auth from './Auth.svelte';
+  import { authStore } from '../stores/authStore';
 
   // Initialize the schedule when the app loads
   onMount(() => {
@@ -16,30 +18,39 @@
 <div class="layout">
   <header>
     <h1>90-Day Workout Challenge</h1>
+    {#if $authStore.user}
+      <button on:click={() => authStore.signOut()}>Sign Out</button>
+    {/if}
   </header>
 
   <main>
-    <div class="grid-layout">
-      <section class="calendar-section">
-        <Calendar />
-      </section>
+    {#if $authStore.loading}
+      <div class="loading">Loading...</div>
+    {:else if !$authStore.user}
+      <Auth />
+    {:else}
+      <div class="grid-layout">
+        <section class="calendar-section">
+          <Calendar />
+        </section>
 
-      <section class="controls-section">
-        <ControlsPanel />
-      </section>
+        <section class="controls-section">
+          <ControlsPanel />
+        </section>
 
-      <section class="analytics-section">
-        <AnalyticsPanel />
-      </section>
+        <section class="analytics-section">
+          <AnalyticsPanel />
+        </section>
 
-      <section class="chart-section">
-        <ProgressChart />
-      </section>
+        <section class="chart-section">
+          <ProgressChart />
+        </section>
 
-      <section class="log-section">
-        <WorkoutLog />
-      </section>
-    </div>
+        <section class="log-section">
+          <WorkoutLog />
+        </section>
+      </div>
+    {/if}
   </main>
 
   <footer>
