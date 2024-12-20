@@ -3,6 +3,8 @@ import { userPreferences } from './userPreferencesStore';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorageHelpers';
 import { generateWorkoutSchedule } from '../utils/sigmoidal';
 import { ValidationError, logError } from '../utils/errorHandling';
+import { saveWorkout, getWorkouts, supabase } from '../services/supabase';
+import { authStore } from './authStore';
 
 function validateWorkout(date, duration) {
   if (isNaN(new Date(date).getTime())) {
@@ -25,12 +27,50 @@ function createScheduleStore() {
 
   const store = writable(stored || []);
 
+  // Subscribe to real-time changes
+  let subscription;
+  
+  authStore.subscribe(({ user }) => {
+    if (user) {
+      subscription = supabase
+        .channel('workouts')
+        .on('postgres_changes', 
+          { event: 'INSERT', schema: 'public', table: 'workouts' },
+          async (payload) => {
+            if (payload.new.user_id === user.id) {
+              store.update(schedule => {
+                const updatedSchedule = schedule.map(day => {
+                  if (day.date.toDateString() === new Date(payload.new.date).toDateString()) {
+                    return {
+                      ...day,
+                      completed: true,
+                      workouts: [...day.workouts, {
+                        duration: payload.new.duration,
+                        timestamp: payload.new.created_at
+                      }]
+                    };
+                  }
+                  return day;
+                });
+                saveToLocalStorage('workoutSchedule', updatedSchedule);
+                return updatedSchedule;
+              });
+            }
+          }
+        )
+        .subscribe();
+    } else if (subscription) {
+      subscription.unsubscribe();
+    }
+  });
+
   return {
     subscribe: store.subscribe,
     
-    initialize: () => {
+    initialize: async () => {
       try {
-        return userPreferences.subscribe(prefs => {
+        // First, generate the schedule based on preferences
+        const unsubscribe = userPreferences.subscribe(prefs => {
           const schedule = generateWorkoutSchedule(
             prefs.startDate,
             prefs.daysPerWeek
@@ -38,30 +78,52 @@ function createScheduleStore() {
           store.set(schedule);
           saveToLocalStorage('workoutSchedule', schedule);
         });
+
+        // Then, fetch completed workouts from Supabase and merge them
+        const user = await supabase.auth.getUser();
+        if (user.data.user) {
+          const workouts = await getWorkouts();
+          store.update(schedule => {
+            const updatedSchedule = schedule.map(day => {
+              const dayWorkouts = workouts.filter(w => 
+                new Date(w.date).toDateString() === new Date(day.date).toDateString()
+              );
+              
+              if (dayWorkouts.length > 0) {
+                return {
+                  ...day,
+                  completed: true,
+                  workouts: dayWorkouts.map(w => ({
+                    duration: w.duration,
+                    timestamp: w.created_at
+                  }))
+                };
+              }
+              return day;
+            });
+            saveToLocalStorage('workoutSchedule', updatedSchedule);
+            return updatedSchedule;
+          });
+        }
+
+        return unsubscribe;
       } catch (error) {
         logError(error, 'Initializing schedule');
         throw error;
       }
     },
 
-    logWorkout: (date, duration) => {
+    logWorkout: async (date, duration) => {
       try {
         validateWorkout(date, duration);
         
-        store.update(schedule => {
-          const updatedSchedule = schedule.map(day => {
-            if (day.date.toDateString() === date.toDateString()) {
-              return {
-                ...day,
-                completed: true,
-                workouts: [...day.workouts, { duration, timestamp: new Date() }]
-              };
-            }
-            return day;
-          });
-          saveToLocalStorage('workoutSchedule', updatedSchedule);
-          return updatedSchedule;
+        // Save to Supabase first
+        await saveWorkout({
+          date: date.toISOString(),
+          duration
         });
+        
+        // Local state will be updated via the real-time subscription
       } catch (error) {
         logError(error, 'Logging workout');
         throw error;
