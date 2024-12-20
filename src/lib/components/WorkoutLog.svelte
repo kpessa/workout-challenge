@@ -1,8 +1,10 @@
 <script>
   import { schedule } from '../stores/scheduleStore';
   
+  export let selectedDate = null;
+  export let onComplete = () => {};
+  
   let duration = 30;
-  let selectedDate = new Date().toISOString().split('T')[0];
   
   // Get recent workouts (last 7 days)
   $: recentWorkouts = $schedule
@@ -10,11 +12,13 @@
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 7);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (duration > 0) {
       schedule.logWorkout(new Date(selectedDate), duration);
       duration = 30; // Reset to default
     }
+    
+    onComplete(); // Call this after successful submission
   }
 
   function formatDate(date) {

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
+    "d3": "^7.9.0",
     "shadcn-svelte": "^0.14.0"
   }
 }

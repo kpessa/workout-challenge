@@ -66,6 +66,8 @@
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+
+  export let onWorkoutClick = (date) => {};
 </script>
 
 <div class="calendar">
@@ -77,7 +79,13 @@
 
   <div class="workout-grid">
     {#each workoutDays as day}
-      <div class="workout-day" class:completed={day.completed}>
+      <div 
+        class="workout-day" 
+        on:click={() => onWorkoutClick(day.date)}
+        role="button"
+        tabindex="0"
+        class:completed={day.completed}
+      >
         <label class="checkbox-label">
           <input
             type="checkbox"

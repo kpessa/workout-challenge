@@ -4,139 +4,113 @@
   import ProgressChart from './ProgressChart.svelte';
   import WorkoutLog from './WorkoutLog.svelte';
   import AnalyticsPanel from './AnalyticsPanel.svelte';
-  import { schedule } from '../stores/scheduleStore';
-  import { onMount } from 'svelte';
   import Auth from './Auth.svelte';
   import { authStore } from '../stores/authStore';
+  import { onMount } from 'svelte';
+  import { schedule } from '../stores/scheduleStore';
+  import { Button } from "$lib/components/UI/button";
 
-  // Initialize the schedule when the app loads
+  let showWorkoutModal = false;
+  let selectedDate = null;
+
+  function openWorkoutLog(date = null) {
+    selectedDate = date;
+    showWorkoutModal = true;
+  }
+
   onMount(() => {
     schedule.initialize();
   });
 </script>
 
-<div class="layout">
-  <header>
-    <h1>90-Day Workout Challenge</h1>
-    {#if $authStore.user}
-      <button on:click={() => authStore.signOut()}>Sign Out</button>
-    {/if}
-  </header>
+<div class="min-h-screen bg-background">
+  <div class="border-b">
+    <div class="flex h-16 items-center px-4">
+      <h1 class="text-2xl font-bold text-primary">90-Day Workout Challenge</h1>
+      <div class="ml-auto flex items-center space-x-4">
+        {#if $authStore.user}
+          <Button variant="outline" on:click={() => openWorkoutLog()}>
+            Add Workout
+          </Button>
+          <Button variant="ghost" on:click={() => authStore.signOut()}>
+            Sign Out
+          </Button>
+        {/if}
+      </div>
+    </div>
+  </div>
 
-  <main>
+  <main class="p-4 md:p-6 space-y-6">
     {#if $authStore.loading}
-      <div class="loading">Loading...</div>
+      <div class="flex items-center justify-center h-[calc(100vh-10rem)]">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     {:else if !$authStore.user}
       <Auth />
     {:else}
-      <div class="grid-layout">
-        <div class="log">
-          <WorkoutLog />
-        </div>
-        <div class="calendar">
-          <Calendar />
-        </div>
-        <div class="controls">
-          <ControlsPanel />
-        </div>
-        <div class="chart">
-          <ProgressChart />
-        </div>
-        <div class="analytics">
+      <div class="grid gap-6 dashboard-grid">
+        <!-- Top Row -->
+        <div class="col-span-full">
           <AnalyticsPanel />
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-span-2 space-y-6">
+          <!-- Progress Chart - Now Larger -->
+          <div class="rounded-lg border bg-card p-6 h-[500px]">
+            <ProgressChart onWorkoutClick={openWorkoutLog} />
+          </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-span-1 space-y-6">
+          <div class="rounded-lg border bg-card p-6 sticky top-6">
+            <ControlsPanel />
+          </div>
         </div>
       </div>
     {/if}
   </main>
 
-  <footer>
-    <p>Track your progress and stay motivated! 💪</p>
+  <footer class="border-t py-6 md:px-8 md:py-0">
+    <div class="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
+      <p class="text-sm text-muted-foreground">
+        Track your progress and stay motivated! 💪
+      </p>
+    </div>
   </footer>
+
+  {#if showWorkoutModal}
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+      <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">Log Workout</h2>
+          <Button variant="ghost" class="h-8 w-8 p-0" on:click={() => showWorkoutModal = false}>
+            ✕
+          </Button>
+        </div>
+        <WorkoutLog 
+          selectedDate={selectedDate}
+          onComplete={() => showWorkoutModal = false}
+        />
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
-  .layout {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #1a1a1a;
-    color: #fff;
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  header {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  h1 {
-    margin: 0;
-    color: #ff3e00;
-    font-size: 2rem;
-  }
-
-  main {
-    flex: 1;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .grid-layout {
-    display: grid;
-    gap: 2rem;
-    grid-template-areas:
-      "log log"
-      "calendar controls"
-      "chart analytics";
-    grid-template-columns: 1fr 300px;
-  }
-
-  .calendar { grid-area: calendar; }
-  .controls { grid-area: controls; }
-  .chart { grid-area: chart; }
-  .analytics { grid-area: analytics; }
-  .log { grid-area: log; }
-
-  footer {
-    text-align: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  footer p {
-    margin: 0;
-    color: #888;
-  }
-
-  @media (max-width: 1200px) {
-    .grid-layout {
-      grid-template-areas:
-        "log"
-        "calendar"
-        "controls"
-        "chart"
-        "analytics";
+  @media (max-width: 1280px) {
+    .dashboard-grid {
       grid-template-columns: 1fr;
-    }
-
-    main {
-      padding: 1rem;
-    }
-  }
-
-  @media (max-width: 768px) {
-    h1 {
-      font-size: 1.5rem;
     }
   }
 
   :global(body) {
     margin: 0;
-    background: #1a1a1a;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
       Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
