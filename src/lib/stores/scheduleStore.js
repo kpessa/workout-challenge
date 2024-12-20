@@ -71,6 +71,7 @@ function createScheduleStore() {
       try {
         // First, generate the schedule based on preferences
         const unsubscribe = userPreferences.subscribe(prefs => {
+          console.log('Generating schedule with preferences:', prefs);
           const schedule = generateWorkoutSchedule(
             prefs.startDate,
             prefs.daysPerWeek
@@ -81,8 +82,12 @@ function createScheduleStore() {
 
         // Then, fetch completed workouts from Supabase and merge them
         const user = await supabase.auth.getUser();
+        console.log('Current user:', user.data.user);
+        
         if (user.data.user) {
           const workouts = await getWorkouts();
+          console.log('Fetched workouts:', workouts);
+          
           store.update(schedule => {
             const updatedSchedule = schedule.map(day => {
               const dayWorkouts = workouts.filter(w => 

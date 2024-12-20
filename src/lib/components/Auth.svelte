@@ -1,31 +1,27 @@
 <script>
     import { authStore } from '../stores/authStore';
-    
+    import { Button } from "$lib/components/UI/button";
+    import { Input } from "$lib/components/UI/input";
+    import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "$lib/components/UI/card";
+    import { Label } from "$lib/components/UI/label";
+    import { Alert, AlertDescription } from "$lib/components/UI/alert";
+
     let email = '';
     let password = '';
-    let loading = false;
+    let isSignUp = false;
     let error = null;
+    let loading = false;
 
-    async function handleSubmit(event) {
-        event.preventDefault();
-        loading = true;
+    async function handleSubmit() {
         error = null;
-
-        try {
-            await authStore.signIn(email, password);
-        } catch (e) {
-            error = e.message;
-        } finally {
-            loading = false;
-        }
-    }
-
-    async function handleSignUp() {
         loading = true;
-        error = null;
-
+        
         try {
-            await authStore.signUp(email, password);
+            if (isSignUp) {
+                await authStore.signUp(email, password);
+            } else {
+                await authStore.signIn(email, password);
+            }
         } catch (e) {
             error = e.message;
         } finally {
@@ -35,68 +31,67 @@
 </script>
 
 <div class="auth-container">
-    <form on:submit={handleSubmit}>
-        <h2>Login</h2>
+    <Card class="w-[350px]">
+        <CardHeader>
+            <CardTitle>{isSignUp ? 'Create Account' : 'Sign In'}</CardTitle>
+            <CardDescription>
+                {isSignUp ? 'Create a new account to track your workouts' : 'Sign in to your account'}
+            </CardDescription>
+        </CardHeader>
         
-        {#if error}
-            <div class="error">{error}</div>
-        {/if}
+        <CardContent>
+            <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+                <div class="space-y-2">
+                    <Label for="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        bind:value={email}
+                        required
+                        placeholder="Enter your email"
+                    />
+                </div>
+                
+                <div class="space-y-2">
+                    <Label for="password">Password</Label>
+                    <Input
+                        id="password"
+                        type="password"
+                        bind:value={password}
+                        required
+                        placeholder="Enter your password"
+                    />
+                </div>
 
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input
-                id="email"
-                type="email"
-                bind:value={email}
-                required
-            />
-        </div>
+                {#if error}
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                {/if}
+                
+                <Button type="submit" class="w-full" disabled={loading}>
+                    {#if loading}
+                        Loading...
+                    {:else}
+                        {isSignUp ? 'Sign Up' : 'Sign In'}
+                    {/if}
+                </Button>
+            </form>
+        </CardContent>
 
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input
-                id="password"
-                type="password"
-                bind:value={password}
-                required
-            />
-        </div>
-
-        <div class="button-group">
-            <button type="submit" disabled={loading}>
-                {loading ? 'Loading...' : 'Sign In'}
-            </button>
-            <button type="button" on:click={handleSignUp} disabled={loading}>
-                Sign Up
-            </button>
-        </div>
-    </form>
+        <CardFooter>
+            <Button variant="ghost" class="w-full" on:click={() => isSignUp = !isSignUp}>
+                {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+            </Button>
+        </CardFooter>
+    </Card>
 </div>
 
 <style>
     .auth-container {
-        max-width: 400px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background: var(--card-bg);
-        border-radius: 8px;
-    }
-
-    .form-group {
-        margin-bottom: 1rem;
-    }
-
-    .error {
-        color: #ff3e00;
-        margin-bottom: 1rem;
-    }
-
-    .button-group {
         display: flex;
-        gap: 1rem;
-    }
-
-    button {
-        flex: 1;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
     }
 </style> 
