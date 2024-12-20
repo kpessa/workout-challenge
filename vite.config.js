@@ -7,13 +7,6 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor': ['chart.js']
-        }
-      }
-    }
+    sourcemap: true
   }
 })
