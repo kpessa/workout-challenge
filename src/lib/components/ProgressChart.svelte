@@ -34,16 +34,25 @@
     }
   }
 
+  let scheduleData;
+  let userPreferencesData;
+
+  schedule.subscribe(value => {
+    scheduleData = value;
+    calculateWorkoutDays();
+  });
+
+  userPreferences.subscribe(value => {
+    userPreferencesData = value;
+    calculateWorkoutDays();
+  });
+
   // Move the workout calculation logic to a function
   function calculateWorkoutDays() {
-    if (!$userPreferences || !$schedule) return;
+    if (!userPreferencesData || !scheduleData) return;
     
-    console.log('Calculating workouts for page:', currentPage);
-    console.log('Current schedule:', $schedule);
-    console.log('User preferences:', $userPreferences);
-    
-    const startDate = new Date($userPreferences.startDate);
-    const daysPerWeek = $userPreferences.daysPerWeek;
+    const startDate = new Date(userPreferencesData.startDate);
+    const daysPerWeek = userPreferencesData.daysPerWeek;
     
     // Calculate start and end dates for current page
     const pageStartDate = new Date(startDate);
@@ -52,85 +61,84 @@
     const pageEndDate = new Date(pageStartDate);
     pageEndDate.setDate(pageEndDate.getDate() + 29);
 
-    console.log('Page date range:', {
-      start: pageStartDate.toDateString(),
-      end: pageEndDate.toDateString()
-    });
+    // First, add all recorded workouts
+    const workoutDays = scheduleData
+      .filter(workout => {
+        const workoutDate = new Date(workout.date);
+        return workoutDate >= pageStartDate && workoutDate <= pageEndDate;
+      })
+      .map(workout => {
+        const workoutDate = new Date(workout.date);
+        const dayNum = Math.floor((workoutDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return {
+          date: workoutDate,
+          day: dayNum,
+          completed: workout.duration,
+          proposed: 0,
+          total: workout.duration
+        };
+      });
 
-    // Generate workout days for this month
-    const workoutDays = [];
+    // Track which dates already have recorded workouts
+    const recordedDates = new Set(workoutDays.map(w => w.date.toDateString()));
+
+    // Now add proposed workouts
     let currentDate = new Date(pageStartDate);
-    let workoutsThisWeek = 0;
-    let weekStart = new Date(currentDate);
-    weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+    let currentWeekWorkouts = 0;
+    let weekStartDate = new Date(currentDate);
 
     while (currentDate <= pageEndDate) {
       const dayOfWeek = currentDate.getDay();
       
-      // Reset counter at start of week (Monday)
-      if (dayOfWeek === 1) {
-        workoutsThisWeek = 0;
+      // Reset week counter on Sundays
+      if (dayOfWeek === 0) {
+        currentWeekWorkouts = 0;
+        weekStartDate = new Date(currentDate);
       }
 
-      // If we haven't hit our weekly limit and it's not Sunday
-      if (workoutsThisWeek < daysPerWeek && dayOfWeek !== 0) {
-        const dayNum = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      // Count recorded workouts this week
+      if (dayOfWeek === 0 || currentDate.toDateString() === pageStartDate.toDateString()) {
+        const weekEnd = new Date(weekStartDate);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        currentWeekWorkouts = Array.from(recordedDates)
+          .filter(dateStr => {
+            const date = new Date(dateStr);
+            return date >= weekStartDate && date <= weekEnd;
+          }).length;
+      }
+
+      // Only propose a workout if:
+      // 1. This day doesn't have a recorded workout
+      // 2. It's not Sunday
+      // 3. We haven't hit our weekly workout goal yet
+      if (!recordedDates.has(currentDate.toDateString()) && 
+          dayOfWeek !== 0 && 
+          currentWeekWorkouts < daysPerWeek) {
         
-        // Find any completed workouts for this day
-        const dayEntries = $schedule.filter(s => {
-          if (!s.date) return false;
-          const sDate = new Date(s.date);
-          return sDate.toDateString() === currentDate.toDateString();
-        });
-
-        // Sum up completed workout minutes
-        const completedTime = dayEntries.reduce((sum, entry) => {
-          if (!entry.workouts) return sum;
-          const dailySum = entry.workouts.reduce((acc, w) => 
-            acc + (w.completed ? w.duration : 0), 0);
-          return sum + dailySum;
-        }, 0);
-
-        // Calculate target duration using sigmoid
-        const targetTime = Math.round(calculateSigmoidal(dayNum, $userPreferences.sigmoidParams));
+        const dayNum = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const targetTime = Math.round(calculateSigmoidal(dayNum, userPreferencesData.sigmoidParams));
 
         workoutDays.push({
           date: new Date(currentDate),
           day: dayNum,
-          completed: completedTime,
-          proposed: Math.max(0, targetTime - completedTime),
+          completed: 0,
+          proposed: targetTime,
           total: targetTime
         });
-
-        workoutsThisWeek++;
+        currentWeekWorkouts++;
       }
 
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    console.log('Generated workout days:', {
-      count: workoutDays.length,
-      first: workoutDays[0],
-      last: workoutDays[workoutDays.length - 1]
-    });
-    
+    // Sort workouts by date
+    workoutDays.sort((a, b) => a.date - b.date);
+
+    console.log('Recorded workouts:', scheduleData.length);
+    console.log('All workout days:', workoutDays);
+
     dailyWorkouts = workoutDays;
-    requestAnimationFrame(updateChart); // Ensure DOM is ready before updating
-  }
-
-  // Watch for changes that should trigger recalculation
-  $: {
-    if ($schedule && $userPreferences) {
-      calculateWorkoutDays();
-    }
-  }
-
-  // Also watch currentPage explicitly
-  $: {
-    currentPage;
-    if ($schedule && $userPreferences) {
-      calculateWorkoutDays();
-    }
+    requestAnimationFrame(updateChart);
   }
 
   // Use time scale for x-axis with proper padding
@@ -142,7 +150,7 @@
     .range([20, width - 20]); // Add padding to prevent bars from going off-screen
 
   $: yScale = d3.scaleLinear()
-    .domain([0, 100])
+    .domain([0, d3.max(dailyWorkouts, d =>  Math.max(d.total, 100)) || 100])
     .range([height, 0]);
 
   function updateChart() {
@@ -153,58 +161,53 @@
     // Remove old elements
     svg.selectAll('.day-group').remove();
 
-    // Join workout data
+    // Create new groups for each day
     const dayGroups = svg.selectAll('.day-group')
-      .data(dailyWorkouts);
-
-    dayGroups.exit().remove();
-    
-    const dayEnter = dayGroups.enter()
+      .data(dailyWorkouts)
+      .enter()
       .append('g')
-      .attr('class', 'day-group');
+      .attr('class', 'day-group')
+      .attr('transform', d => `translate(${xScale(d.date)},0)`);
 
     const barWidth = Math.min(
       20,  // Maximum width
       (width / dailyWorkouts.length) * 0.8  // 80% of available space per bar
     );
 
-    // Merge and position groups
-    const dayMerge = dayEnter.merge(dayGroups)
-      .attr('transform', d => {
-        const x = xScale(d.date);
-        return `translate(${x},0)`;
-      });
-
-    // Completed portion
-    dayMerge.selectAll('.completed-rect')
-      .data(d => [d])
-      .join('rect')
+    // Add completed workout bars
+    dayGroups.filter(d => d.completed > 0)
+      .append('rect')
       .attr('class', 'completed-rect')
       .attr('y', d => yScale(d.completed))
       .attr('height', d => height - yScale(d.completed))
       .attr('width', barWidth)
-      .attr('x', -barWidth / 2)  // Center the bar on the date
+      .attr('x', -barWidth / 2)
       .attr('fill', 'var(--success-color)');
 
-    // Proposed portion
-    dayMerge.selectAll('.proposed-rect')
-      .data(d => [d])
-      .join('rect')
+    // Add proposed workout bars
+    dayGroups.filter(d => d.proposed > 0)
+      .append('rect')
       .attr('class', 'proposed-rect')
-      .attr('y', d => yScale(d.total))
+      .attr('y', d => yScale(d.proposed))
       .attr('height', d => height - yScale(d.proposed))
       .attr('width', barWidth)
-      .attr('x', -barWidth / 2);  // Center the bar on the date
+      .attr('x', -barWidth / 2)
+      .attr('fill', 'transparent')
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '4,4');
 
-    // X-axis with dates - adjust tick count based on available space
+    // X-axis with dates
     const formatDate = timeFormat('%a, %m/%d');
     svg.select('.x-axis')
       .call(d3.axisBottom(xScale)
-        .ticks(Math.min(dailyWorkouts.length, 10)) // Limit number of ticks
+        .ticks(Math.min(dailyWorkouts.length, 10))
         .tickFormat(formatDate))
       .selectAll('text')
-      .attr('dy', '0.5em')
-      .attr('dx', '-0.5em');
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', 'rotate(-45)');
 
     // Y-axis
     svg.select('.y-axis')
@@ -213,37 +216,35 @@
         .tickFormat(d => `${d}min`));
 
     // Update grid lines
-    svg.selectAll('.grid-lines line')
-      .data(d3.range(0, 110, 10))
+    svg.select('.grid-lines')
+      .selectAll('line')
+      .data(yScale.ticks(5))
       .join('line')
       .attr('x1', 0)
       .attr('x2', width)
       .attr('y1', d => yScale(d))
-      .attr('y2', d => yScale(d));
+      .attr('y2', d => yScale(d))
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-opacity', 0.2)
+      .attr('stroke-dasharray', '2,2');
   }
 
   onMount(() => {
     // Create the SVG
-    svg = d3.select(chartContainer)
+    const svgElement = d3.select(chartContainer)
       .append('svg')
       .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
+      .attr('height', height + margin.top + margin.bottom);
+    
+    svg = svgElement
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Add grid lines for every 10 minutes
+    // Add grid lines container
     svg.append('g')
-      .attr('class', 'grid-lines')
-      .selectAll('line')
-      .data(d3.range(0, 110, 10))
-      .enter()
-      .append('line')
-      .attr('x1', 0)
-      .attr('x2', width)
-      .attr('y1', d => yScale(d))
-      .attr('y2', d => yScale(d));
+      .attr('class', 'grid-lines');
 
-    // Add axes with more visible styling
+    // Add axes
     svg.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0,${height})`);
@@ -255,7 +256,7 @@
     svg.append('text')
       .attr('class', 'axis-label')
       .attr('x', width / 2)
-      .attr('y', height + 40)
+      .attr('y', height + margin.bottom - 10)
       .attr('text-anchor', 'middle')
       .text('Workouts');
 
@@ -263,18 +264,18 @@
       .attr('class', 'axis-label')
       .attr('transform', 'rotate(-90)')
       .attr('x', -height / 2)
-      .attr('y', -40)
+      .attr('y', -margin.left + 20)
       .attr('text-anchor', 'middle')
       .text('Duration (minutes)');
 
     // Initial update
-    updateChart();
+    calculateWorkoutDays();
 
     return () => {
-      if (svg) {
-        svg.remove();
-        svg = null;
+      if (svgElement) {
+        svgElement.remove();
       }
+      svg = null;
     };
   });
 
@@ -308,10 +309,10 @@
 <style>
   /* Make sure these variables contrast enough to be visible */
   :root {
-    --card-bg: #ffffff;        /* A lighter card background */
-    --border-color: #333333;   /* Darker border color for outlines and axes */
-    --muted-foreground: #555;  /* Text color for axis ticks/labels */
-    --success-color: #28a745;  /* Green color for completed workouts */
+    --card-bg: #ffffff;
+    --border-color: #333333;
+    --muted-foreground: #555555;
+    --success-color: #28a745;
   }
 
   .chart-container {
@@ -319,14 +320,16 @@
     border-radius: 8px;
     padding: 1.5rem;
     height: 100%;
+    min-height: 600px;
   }
 
   .chart {
     width: 100%;
-    height: calc(100% - 4rem);
+    height: 100%;
   }
 
   :global(.completed-rect) {
+    fill: var(--success-color);
     stroke: var(--border-color);
     stroke-width: 1;
   }
@@ -334,7 +337,7 @@
   :global(.proposed-rect) {
     fill: transparent;
     stroke: var(--border-color);
-    stroke-width: 1;
+    stroke-width: 1.5;
     stroke-dasharray: 4,4;
   }
 
@@ -346,7 +349,6 @@
   :global(.x-axis line), :global(.y-axis line) {
     stroke: var(--border-color);
     stroke-width: 1.5;
-    stroke-opacity: 1;
   }
 
   :global(.x-axis text), :global(.y-axis text) {
@@ -365,17 +367,5 @@
     fill: var(--muted-foreground);
     font-size: 14px;
     font-weight: 500;
-  }
-
-  /* Adjust bar widths */
-  :global(.completed-rect),
-  :global(.proposed-rect) {
-    rx: 2;  /* Rounded corners */
-  }
-
-  /* Make x-axis dates more readable */
-  :global(.x-axis text) {
-    transform: rotate(-45deg);
-    text-anchor: end;
   }
 </style>

@@ -13,6 +13,8 @@
   let showWorkoutModal = false;
   let selectedDate = null;
 
+
+
   function openWorkoutLog(date = null) {
     selectedDate = date;
     showWorkoutModal = true;
@@ -21,6 +23,8 @@
   onMount(() => {
     schedule.initialize();
   });
+
+  
 </script>
 
 <div class="min-h-screen bg-background">
