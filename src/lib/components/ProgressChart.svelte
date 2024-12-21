@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
   import { calculateSigmoidal } from '../utils/sigmoidal';
   import { Button } from "$lib/components/UI/button";
+  import * as Tabs from "$lib/components/UI/tabs";
   import { timeFormat } from 'd3-time-format';
   import { createEventDispatcher } from 'svelte';
 
@@ -14,10 +15,20 @@
   let currentPage = 0;
   let svg;
   let dailyWorkouts = [];
-  let viewMode = 'month'; // 'week' or 'month'
+  let isMonthView = true;
+  let viewMode = 'month';
   let containerWidth;
   let containerHeight;
-  
+
+  $: {
+    // Update viewMode whenever isMonthView changes
+    viewMode = isMonthView ? 'month' : 'week';
+    // Recalculate workout days when viewMode changes
+    if (userPreferencesData && scheduleData) {
+      calculateWorkoutDays();
+    }
+  }
+
   // Chart dimensions
   $: margin = {
     top: 20,
@@ -83,17 +94,18 @@
   }
 
   function nextPeriod() {
-    const maxPages = viewMode === 'week' ? 12 : 3; // 12 weeks or 3 months
+    const maxPages = viewMode === 'month' ? 3 : 12; // 3 months or 12 weeks
     if (currentPage < maxPages - 1) {
       currentPage++;
       calculateWorkoutDays();
     }
   }
 
-  function toggleView() {
-    viewMode = viewMode === 'month' ? 'week' : 'month';
+  function handleViewModeChange(value: string) {
+    console.log('View mode change:', { value, currentMode: viewMode });
+    isMonthView = value === 'month';
+    console.log('Updated isMonthView:', isMonthView);
     currentPage = 0; // Reset to first page when switching views
-    calculateWorkoutDays();
   }
 
   let scheduleData;
@@ -112,6 +124,8 @@
   function calculateWorkoutDays() {
     if (!userPreferencesData || !scheduleData) return;
     
+    console.log('Calculating workout days:', { viewMode, currentPage, isMonthView });
+    
     const startDate = new Date(userPreferencesData.startDate);
     const daysPerWeek = userPreferencesData.daysPerWeek;
     
@@ -120,20 +134,20 @@
     const daysToAdd = viewMode === 'month' ? currentPage * 30 : currentPage * 7;
     pageStartDate.setDate(pageStartDate.getDate() + daysToAdd);
     
-    if (viewMode === 'week') {
-      // Adjust to the nearest Sunday
-      const dayOfWeek = pageStartDate.getDay();
-      pageStartDate.setDate(pageStartDate.getDate() - dayOfWeek);
-    }
+    // Always adjust to the nearest Sunday for consistent week boundaries
+    const dayOfWeek = pageStartDate.getDay();
+    pageStartDate.setDate(pageStartDate.getDate() - dayOfWeek);
     
     const pageEndDate = new Date(pageStartDate);
-    const periodLength = viewMode === 'month' ? 29 : 6;
+    // Set period length based on view mode
+    const periodLength = viewMode === 'month' ? 29 : 6; // 30 days for month, 7 days for week
     pageEndDate.setDate(pageEndDate.getDate() + periodLength);
 
-    // Debug date ranges
-    console.log('Date Range:', {
-      pageStart: pageStartDate.toDateString(),
-      pageEnd: pageEndDate.toDateString()
+    console.log('Date range:', {
+      start: pageStartDate.toDateString(),
+      end: pageEndDate.toDateString(),
+      periodLength,
+      viewMode
     });
 
     // Ensure we include all dates in the range, not just those with workouts
@@ -220,8 +234,6 @@
       }
     });
 
-    console.log('All workout days:', workoutDays);
-
     dailyWorkouts = workoutDays;
     requestAnimationFrame(updateChart);
   }
@@ -242,14 +254,12 @@
         duration: workout.duration,
         id: workout.id
       };
-      console.log('Dispatching editWorkout with data:', workoutData);
       dispatch('editWorkout', workoutData);
     }
   }
 
   function handleDeleteWorkout(workout) {
     if (workout && workout.date && workout.id) {
-      console.log('Deleting workout:', workout);
       dispatch('deleteWorkout', {
         date: workout.date.toISOString(),
         id: workout.id
@@ -338,21 +348,10 @@
     today.setHours(0, 0, 0, 0);
     const todayStr = today.toDateString();
     
-    // Debug current day visibility
-    console.log('Today:', todayStr);
-    console.log('Daily Workouts:', dailyWorkouts.map(d => ({
-      date: d.date.toDateString(),
-      isToday: d.date.toDateString() === todayStr
-    })));
-    
     // Add current day indicator if today is in view
     const todayInView = dailyWorkouts.some(d => d.date.toDateString() === todayStr);
-    console.log('Today in view:', todayInView);
 
     if (todayInView) {
-      console.log('Adding current day indicator at x:', x(todayStr));
-      
-      // Add background bar for today with increased opacity
       svg.append('rect')
         .attr('class', 'current-day-background')
         .attr('x', x(todayStr))
@@ -360,36 +359,24 @@
         .attr('width', x.bandwidth())
         .attr('height', height)
         .attr('fill', 'rgb(59, 130, 246)')  // Using tailwind blue-500
-        .attr('opacity', 0.15);  // Increased from 0.08
+        .attr('opacity', 0.15);
     }
 
     // Add week boundaries in month view
     if (viewMode === 'month') {
-      console.log('Adding week boundaries for dates:', dailyWorkouts.map(d => ({
-        date: d.date.toDateString(),
-        dayOfWeek: d.date.getDay(),
-        isWeekBoundary: d.date.getDay() === 0 || d.date.getDay() === 6
-      })));
-
-      dailyWorkouts.forEach(d => {
+      dailyWorkouts.forEach((d, i) => {
         const date = new Date(d.date);
-        // If it's Sunday (start of week) or Saturday (end of week)
-        if (date.getDay() === 0 || date.getDay() === 6) {
-          const isWeekStart = date.getDay() === 0;
-          const xPos = x(date.toDateString()) + (isWeekStart ? 0 : x.bandwidth());
-          
-          console.log('Adding week boundary line at x:', xPos, 'for date:', date.toDateString());
-          
-          svg.append('line')
+        // If it's Sunday (start of week)
+        if (date.getDay() === 0) {
+          const xPos = x(date.toDateString());
+          svg.append('rect')
             .attr('class', 'week-boundary-line')
-            .attr('x1', xPos)
-            .attr('x2', xPos)
-            .attr('y1', 0)
-            .attr('y2', height)
-            .attr('stroke', 'hsl(var(--border))')  // Using HSL format from theme
-            .attr('stroke-opacity', 0.7)
-            .attr('stroke-width', 2)
-            .attr('stroke-dasharray', '5,5');
+            .attr('x', xPos - 1)  // Center the line
+            .attr('y', 0)
+            .attr('width', 2)
+            .attr('height', height)
+            .attr('fill', 'currentColor')
+            .attr('opacity', 0.2);
         }
       });
     }
@@ -522,49 +509,54 @@
 </script>
 
 <div class="chart-container">
-  <div class="flex justify-between items-center mb-2 sm:mb-4 pt-1">
-    <div class="flex items-center gap-1 sm:gap-2">
-      <Button 
-        variant="outline" 
-        size="sm"
-        class="h-7 px-2"
-        on:click={previousPeriod} 
-        disabled={currentPage === 0}
-      >
-        ←
-      </Button>
-      <Button 
-        variant="outline"
-        size="sm"
-        class="h-7 px-2"
-        on:click={toggleView}
-      >
-        {viewMode === 'month' ? 'Week' : 'Month'}
-      </Button>
-      <Button 
-        variant="outline"
-        size="sm"
-        class="h-7 px-2"
-        on:click={goToToday}
-      >
-        Today
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm"
-        class="h-7 px-2"
-        on:click={nextPeriod} 
-        disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
-      >
-        →
-      </Button>
+  <div class="relative mb-2 sm:mb-4 pt-1">
+    <!-- Absolute positioned tabs in top right -->
+    <div class="absolute right-0 top-0 h-7">
+      <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
+        <Tabs.List>
+          <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
+          <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
+        </Tabs.List>
+      </Tabs.Root>
     </div>
-    <h2 class="text-sm sm:text-base font-semibold">
-      {viewMode === 'month' ? `Month ${currentPage + 1}` : `Week ${currentPage + 1}`}
-    </h2>
+
+    <!-- Centered content -->
+    <div class="flex flex-col items-center gap-2">
+      <h2 class="text-sm sm:text-base font-semibold">
+        {viewMode === 'month' ? `Month ${currentPage + 1}` : `Week ${currentPage + 1}`}
+      </h2>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          class="h-7 px-2"
+          on:click={previousPeriod} 
+          disabled={currentPage === 0}
+        >
+          ←
+        </Button>
+        <Button 
+          variant="outline"
+          size="sm"
+          class="h-7 px-2"
+          on:click={goToToday}
+        >
+          Today
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          class="h-7 px-2"
+          on:click={nextPeriod} 
+          disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
+        >
+          →
+        </Button>
+      </div>
+    </div>
   </div>
   
-  <div bind:this={chartContainer} class="chart h-full"></div>
+  <div bind:this={chartContainer} class="chart"></div>
 </div>
 
 <style>
@@ -583,7 +575,7 @@
 
   .chart {
     width: 100%;
-    height: calc(100% - 2.5rem);
+    height: calc(100% - 5rem);
   }
 
   :global(.chart-svg) {
@@ -643,10 +635,7 @@
 
   :global(.week-boundary-line) {
     pointer-events: none;
-    stroke: var(--border);
-    stroke-opacity: 0.7;
-    stroke-width: 2px;
-    stroke-dasharray: 5,5;
+    color: var(--border);
   }
 
   :global(.duration-label) {
@@ -698,6 +687,7 @@
     :global(.week-boundary-line) {
       stroke-width: 2.5px;
       stroke-opacity: 0.8;
+      opacity: 0.25 !important;
     }
   }
 
@@ -709,5 +699,33 @@
       --muted-foreground: #999999;
       --background: transparent;
     }
+  }
+
+  /* Remove any styles that might interfere with shadcn tabs */
+  :global(.chart-container [data-state="active"]) {
+    background-color: unset !important;
+    color: unset !important;
+  }
+
+  /* Add proper tab styling */
+  :global(.chart-container [role="tablist"]) {
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 0;
+    background: none;
+  }
+
+  :global(.chart-container [role="tab"]) {
+    height: 100%;
+    border-radius: 0.375rem;
+    border: none;
+    background: none;
+    color: var(--muted-foreground);
+  }
+
+  :global(.chart-container [role="tab"][data-state="active"]) {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
   }
 </style>

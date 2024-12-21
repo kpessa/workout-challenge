@@ -75,11 +75,11 @@
   <!-- Navbar -->
   <header class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div class="container flex h-14 items-center">
-      <div class="mr-4 flex">
+      <div class="flex-1 flex items-center">
         <h1 class="text-lg font-semibold">90-Day Challenge</h1>
       </div>
       {#if $authStore.user}
-        <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+        <div class="flex items-center space-x-2">
           <nav class="flex items-center space-x-2">
             <Button variant="outline" size="sm" on:click={() => openWorkoutLog()}>
               <span class="hidden sm:inline-block">Add Workout</span>
