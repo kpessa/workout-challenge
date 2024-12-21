@@ -63,58 +63,57 @@
 
 <style>
   .analytics-panel {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 1.5rem;
-    max-width: 1200px;
-    margin: 1rem auto;
+    width: 100%;
+    margin: 0 auto;
   }
 
   h2 {
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 1rem 0;
     text-align: center;
+    font-size: 1.25rem;
   }
 
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .stat-card {
     background: rgba(255, 255, 255, 0.03);
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 6px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .stat-value {
-    font-size: 2.5em;
+    font-size: 1.75rem;
     font-weight: bold;
     color: #ff3e00;
     line-height: 1;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
   }
 
   .stat-label {
-    font-size: 1.1em;
+    font-size: 0.9rem;
     color: #ccc;
     margin-bottom: 0.25rem;
   }
 
   .stat-subtext {
-    font-size: 0.9em;
+    font-size: 0.75rem;
     color: #888;
   }
 
   .progress-bar {
     width: 100%;
-    height: 8px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 3px;
     overflow: hidden;
+    margin-top: 0.5rem;
   }
 
   .progress-fill {
@@ -123,15 +122,38 @@
     transition: width 0.3s ease;
   }
 
-  @media (max-width: 768px) {
+  @media (min-width: 640px) {
     .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
-  }
 
-  @media (max-width: 480px) {
-    .stats-grid {
-      grid-template-columns: 1fr;
+    .stat-card {
+      padding: 1rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+    }
+
+    .stat-subtext {
+      font-size: 0.875rem;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
     }
   }
 </style>

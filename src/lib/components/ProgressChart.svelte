@@ -15,11 +15,62 @@
   let svg;
   let dailyWorkouts = [];
   let viewMode = 'month'; // 'week' or 'month'
+  let containerWidth;
+  let containerHeight;
   
   // Chart dimensions
-  const margin = { top: 40, right: 40, bottom: 60, left: 60 };
-  const width = 800 - margin.left - margin.right;
-  const height = 500 - margin.top - margin.bottom;
+  $: margin = {
+    top: 20,
+    right: containerWidth < 640 ? 20 : 40,
+    bottom: containerWidth < 640 ? 50 : 60,
+    left: containerWidth < 640 ? 35 : 50
+  };
+  
+  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
+  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
+
+  // Use time scale for x-axis with proper padding
+  function createScales() {
+    if (!width || !height || !dailyWorkouts.length) return null;
+
+    const x = d3.scaleBand()
+      .domain(dailyWorkouts.map(d => new Date(d.date).toDateString()))
+      .range([0, width])
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(dailyWorkouts, d => Math.max(d.total, 100)) || 100])
+      .range([height, 0]);
+
+    return { x, y };
+  }
+
+  // Format date based on view mode and screen size
+  $: formatDate = (date) => {
+    const d = new Date(date);
+    if (containerWidth < 640) {
+      return d3.timeFormat(viewMode === 'week' ? '%a' : '%d')(d);
+    }
+    return d3.timeFormat(viewMode === 'week' ? '%a, %d' : '%b %d')(d);
+  };
+
+  function updateDimensions() {
+    if (chartContainer) {
+      const rect = chartContainer.getBoundingClientRect();
+      containerWidth = rect.width;
+      containerHeight = rect.height;
+    }
+  }
+
+  // Update chart dimensions on resize
+  function handleResize() {
+    updateDimensions();
+    if (svg) {
+      svg.attr('width', containerWidth)
+         .attr('height', containerHeight);
+      updateChart();
+    }
+  }
 
   // Navigation functions
   function previousPeriod() {
@@ -173,16 +224,6 @@
     requestAnimationFrame(updateChart);
   }
 
-  // Use time scale for x-axis with proper padding
-  $: xScale = d3.scaleBand()
-    .domain(dailyWorkouts.map(d => new Date(d.date).toDateString()))
-    .range([margin.left, width - margin.right])
-    .padding(0.1);
-
-  $: yScale = d3.scaleLinear()
-    .domain([0, d3.max(dailyWorkouts, d =>  Math.max(d.total, 100)) || 100])
-    .range([height, 0]);
-
   function handleWorkoutClick(workout) {
     if (workout && workout.proposed > 0) {
       dispatch('workoutClick', {
@@ -214,101 +255,15 @@
     }
   }
 
-  function updateChart() {
-    if (!svg || !dailyWorkouts.length) return;
-
-    // Remove old elements
-    svg.selectAll('.day-group').remove();
-
-    // Create new groups for each day
-    const dayGroups = svg.selectAll('.day-group')
-      .data(dailyWorkouts)
-      .enter()
-      .append('g')
-      .attr('class', 'day-group')
-      .attr('transform', d => `translate(${xScale(new Date(d.date).toDateString())},0)`);
-
-    const barWidth = xScale.bandwidth();
-
-    // Add completed workout bars (stacked)
-    dayGroups.each(function(d) {
-      const group = d3.select(this);
-      let stackHeight = 0;
-
-      // Add bars for each workout in the day
-      if (d.workouts && d.workouts.length > 0) {
-        d.workouts.forEach((workout, i) => {
-          console.log('Creating bar for workout:', workout); // Debug log
-          group.append('rect')
-            .attr('class', 'completed-rect')
-            .attr('y', () => yScale(stackHeight + workout.duration))
-            .attr('height', () => height - yScale(workout.duration))
-            .attr('width', barWidth)
-            .attr('x', 0)
-            .attr('fill', 'var(--success-color)')
-            .style('cursor', 'pointer')
-            .on('click', () => handleEditWorkout(workout));
-
-          stackHeight += workout.duration;
-        });
-      }
-
-      // Add proposed workout bar if it exists
-      if (d.proposed > 0) {
-        group.append('rect')
-          .attr('class', 'proposed-rect')
-          .attr('y', yScale(d.proposed))
-          .attr('height', height - yScale(d.proposed))
-          .attr('width', barWidth)
-          .attr('x', 0)
-          .attr('fill', 'transparent')
-          .attr('stroke', 'var(--border-color)')
-          .attr('stroke-width', 1)
-          .attr('stroke-dasharray', '4,4')
-          .style('cursor', 'pointer')
-          .on('click', () => handleWorkoutClick(d));
-      }
-    });
-
-    // X-axis with dates
-    const formatDate = timeFormat('%a, %m/%d');
-    svg.select('.x-axis')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(xScale)
-        .tickFormat((d, i) => formatDate(new Date(d))))
-      .selectAll('text')
-      .style('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '.15em')
-      .attr('transform', 'rotate(-45)');
-
-    // Y-axis
-    svg.select('.y-axis')
-      .attr('transform', `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale)
-        .ticks(5)
-        .tickFormat(d => `${d}min`));
-
-    // Update grid lines
-    svg.select('.grid-lines')
-      .selectAll('line')
-      .data(yScale.ticks(5))
-      .join('line')
-      .attr('x1', margin.left)
-      .attr('x2', width - margin.right)
-      .attr('y1', d => yScale(d))
-      .attr('y2', d => yScale(d))
-      .attr('stroke', 'var(--border-color)')
-      .attr('stroke-opacity', 0.2)
-      .attr('stroke-dasharray', '2,2');
-  }
-
   onMount(() => {
     // Create the SVG
+    updateDimensions();
+    
     const svgElement = d3.select(chartContainer)
       .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom);
+      .attr('width', containerWidth)
+      .attr('height', containerHeight)
+      .attr('class', 'chart-svg');
     
     svg = svgElement
       .append('g')
@@ -327,90 +282,190 @@
 
     // Add axis labels
     svg.append('text')
-      .attr('class', 'axis-label')
-      .attr('x', width / 2)
-      .attr('y', height + margin.bottom - 10)
-      .attr('text-anchor', 'middle')
-      .text('Workouts');
-
-    svg.append('text')
-      .attr('class', 'axis-label')
+      .attr('class', 'y-axis-label')
       .attr('transform', 'rotate(-90)')
-      .attr('x', -height / 2)
-      .attr('y', -margin.left + 20)
-      .attr('text-anchor', 'middle')
-      .text('Duration (minutes)');
+      .attr('text-anchor', 'middle');
 
     // Initial update
     calculateWorkoutDays();
 
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (svgElement) {
         svgElement.remove();
       }
       svg = null;
     };
   });
+
+  function updateChart() {
+    if (!svg || !dailyWorkouts.length || !width || !height) return;
+
+    const scales = createScales();
+    if (!scales) return;
+    const { x, y } = scales;
+
+    // Remove old elements
+    svg.selectAll('.day-group').remove();
+
+    // Create new groups for each day
+    const dayGroups = svg.selectAll('.day-group')
+      .data(dailyWorkouts)
+      .enter()
+      .append('g')
+      .attr('class', 'day-group')
+      .attr('transform', d => `translate(${x(new Date(d.date).toDateString())},0)`);
+
+    const barWidth = x.bandwidth();
+
+    // Add completed workout bars (stacked)
+    dayGroups.each(function(d) {
+      const group = d3.select(this);
+      let stackHeight = 0;
+
+      // Add bars for each workout in the day
+      if (d.workouts && d.workouts.length > 0) {
+        d.workouts.forEach((workout) => {
+          group.append('rect')
+            .attr('class', 'completed-rect')
+            .attr('y', y(stackHeight + workout.duration))
+            .attr('height', height - y(workout.duration))
+            .attr('width', barWidth)
+            .attr('x', 0)
+            .style('cursor', 'pointer')
+            .on('click', () => handleEditWorkout(workout));
+
+          stackHeight += workout.duration;
+        });
+      }
+
+      // Add proposed workout bar if it exists
+      if (d.proposed > 0) {
+        group.append('rect')
+          .attr('class', 'proposed-rect')
+          .attr('y', y(d.proposed))
+          .attr('height', height - y(d.proposed))
+          .attr('width', barWidth)
+          .attr('x', 0)
+          .style('cursor', 'pointer')
+          .on('click', () => handleWorkoutClick(d));
+      }
+    });
+
+    // Update X-axis with explicit styling
+    svg.select('.x-axis')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x)
+        .tickFormat(formatDate))
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', containerWidth < 640 ? 'rotate(-45)' : 'rotate(-65)');
+
+    // Update Y-axis with explicit styling
+    svg.select('.y-axis')
+      .call(d3.axisLeft(y)
+        .ticks(containerWidth < 640 ? 5 : 8)
+        .tickFormat(d => `${d}${containerWidth < 640 ? '' : 'min'}`));
+
+    // Update grid lines with explicit styling
+    svg.select('.grid-lines')
+      .selectAll('line')
+      .data(y.ticks(containerWidth < 640 ? 5 : 8))
+      .join('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', d => y(d))
+      .attr('y2', d => y(d))
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-opacity', 0.2)
+      .attr('stroke-dasharray', '2,2');
+
+    // Update Y-axis label with explicit styling
+    svg.select('.y-axis-label')
+      .attr('x', -height / 2)
+      .attr('y', -margin.left + 12)
+      .attr('fill', 'var(--muted-foreground)')
+      .text(containerWidth < 640 ? 'Min' : 'Duration (minutes)');
+  }
 </script>
 
 <div class="chart-container">
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex justify-between items-center mb-4 sm:mb-6">
     <div class="flex items-center gap-2">
       <Button 
         variant="outline" 
+        size="sm"
         on:click={previousPeriod} 
         disabled={currentPage === 0}
       >
-        Previous {viewMode === 'month' ? 'Month' : 'Week'}
+        ←
       </Button>
       <Button 
         variant="outline"
+        size="sm"
         on:click={toggleView}
       >
-        {viewMode === 'month' ? 'Switch to Week View' : 'Switch to Month View'}
+        {viewMode === 'month' ? 'Week' : 'Month'}
       </Button>
       <Button 
         variant="outline" 
+        size="sm"
         on:click={nextPeriod} 
         disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
       >
-        Next {viewMode === 'month' ? 'Month' : 'Week'}
+        →
       </Button>
     </div>
-    <h2 class="text-xl font-bold">
+    <h2 class="text-sm sm:text-base font-semibold">
       {viewMode === 'month' ? `Month ${currentPage + 1}` : `Week ${currentPage + 1}`}
     </h2>
   </div>
   
-  <div bind:this={chartContainer} class="chart"></div>
+  <div bind:this={chartContainer} class="chart h-full"></div>
 </div>
 
 <style>
-  /* Make sure these variables contrast enough to be visible */
   :root {
-    --card-bg: #ffffff;
-    --border-color: #333333;
-    --muted-foreground: #555555;
     --success-color: #28a745;
+    --border-color: #333333;
+    --muted-foreground: #666666;
+    --background: #ffffff;
   }
 
   .chart-container {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
     height: 100%;
-    min-height: 600px;
+    width: 100%;
+    background: var(--background);
   }
 
   .chart {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 3rem);
+  }
+
+  :global(.x-axis), :global(.y-axis) {
+    color: var(--muted-foreground);
+  }
+
+  :global(.x-axis path), :global(.y-axis path),
+  :global(.x-axis line), :global(.y-axis line) {
+    stroke: var(--border-color);
+    stroke-width: 1px;
+  }
+
+  :global(.x-axis text), :global(.y-axis text) {
+    fill: var(--muted-foreground);
+    font-size: 0.7rem;
   }
 
   :global(.completed-rect) {
     fill: var(--success-color);
     stroke: var(--border-color);
-    stroke-width: 1;
+    stroke-width: 1px;
     transition: filter 0.2s ease-in-out;
   }
 
@@ -421,29 +476,13 @@
   :global(.proposed-rect) {
     fill: transparent;
     stroke: var(--border-color);
-    stroke-width: 1.5;
+    stroke-width: 1.5px;
     stroke-dasharray: 4,4;
     transition: fill 0.2s ease-in-out;
   }
 
   :global(.proposed-rect:hover) {
-    fill: rgba(40, 167, 69, 0.1); /* Light green background on hover */
-  }
-
-  :global(.x-axis), :global(.y-axis) {
-    color: var(--muted-foreground);
-  }
-
-  :global(.x-axis path), :global(.y-axis path),
-  :global(.x-axis line), :global(.y-axis line) {
-    stroke: var(--border-color);
-    stroke-width: 1.5;
-  }
-
-  :global(.x-axis text), :global(.y-axis text) {
-    fill: var(--muted-foreground);
-    font-size: 12px;
-    font-weight: 500;
+    fill: rgba(40, 167, 69, 0.1);
   }
 
   :global(.grid-lines line) {
@@ -452,9 +491,24 @@
     stroke-dasharray: 2,2;
   }
 
-  :global(.axis-label) {
+  :global(.y-axis-label) {
     fill: var(--muted-foreground);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 0.8rem;
+  }
+
+  @media (min-width: 640px) {
+    :global(.x-axis text), :global(.y-axis text) {
+      font-size: 0.8rem;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --success-color: #28a745;
+      --border-color: #666666;
+      --muted-foreground: #999999;
+      --background: transparent;
+    }
   }
 </style>

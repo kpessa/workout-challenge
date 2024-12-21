@@ -11,6 +11,7 @@
   import { Button } from "$lib/components/UI/button";
 
   let showWorkoutModal = false;
+  let showSettingsModal = false;
   let selectedDate = null;
   let proposedDuration = 30;
   let editMode = false;
@@ -48,9 +49,18 @@
     workoutId = null;
   }
 
+  function toggleSettings() {
+    showSettingsModal = !showSettingsModal;
+  }
+
   function handleKeydown(event) {
-    if (event.key === 'Escape' && showWorkoutModal) {
-      closeModal();
+    if (event.key === 'Escape') {
+      if (showWorkoutModal) {
+        closeModal();
+      }
+      if (showSettingsModal) {
+        showSettingsModal = false;
+      }
     }
   }
 
@@ -62,15 +72,19 @@
 <svelte:window on:keydown={handleKeydown}/>
 
 <div class="min-h-screen bg-background">
-  <div class="border-b">
-    <div class="flex h-16 items-center px-4">
-      <h1 class="text-2xl font-bold text-primary">90-Day Workout Challenge</h1>
-      <div class="ml-auto flex items-center space-x-4">
+  <!-- Header -->
+  <div class="border-b sticky top-0 bg-background z-10">
+    <div class="flex flex-col sm:flex-row h-auto sm:h-16 items-center px-3 py-2 sm:py-0 gap-2 sm:gap-4">
+      <h1 class="text-lg sm:text-xl font-bold text-primary">90-Day Challenge</h1>
+      <div class="flex items-center gap-2 sm:gap-4 sm:ml-auto">
         {#if $authStore.user}
-          <Button variant="outline" on:click={() => openWorkoutLog()}>
-            Add Workout
+          <Button variant="ghost" size="sm" class="px-2" on:click={toggleSettings}>
+            ⚙️
           </Button>
-          <Button variant="ghost" on:click={() => authStore.signOut()}>
+          <Button variant="outline" size="sm" on:click={() => openWorkoutLog()}>
+            + Workout
+          </Button>
+          <Button variant="ghost" size="sm" on:click={() => authStore.signOut()}>
             Sign Out
           </Button>
         {/if}
@@ -78,7 +92,8 @@
     </div>
   </div>
 
-  <main class="p-4 md:p-6 space-y-6">
+  <!-- Main Content -->
+  <main class="p-3 sm:p-4 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
     {#if $authStore.loading}
       <div class="flex items-center justify-center h-[calc(100vh-10rem)]">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -86,16 +101,10 @@
     {:else if !$authStore.user}
       <Auth />
     {:else}
-      <div class="grid gap-6 dashboard-grid">
-        <!-- Top Row -->
-        <div class="col-span-full">
-          <AnalyticsPanel />
-        </div>
-
-        <!-- Main Content Area -->
-        <div class="col-span-2 space-y-6">
-          <!-- Progress Chart - Now Larger -->
-          <div class="rounded-lg border bg-card p-6 h-[500px]">
+      <div class="flex flex-col gap-4 sm:gap-6">
+        <!-- Progress Chart -->
+        <div class="w-full">
+          <div class="rounded-lg border bg-card p-2 sm:p-4 h-[350px] sm:h-[500px]">
             <ProgressChart 
               on:workoutClick={handleWorkoutClick}
               on:editWorkout={handleEditWorkout}
@@ -103,32 +112,34 @@
           </div>
         </div>
 
-        <!-- Right Sidebar -->
-        <div class="col-span-1 space-y-6">
-          <div class="rounded-lg border bg-card p-6 sticky top-6">
-            <ControlsPanel />
+        <!-- Analytics Panel -->
+        <div class="w-full">
+          <div class="rounded-lg border bg-card p-3 sm:p-4">
+            <AnalyticsPanel />
           </div>
         </div>
       </div>
     {/if}
   </main>
 
-  <footer class="border-t py-6 md:px-8 md:py-0">
-    <div class="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
-      <p class="text-sm text-muted-foreground">
+  <!-- Footer -->
+  <footer class="border-t py-3 sm:py-4 mt-auto">
+    <div class="container flex flex-col items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4">
+      <p class="text-xs sm:text-sm text-muted-foreground text-center">
         Track your progress and stay motivated! 💪
       </p>
     </div>
   </footer>
 
+  <!-- Modals -->
   {#if showWorkoutModal}
     <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" on:click={closeModal}>
       <div 
-        class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg max-h-[90vh] overflow-y-auto"
+        class="fixed left-[50%] top-[50%] z-50 w-[95%] sm:w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-3 sm:p-6 shadow-lg duration-200 rounded-lg max-h-[90vh] overflow-y-auto"
         on:click|stopPropagation
       >
-        <div class="flex justify-between items-center sticky top-0 bg-background pb-4 border-b">
-          <h2 class="text-lg font-semibold">{editMode ? 'Edit Workout' : 'Log Workout'}</h2>
+        <div class="flex justify-between items-center sticky top-0 bg-background pb-3 sm:pb-4 border-b">
+          <h2 class="text-base sm:text-lg font-semibold">{editMode ? 'Edit Workout' : 'Log Workout'}</h2>
           <Button 
             variant="ghost" 
             class="h-8 w-8 p-0" 
@@ -137,7 +148,7 @@
             ✕
           </Button>
         </div>
-        <div class="overflow-y-auto">
+        <div class="overflow-y-auto pt-2">
           <WorkoutLog 
             selectedDate={selectedDate}
             proposedDuration={proposedDuration}
@@ -149,28 +160,46 @@
       </div>
     </div>
   {/if}
+
+  <!-- Settings Modal -->
+  {#if showSettingsModal}
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" on:click={() => showSettingsModal = false}>
+      <div 
+        class="fixed left-[50%] top-[50%] z-50 w-[95%] sm:w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-3 sm:p-6 shadow-lg duration-200 rounded-lg"
+        on:click|stopPropagation
+      >
+        <div class="flex justify-between items-center sticky top-0 bg-background pb-3 sm:pb-4 border-b">
+          <h2 class="text-base sm:text-lg font-semibold">Challenge Settings</h2>
+          <Button 
+            variant="ghost" 
+            class="h-8 w-8 p-0" 
+            on:click={() => showSettingsModal = false}
+          >
+            ✕
+          </Button>
+        </div>
+        <div class="overflow-y-auto pt-2">
+          <ControlsPanel />
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
-  .dashboard-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (max-width: 1280px) {
-    .dashboard-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   :global(body) {
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
       Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    -webkit-text-size-adjust: 100%;
   }
 
   :global(.modal-content) {
     max-height: 90vh;
     overflow-y: auto;
+    width: 95vw;
+    max-width: 500px;
+    margin: 0 auto;
   }
 
   :global(.modal-header) {
