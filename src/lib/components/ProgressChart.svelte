@@ -21,9 +21,9 @@
   // Chart dimensions
   $: margin = {
     top: 20,
-    right: containerWidth < 640 ? 20 : 40,
-    bottom: containerWidth < 640 ? 50 : 60,
-    left: containerWidth < 640 ? 35 : 50
+    right: containerWidth < 640 ? 20 : 50,
+    bottom: containerWidth < 640 ? 50 : 70,
+    left: containerWidth < 640 ? 35 : 75
   };
   
   $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
@@ -51,7 +51,7 @@
     if (containerWidth < 640) {
       return d3.timeFormat(viewMode === 'week' ? '%a' : '%d')(d);
     }
-    return d3.timeFormat(viewMode === 'week' ? '%a, %d' : '%b %d')(d);
+    return d3.timeFormat('%a, %m/%d')(d);
   };
 
   function updateDimensions() {
@@ -66,8 +66,10 @@
   function handleResize() {
     updateDimensions();
     if (svg) {
-      svg.attr('width', containerWidth)
-         .attr('height', containerHeight);
+      const svgElement = d3.select(chartContainer).select('svg');
+      svgElement
+        .attr('width', containerWidth)
+        .attr('height', containerHeight);
       updateChart();
     }
   }
@@ -128,6 +130,21 @@
     const periodLength = viewMode === 'month' ? 29 : 6;
     pageEndDate.setDate(pageEndDate.getDate() + periodLength);
 
+    // Debug date ranges
+    console.log('Date Range:', {
+      pageStart: pageStartDate.toDateString(),
+      pageEnd: pageEndDate.toDateString()
+    });
+
+    // Ensure we include all dates in the range, not just those with workouts
+    const allDates = [];
+    const currentDate = new Date(pageStartDate);
+    
+    while (currentDate <= pageEndDate) {
+      allDates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
     // Group recorded workouts by date
     const workoutsByDate = scheduleData
       .filter(workout => {
@@ -148,14 +165,16 @@
         return acc;
       }, {});
 
-    // Convert grouped workouts into daily records
-    const workoutDays = Object.entries(workoutsByDate).map(([dateStr, workouts]) => {
-      const date = new Date(dateStr);
+    // Create base workout days for all dates in range
+    const workoutDays = allDates.map(date => {
+      const dateStr = date.toDateString();
+      const workouts = workoutsByDate[dateStr] || [];
       const dayNum = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      
       return {
         date,
         day: dayNum,
-        completed: true,
+        completed: workouts.length > 0,
         workouts: workouts.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
         proposed: 0,
         total: workouts.reduce((sum, w) => sum + w.duration, 0)
@@ -163,24 +182,23 @@
     });
 
     // Track which dates already have recorded workouts
-    const recordedDates = new Set(workoutDays.map(w => w.date.toDateString()));
+    const recordedDates = new Set(Object.keys(workoutsByDate));
 
     // Now add proposed workouts
-    let currentDate = new Date(pageStartDate);
     let currentWeekWorkouts = 0;
-    let weekStartDate = new Date(currentDate);
+    let weekStartDate = new Date(pageStartDate);
 
-    while (currentDate <= pageEndDate) {
-      const dayOfWeek = currentDate.getDay();
+    workoutDays.forEach(day => {
+      const dayOfWeek = day.date.getDay();
       
       // Reset week counter on Sundays
       if (dayOfWeek === 0) {
         currentWeekWorkouts = 0;
-        weekStartDate = new Date(currentDate);
+        weekStartDate = new Date(day.date);
       }
 
       // Count recorded workouts this week
-      if (dayOfWeek === 0 || currentDate.toDateString() === pageStartDate.toDateString()) {
+      if (dayOfWeek === 0 || day.date.toDateString() === pageStartDate.toDateString()) {
         const weekEnd = new Date(weekStartDate);
         weekEnd.setDate(weekEnd.getDate() + 6);
         currentWeekWorkouts = Array.from(recordedDates)
@@ -190,33 +208,17 @@
           }).length;
       }
 
-      // Only propose a workout if:
-      // 1. This day doesn't have a recorded workout
-      // 2. It's not Sunday
-      // 3. We haven't hit our weekly workout goal yet
-      if (!recordedDates.has(currentDate.toDateString()) && 
+      // Only propose a workout if conditions are met
+      if (!recordedDates.has(day.date.toDateString()) && 
           dayOfWeek !== 0 && 
           currentWeekWorkouts < daysPerWeek) {
         
-        const dayNum = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        const targetTime = Math.round(calculateSigmoidal(dayNum, userPreferencesData.sigmoidParams));
-
-        workoutDays.push({
-          date: new Date(currentDate),
-          day: dayNum,
-          workouts: [],
-          completed: false,
-          proposed: targetTime,
-          total: targetTime
-        });
+        const targetTime = Math.round(calculateSigmoidal(day.day, userPreferencesData.sigmoidParams));
+        day.proposed = targetTime;
+        day.total = targetTime;
         currentWeekWorkouts++;
       }
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    // Sort workouts by date
-    workoutDays.sort((a, b) => a.date.getTime() - b.date.getTime());
+    });
 
     console.log('All workout days:', workoutDays);
 
@@ -253,6 +255,24 @@
         id: workout.id
       });
     }
+  }
+
+  function calculateCurrentPage() {
+    const today = new Date();
+    const startDate = new Date(userPreferencesData.startDate);
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (viewMode === 'month') {
+      return Math.floor(diffDays / 30);
+    } else {
+      return Math.floor(diffDays / 7);
+    }
+  }
+
+  function goToToday() {
+    currentPage = calculateCurrentPage();
+    calculateWorkoutDays();
   }
 
   onMount(() => {
@@ -309,8 +329,72 @@
 
     // Remove old elements
     svg.selectAll('.day-group').remove();
+    svg.selectAll('.current-day-line').remove();
+    svg.selectAll('.week-boundary-line').remove();
+    svg.selectAll('.current-day-background').remove();
 
-    // Create new groups for each day
+    // Add current day background and line
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toDateString();
+    
+    // Debug current day visibility
+    console.log('Today:', todayStr);
+    console.log('Daily Workouts:', dailyWorkouts.map(d => ({
+      date: d.date.toDateString(),
+      isToday: d.date.toDateString() === todayStr
+    })));
+    
+    // Add current day indicator if today is in view
+    const todayInView = dailyWorkouts.some(d => d.date.toDateString() === todayStr);
+    console.log('Today in view:', todayInView);
+
+    if (todayInView) {
+      console.log('Adding current day indicator at x:', x(todayStr));
+      
+      // Add background bar for today with increased opacity
+      svg.append('rect')
+        .attr('class', 'current-day-background')
+        .attr('x', x(todayStr))
+        .attr('y', 0)
+        .attr('width', x.bandwidth())
+        .attr('height', height)
+        .attr('fill', 'rgb(59, 130, 246)')  // Using tailwind blue-500
+        .attr('opacity', 0.15);  // Increased from 0.08
+    }
+
+    // Add week boundaries in month view
+    if (viewMode === 'month') {
+      console.log('Adding week boundaries for dates:', dailyWorkouts.map(d => ({
+        date: d.date.toDateString(),
+        dayOfWeek: d.date.getDay(),
+        isWeekBoundary: d.date.getDay() === 0 || d.date.getDay() === 6
+      })));
+
+      dailyWorkouts.forEach(d => {
+        const date = new Date(d.date);
+        // If it's Sunday (start of week) or Saturday (end of week)
+        if (date.getDay() === 0 || date.getDay() === 6) {
+          const isWeekStart = date.getDay() === 0;
+          const xPos = x(date.toDateString()) + (isWeekStart ? 0 : x.bandwidth());
+          
+          console.log('Adding week boundary line at x:', xPos, 'for date:', date.toDateString());
+          
+          svg.append('line')
+            .attr('class', 'week-boundary-line')
+            .attr('x1', xPos)
+            .attr('x2', xPos)
+            .attr('y1', 0)
+            .attr('y2', height)
+            .attr('stroke', 'hsl(var(--border))')  // Using HSL format from theme
+            .attr('stroke-opacity', 0.7)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5');
+        }
+      });
+    }
+
+    // Create day groups after boundaries so bars are on top
     const dayGroups = svg.selectAll('.day-group')
       .data(dailyWorkouts)
       .enter()
@@ -320,7 +404,7 @@
 
     const barWidth = x.bandwidth();
 
-    // Add completed workout bars (stacked)
+    // Add completed workout bars (stacked) and labels
     dayGroups.each(function(d) {
       const group = d3.select(this);
       let stackHeight = 0;
@@ -339,9 +423,19 @@
 
           stackHeight += workout.duration;
         });
+
+        // Add total duration label for recorded workouts
+        group.append('text')
+          .attr('class', 'duration-label')
+          .attr('x', barWidth / 2)
+          .attr('y', y(stackHeight) - 5)
+          .attr('text-anchor', 'middle')
+          .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
+          .style('fill', 'var(--muted-foreground)')
+          .text(stackHeight);
       }
 
-      // Add proposed workout bar if it exists
+      // Add proposed workout bar and label if it exists
       if (d.proposed > 0) {
         group.append('rect')
           .attr('class', 'proposed-rect')
@@ -351,6 +445,18 @@
           .attr('x', 0)
           .style('cursor', 'pointer')
           .on('click', () => handleWorkoutClick(d));
+
+        // Add proposed duration label
+        const labelY = d.workouts.length > 0 ? y(stackHeight) - 20 : y(d.proposed) - 5;
+        group.append('text')
+          .attr('class', 'duration-label proposed')
+          .attr('x', barWidth / 2)
+          .attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
+          .style('fill', 'var(--muted-foreground)')
+          .style('opacity', 0.7)
+          .text(`${d.proposed}`);
       }
     });
 
@@ -358,47 +464,70 @@
     svg.select('.x-axis')
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x)
-        .tickFormat(formatDate))
+        .tickFormat(formatDate)
+        .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
+          .filter((_, i) => {
+            if (containerWidth < 640) {
+              if (viewMode === 'month') {
+                // Show every 4th day in month view on mobile
+                return i % 4 === 0;
+              } else {
+                // Show every other day in week view on mobile
+                return i % 2 === 0;
+              }
+            } else if (viewMode === 'month') {
+              // Show every 3rd day in month view on desktop
+              return i % 3 === 0;
+            } else {
+              // Show every other day in week view on desktop
+              return i % 2 === 0;
+            }
+          })))
       .selectAll('text')
       .style('text-anchor', 'end')
       .attr('dx', '-.8em')
       .attr('dy', '.15em')
-      .attr('transform', containerWidth < 640 ? 'rotate(-45)' : 'rotate(-65)');
+      .attr('transform', containerWidth < 640 ? 'rotate(-45)' : 'rotate(-35)')
+      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.8rem');
 
     // Update Y-axis with explicit styling
     svg.select('.y-axis')
       .call(d3.axisLeft(y)
-        .ticks(containerWidth < 640 ? 5 : 8)
-        .tickFormat(d => `${d}${containerWidth < 640 ? '' : 'min'}`));
+        .ticks(5)
+        .tickFormat(d => d))
+      .selectAll('text')
+      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.9rem');
 
     // Update grid lines with explicit styling
     svg.select('.grid-lines')
       .selectAll('line')
-      .data(y.ticks(containerWidth < 640 ? 5 : 8))
+      .data(y.ticks(5))
       .join('line')
       .attr('x1', 0)
       .attr('x2', width)
       .attr('y1', d => y(d))
       .attr('y2', d => y(d))
       .attr('stroke', 'var(--border-color)')
-      .attr('stroke-opacity', 0.2)
+      .attr('stroke-opacity', containerWidth < 640 ? 0.2 : 0.15)
       .attr('stroke-dasharray', '2,2');
 
     // Update Y-axis label with explicit styling
     svg.select('.y-axis-label')
       .attr('x', -height / 2)
-      .attr('y', -margin.left + 12)
+      .attr('y', -margin.left + (containerWidth < 640 ? 12 : 35))
       .attr('fill', 'var(--muted-foreground)')
-      .text(containerWidth < 640 ? 'Min' : 'Duration (minutes)');
+      .style('font-size', containerWidth < 640 ? '0.8rem' : '1rem')
+      .text('Min');
   }
 </script>
 
 <div class="chart-container">
-  <div class="flex justify-between items-center mb-4 sm:mb-6">
-    <div class="flex items-center gap-2">
+  <div class="flex justify-between items-center mb-2 sm:mb-4 pt-1">
+    <div class="flex items-center gap-1 sm:gap-2">
       <Button 
         variant="outline" 
         size="sm"
+        class="h-7 px-2"
         on:click={previousPeriod} 
         disabled={currentPage === 0}
       >
@@ -407,13 +536,23 @@
       <Button 
         variant="outline"
         size="sm"
+        class="h-7 px-2"
         on:click={toggleView}
       >
         {viewMode === 'month' ? 'Week' : 'Month'}
       </Button>
       <Button 
+        variant="outline"
+        size="sm"
+        class="h-7 px-2"
+        on:click={goToToday}
+      >
+        Today
+      </Button>
+      <Button 
         variant="outline" 
         size="sm"
+        class="h-7 px-2"
         on:click={nextPeriod} 
         disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
       >
@@ -444,7 +583,12 @@
 
   .chart {
     width: 100%;
-    height: calc(100% - 3rem);
+    height: calc(100% - 2.5rem);
+  }
+
+  :global(.chart-svg) {
+    width: 100%;
+    height: 100%;
   }
 
   :global(.x-axis), :global(.y-axis) {
@@ -491,14 +635,69 @@
     stroke-dasharray: 2,2;
   }
 
-  :global(.y-axis-label) {
-    fill: var(--muted-foreground);
-    font-size: 0.8rem;
+  :global(.current-day-background) {
+    pointer-events: none;
+    fill: rgb(59, 130, 246);  /* tailwind blue-500 */
+    opacity: 0.15;  /* Increased from 0.08 */
+  }
+
+  :global(.week-boundary-line) {
+    pointer-events: none;
+    stroke: var(--border);
+    stroke-opacity: 0.7;
+    stroke-width: 2px;
+    stroke-dasharray: 5,5;
+  }
+
+  :global(.duration-label) {
+    pointer-events: none;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  :global(.duration-label.proposed) {
+    opacity: 0.7;
   }
 
   @media (min-width: 640px) {
+    :global(.chart-svg) {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .chart-container {
+      position: relative;
+    }
+
+    .chart {
+      position: relative;
+    }
+
     :global(.x-axis text), :global(.y-axis text) {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    :global(.x-axis path), :global(.y-axis path),
+    :global(.x-axis line), :global(.y-axis line) {
+      stroke-width: 1.5px;
+    }
+
+    :global(.completed-rect) {
+      stroke-width: 1.5px;
+    }
+
+    :global(.proposed-rect) {
+      stroke-width: 2px;
+    }
+
+    :global(.grid-lines line) {
+      stroke-opacity: 0.15;
+      stroke-width: 1.5px;
+    }
+
+    :global(.week-boundary-line) {
+      stroke-width: 2.5px;
+      stroke-opacity: 0.8;
     }
   }
 
