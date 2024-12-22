@@ -8,10 +8,11 @@
 	export let pressed = false;
 	export let variant: "default" | "outline" = "default";
 	export let size: "default" | "sm" | "lg" = "default";
+	export let isTotal = false;
 </script>
 
 <TogglePrimitive.Root
-	class={cn(toggleVariants({ variant, size, className }))}
+	class={cn(toggleVariants({ variant, size, className }), isTotal ? 'total-button' : '')}
 	bind:pressed
 	on:click
 	{...$$restProps}
