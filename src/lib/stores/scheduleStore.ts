@@ -62,6 +62,23 @@ function createScheduleStore() {
       }
 
       update(workouts => workouts.filter(w => w.id !== id));
+    },
+    logWorkout: async (date: Date, duration: number) => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .insert([{ 
+          date: date.toISOString(), 
+          duration 
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error logging workout:', error);
+        return;
+      }
+
+      update(workouts => [...workouts, data]);
     }
   };
 }

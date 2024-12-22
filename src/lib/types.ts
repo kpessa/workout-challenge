@@ -30,4 +30,13 @@ export interface ScheduleState {
   workouts: Workout[];
   startDate: string;
   duration: number;
+}
+
+export interface CalendarWorkout extends Workout {
+  completed: boolean;
+  workouts: Workout[];
+  targetDuration: number;
+  day: number;
+  proposed: number;
+  total: number;
 } 

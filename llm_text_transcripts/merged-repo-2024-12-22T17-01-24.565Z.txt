@@ -1,3 +1,331 @@
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/README.MD CODE IS BELOW
+# Svelte + Vite
+
+This template should help get you started developing with Svelte in Vite.
+
+## Recommended IDE Setup
+
+[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+
+## Need an official Svelte framework?
+
+Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+
+## Technical considerations
+
+**Why use this over SvelteKit?**
+
+- It brings its own routing solution which might not be preferable for some users.
+- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+
+This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+
+Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+
+**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+
+Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+
+**Why include `.vscode/extensions.json`?**
+
+Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+
+**Why enable `checkJs` in the JS template?**
+
+It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+
+**Why is HMR not preserving my local component state?**
+
+HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+
+If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+
+```js
+// store.js
+// An extremely simple external store
+import { writable } from 'svelte/store'
+export default writable(0)
+```
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/COMPONENTS.JSON CODE IS BELOW
+{
+	"$schema": "https://shadcn-svelte.com/schema.json",
+	"style": "default",
+	"tailwind": {
+		"config": "tailwind.config.js",
+		"css": "src/app.postcss",
+		"baseColor": "green"
+	},
+	"aliases": {
+		"components": "$lib/components",
+		"utils": "$lib/utils"
+	},
+	"typescript": false
+}
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/INDEX.HTML CODE IS BELOW
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="90-Day Workout Challenge - Track your fitness journey with a progressive workout schedule" />
+    <title>90-Day Workout Challenge</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/INSTRUCTIONS.MD CODE IS BELOW
+# Workout Challenge Application Requirements
+
+## Setup & Frameworks
+
+- Use Svelte 5 + Vite as the build setup
+- Use JavaScript (no TypeScript)
+- Use shadcn-svelte for UI components and styling
+- Use Supabase for backend and authentication
+- Deploy as a static site build
+
+## Core Features
+
+### Authentication & User Management
+- Email/password authentication via Supabase
+- User profile management
+- Secure data access with Row Level Security (RLS)
+- Handle login, logout, and session persistence
+
+### Workout Challenge Timeline
+- 90-day (3-month) workout challenge timeline
+- Sigmoidal progression curve: 15 minutes (Day 1) to 90 minutes (Day 90)
+- Adjustable parameters:
+  - Start time
+  - End time
+  - Steepness
+  - Midpoint
+- User-configurable workout days per week (e.g., 3 or 4)
+- Visual states:
+  - Projected workouts: low-alpha or dotted outlines
+  - Completed workouts: fully opaque
+- Multiple workout sessions per day allowed
+
+### Analytics
+- Total workouts completed
+- Average workouts per week
+- Average total workout time per week
+- Real-time updates when data changes
+
+## Data Persistence
+- Primary storage in Supabase database:
+  - User preferences
+  - Completed workouts
+  - Curve parameters
+- Optional localStorage for offline functionality
+- Real-time sync with Supabase
+
+## Calendar Integration
+- Configurable start date
+- Calendar/timeline view for 90 days
+- Sync with database on changes
+
+## Implementation Details
+
+### Database Schema
+- users (managed by Supabase Auth)
+- user_preferences
+  - days_per_week
+  - start_date
+  - sigmoid_params (JSON)
+- workouts
+  - user_id (with RLS)
+  - date
+  - duration
+  - created_at
+
+### Component Structure
+- Modular components for each major feature
+- Responsive design principles
+- shadcn-svelte integration for UI elements
+- Auth components for user management
+
+### Data Flow
+- Centralized state management using Svelte stores
+- Integration with Supabase client
+- Real-time analytics updates
+- Persistent storage synchronization
+- Error handling for network issues
+
+### Security
+- Row Level Security (RLS) policies
+- Secure authentication flow
+- Protected API endpoints
+- Data validation
+
+### Testing Strategy
+- Unit tests for sigmoidal calculations
+- Integration tests for workout logging
+- Storage persistence verification
+- Authentication flow testing
+- Database operation testing
+
+### Error Handling
+- Graceful degradation when offline
+- User-friendly error messages
+- Loading states during data fetches
+- Retry mechanisms for failed operations
+
+### Deployment
+- Environment variable management
+- Build optimization
+- Supabase project configuration
+- Static site hosting (Vercel/Netlify)
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/JSCONFIG.JSON CODE IS BELOW
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    /**
+     * svelte-preprocess cannot figure out whether you have
+     * a value or a type, so tell TypeScript to enforce using
+     * `import type` instead of `import` for Types.
+     */
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    /**
+     * To have warnings / errors of the Svelte compiler at the
+     * correct position, enable source maps by default.
+     */
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    /**
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable this if you'd like to use dynamic types.
+     */
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"]
+    }
+  },
+  /**
+   * Use global.d.ts instead of compilerOptions.types
+   * to avoid limiting type declarations.
+   */
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte"]
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/MERGE_REPO.JS CODE IS BELOW
+import { readdir, stat, mkdir, access } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
+
+async function selectFiles(currentDir, excludePatterns) {
+  const selectedFiles = [];
+
+  const files = await readdir(currentDir);
+  for (const file of files) {
+    // Skip files/directories that match exclude patterns
+    if (excludePatterns.some(pattern => {
+      if (pattern instanceof RegExp) {
+        return pattern.test(file);
+      }
+      return file === pattern || file.startsWith(pattern);
+    })) {
+      continue;
+    }
+
+    const filePath = join(currentDir, file);
+    const stats = await stat(filePath);
+
+    if (stats.isDirectory()) {
+      const subFiles = await selectFiles(filePath, excludePatterns);
+      selectedFiles.push(...subFiles);
+    } else {
+      selectedFiles.push(filePath);
+    }
+  }
+
+  return selectedFiles;
+}
+
+async function mergeFiles(selectedFiles, outputFilePath) {
+  let mergedContent = '';
+
+  for (const filePath of selectedFiles) {
+    const fileContent = await readFile(filePath, 'utf-8');
+    const sectionHeader = `\n${filePath.toUpperCase()} CODE IS BELOW\n`;
+    mergedContent += sectionHeader + fileContent + '\n';
+  }
+
+  await writeFile(outputFilePath, mergedContent);
+}
+
+async function createOutputDirectory(outputDirPath) {
+  try {
+    await access(outputDirPath);
+  } catch (error) {
+    await mkdir(outputDirPath);
+  }
+}
+
+function getTimestampedFileName() {
+  const timestamp = new Date().toISOString().replace(/:/g, '-');
+  return `merged-repo-${timestamp}.txt`;
+}
+
+async function main() {
+  try {
+    const currentDir = process.cwd();
+
+    console.log('Automatically selecting and merging files...');
+    const excludePatterns = [
+      'node_modules',
+      '.git',
+      '.env',
+      '.DS_Store',
+      'dist',
+      'build',
+      'coverage',
+      /^\./,  // Hidden files
+      /\.log$/,
+      /\.map$/,
+      'llm_text_transcripts',
+      /\.(jpg|jpeg|png|gif|ico|svg|mp4|mov|avi|mp3|wav|pdf)$/i
+    ];
+    
+    const selectedFiles = await selectFiles(currentDir, excludePatterns);
+    console.log(`Found ${selectedFiles.length} files to merge.`);
+
+    const outputDirName = 'llm_text_transcripts';
+    const outputDirPath = join(currentDir, outputDirName);
+    await createOutputDirectory(outputDirPath);
+
+    const outputFileName = getTimestampedFileName();
+    const outputFilePath = join(outputDirPath, outputFileName);
+    await mergeFiles(selectedFiles, outputFilePath);
+
+    console.log(`Merged repository saved to: ${outputFilePath}`);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+main();
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PACKAGE-LOCK.JSON CODE IS BELOW
 {
   "name": "workout-challenge",
   "version": "0.0.0",
@@ -11,26 +339,26 @@
         "@supabase/supabase-js": "^2.39.3",
         "d3": "^7.8.5",
         "date-fns": "^3.3.1",
+        "fs": "^0.0.1-security",
         "shadcn-svelte": "^0.5.0"
       },
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^3.0.2",
         "@tsconfig/svelte": "^5.0.2",
-        "@types/node": "^20.10.6",
-        "autoprefixer": "^10.4.16",
-        "bits-ui": "^0.19.7",
+        "autoprefixer": "^10.4.17",
+        "bits-ui": "^0.19.5",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
         "lucide-svelte": "^0.344.0",
-        "postcss": "^8.4.32",
-        "svelte": "^4.2.11",
+        "postcss": "^8.4.35",
+        "svelte": "^5.0.0-next.1",
         "svelte-check": "^3.6.4",
-        "tailwind-merge": "^2.2.0",
-        "tailwind-variants": "^0.1.20",
+        "tailwind-merge": "^2.2.1",
+        "tailwind-variants": "^0.2.0",
         "tailwindcss": "^3.4.1",
         "tailwindcss-animate": "^1.0.7",
         "typescript": "^5.3.3",
-        "vite": "^5.0.10"
+        "vite": "^5.1.4"
       }
     },
     "node_modules/@alloc/quick-lru": {
@@ -578,25 +906,6 @@
         "svelte": ">=3 <5"
       }
     },
-    "node_modules/@melt-ui/svelte/node_modules/nanoid": {
-      "version": "5.0.9",
-      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-5.0.9.tgz",
-      "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",
-      "dev": true,
-      "funding": [
-        {
-          "type": "github",
-          "url": "https://github.com/sponsors/ai"
-        }
-      ],
-      "license": "MIT",
-      "bin": {
-        "nanoid": "bin/nanoid.js"
-      },
-      "engines": {
-        "node": "^18 || >=20"
-      }
-    },
     "node_modules/@nodelib/fs.scandir": {
       "version": "2.1.5",
       "resolved": "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz",
@@ -647,9 +956,9 @@
       }
     },
     "node_modules/@rollup/rollup-android-arm-eabi": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.28.1.tgz",
-      "integrity": "sha512-2aZp8AES04KI2dy3Ss6/MDjXbwBzj+i0GqKtWXgw2/Ma6E4jJvujryO6gJAghIRVz7Vwr9Gtl/8na3nDUKpraQ==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.29.1.tgz",
+      "integrity": "sha512-ssKhA8RNltTZLpG6/QNkCSge+7mBQGUqJRisZ2MDQcEGaK93QESEgWK2iOpIDZ7k9zPVkG5AS3ksvD5ZWxmItw==",
       "cpu": [
         "arm"
       ],
@@ -661,9 +970,9 @@
       ]
     },
     "node_modules/@rollup/rollup-android-arm64": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.28.1.tgz",
-      "integrity": "sha512-EbkK285O+1YMrg57xVA+Dp0tDBRB93/BZKph9XhMjezf6F4TpYjaUSuPt5J0fZXlSag0LmZAsTmdGGqPp4pQFA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.29.1.tgz",
+      "integrity": "sha512-CaRfrV0cd+NIIcVVN/jx+hVLN+VRqnuzLRmfmlzpOzB87ajixsN/+9L5xNmkaUUvEbI5BmIKS+XTwXsHEb65Ew==",
       "cpu": [
         "arm64"
       ],
@@ -675,9 +984,9 @@
       ]
     },
     "node_modules/@rollup/rollup-darwin-arm64": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.28.1.tgz",
-      "integrity": "sha512-prduvrMKU6NzMq6nxzQw445zXgaDBbMQvmKSJaxpaZ5R1QDM8w+eGxo6Y/jhT/cLoCvnZI42oEqf9KQNYz1fqQ==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.29.1.tgz",
+      "integrity": "sha512-2ORr7T31Y0Mnk6qNuwtyNmy14MunTAMx06VAPI6/Ju52W10zk1i7i5U3vlDRWjhOI5quBcrvhkCHyF76bI7kEw==",
       "cpu": [
         "arm64"
       ],
@@ -689,9 +998,9 @@
       ]
     },
     "node_modules/@rollup/rollup-darwin-x64": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.28.1.tgz",
-      "integrity": "sha512-WsvbOunsUk0wccO/TV4o7IKgloJ942hVFK1CLatwv6TJspcCZb9umQkPdvB7FihmdxgaKR5JyxDjWpCOp4uZlQ==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.29.1.tgz",
+      "integrity": "sha512-j/Ej1oanzPjmN0tirRd5K2/nncAhS9W6ICzgxV+9Y5ZsP0hiGhHJXZ2JQ53iSSjj8m6cRY6oB1GMzNn2EUt6Ng==",
       "cpu": [
         "x64"
       ],
@@ -703,9 +1012,9 @@
       ]
     },
     "node_modules/@rollup/rollup-freebsd-arm64": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.28.1.tgz",
-      "integrity": "sha512-HTDPdY1caUcU4qK23FeeGxCdJF64cKkqajU0iBnTVxS8F7H/7BewvYoG+va1KPSL63kQ1PGNyiwKOfReavzvNA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.29.1.tgz",
+      "integrity": "sha512-91C//G6Dm/cv724tpt7nTyP+JdN12iqeXGFM1SqnljCmi5yTXriH7B1r8AD9dAZByHpKAumqP1Qy2vVNIdLZqw==",
       "cpu": [
         "arm64"
       ],
@@ -717,9 +1026,9 @@
       ]
     },
     "node_modules/@rollup/rollup-freebsd-x64": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.28.1.tgz",
-      "integrity": "sha512-m/uYasxkUevcFTeRSM9TeLyPe2QDuqtjkeoTpP9SW0XxUWfcYrGDMkO/m2tTw+4NMAF9P2fU3Mw4ahNvo7QmsQ==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.29.1.tgz",
+      "integrity": "sha512-hEioiEQ9Dec2nIRoeHUP6hr1PSkXzQaCUyqBDQ9I9ik4gCXQZjJMIVzoNLBRGet+hIUb3CISMh9KXuCcWVW/8w==",
       "cpu": [
         "x64"
       ],
@@ -731,9 +1040,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-arm-gnueabihf": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.28.1.tgz",
-      "integrity": "sha512-QAg11ZIt6mcmzpNE6JZBpKfJaKkqTm1A9+y9O+frdZJEuhQxiugM05gnCWiANHj4RmbgeVJpTdmKRmH/a+0QbA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.29.1.tgz",
+      "integrity": "sha512-Py5vFd5HWYN9zxBv3WMrLAXY3yYJ6Q/aVERoeUFwiDGiMOWsMs7FokXihSOaT/PMWUty/Pj60XDQndK3eAfE6A==",
       "cpu": [
         "arm"
       ],
@@ -745,9 +1054,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-arm-musleabihf": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.28.1.tgz",
-      "integrity": "sha512-dRP9PEBfolq1dmMcFqbEPSd9VlRuVWEGSmbxVEfiq2cs2jlZAl0YNxFzAQS2OrQmsLBLAATDMb3Z6MFv5vOcXg==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.29.1.tgz",
+      "integrity": "sha512-RiWpGgbayf7LUcuSNIbahr0ys2YnEERD4gYdISA06wa0i8RALrnzflh9Wxii7zQJEB2/Eh74dX4y/sHKLWp5uQ==",
       "cpu": [
         "arm"
       ],
@@ -759,9 +1068,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-arm64-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.28.1.tgz",
-      "integrity": "sha512-uGr8khxO+CKT4XU8ZUH1TTEUtlktK6Kgtv0+6bIFSeiSlnGJHG1tSFSjm41uQ9sAO/5ULx9mWOz70jYLyv1QkA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.29.1.tgz",
+      "integrity": "sha512-Z80O+taYxTQITWMjm/YqNoe9d10OX6kDh8X5/rFCMuPqsKsSyDilvfg+vd3iXIqtfmp+cnfL1UrYirkaF8SBZA==",
       "cpu": [
         "arm64"
       ],
@@ -773,9 +1082,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-arm64-musl": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.28.1.tgz",
-      "integrity": "sha512-QF54q8MYGAqMLrX2t7tNpi01nvq5RI59UBNx+3+37zoKX5KViPo/gk2QLhsuqok05sSCRluj0D00LzCwBikb0A==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.29.1.tgz",
+      "integrity": "sha512-fOHRtF9gahwJk3QVp01a/GqS4hBEZCV1oKglVVq13kcK3NeVlS4BwIFzOHDbmKzt3i0OuHG4zfRP0YoG5OF/rA==",
       "cpu": [
         "arm64"
       ],
@@ -787,9 +1096,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-loongarch64-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loongarch64-gnu/-/rollup-linux-loongarch64-gnu-4.28.1.tgz",
-      "integrity": "sha512-vPul4uodvWvLhRco2w0GcyZcdyBfpfDRgNKU+p35AWEbJ/HPs1tOUrkSueVbBS0RQHAf/A+nNtDpvw95PeVKOA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loongarch64-gnu/-/rollup-linux-loongarch64-gnu-4.29.1.tgz",
+      "integrity": "sha512-5a7q3tnlbcg0OodyxcAdrrCxFi0DgXJSoOuidFUzHZ2GixZXQs6Tc3CHmlvqKAmOs5eRde+JJxeIf9DonkmYkw==",
       "cpu": [
         "loong64"
       ],
@@ -801,9 +1110,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-powerpc64le-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-powerpc64le-gnu/-/rollup-linux-powerpc64le-gnu-4.28.1.tgz",
-      "integrity": "sha512-pTnTdBuC2+pt1Rmm2SV7JWRqzhYpEILML4PKODqLz+C7Ou2apEV52h19CR7es+u04KlqplggmN9sqZlekg3R1A==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-powerpc64le-gnu/-/rollup-linux-powerpc64le-gnu-4.29.1.tgz",
+      "integrity": "sha512-9b4Mg5Yfz6mRnlSPIdROcfw1BU22FQxmfjlp/CShWwO3LilKQuMISMTtAu/bxmmrE6A902W2cZJuzx8+gJ8e9w==",
       "cpu": [
         "ppc64"
       ],
@@ -815,9 +1124,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-riscv64-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.28.1.tgz",
-      "integrity": "sha512-vWXy1Nfg7TPBSuAncfInmAI/WZDd5vOklyLJDdIRKABcZWojNDY0NJwruY2AcnCLnRJKSaBgf/GiJfauu8cQZA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.29.1.tgz",
+      "integrity": "sha512-G5pn0NChlbRM8OJWpJFMX4/i8OEU538uiSv0P6roZcbpe/WfhEO+AT8SHVKfp8qhDQzaz7Q+1/ixMy7hBRidnQ==",
       "cpu": [
         "riscv64"
       ],
@@ -829,9 +1138,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-s390x-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.28.1.tgz",
-      "integrity": "sha512-/yqC2Y53oZjb0yz8PVuGOQQNOTwxcizudunl/tFs1aLvObTclTwZ0JhXF2XcPT/zuaymemCDSuuUPXJJyqeDOg==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.29.1.tgz",
+      "integrity": "sha512-WM9lIkNdkhVwiArmLxFXpWndFGuOka4oJOZh8EP3Vb8q5lzdSCBuhjavJsw68Q9AKDGeOOIHYzYm4ZFvmWez5g==",
       "cpu": [
         "s390x"
       ],
@@ -843,9 +1152,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-x64-gnu": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.28.1.tgz",
-      "integrity": "sha512-fzgeABz7rrAlKYB0y2kSEiURrI0691CSL0+KXwKwhxvj92VULEDQLpBYLHpF49MSiPG4sq5CK3qHMnb9tlCjBw==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.29.1.tgz",
+      "integrity": "sha512-87xYCwb0cPGZFoGiErT1eDcssByaLX4fc0z2nRM6eMtV9njAfEE6OW3UniAoDhX4Iq5xQVpE6qO9aJbCFumKYQ==",
       "cpu": [
         "x64"
       ],
@@ -857,9 +1166,9 @@
       ]
     },
     "node_modules/@rollup/rollup-linux-x64-musl": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.28.1.tgz",
-      "integrity": "sha512-xQTDVzSGiMlSshpJCtudbWyRfLaNiVPXt1WgdWTwWz9n0U12cI2ZVtWe/Jgwyv/6wjL7b66uu61Vg0POWVfz4g==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.29.1.tgz",
+      "integrity": "sha512-xufkSNppNOdVRCEC4WKvlR1FBDyqCSCpQeMMgv9ZyXqqtKBfkw1yfGMTUTs9Qsl6WQbJnsGboWCp7pJGkeMhKA==",
       "cpu": [
         "x64"
       ],
@@ -871,9 +1180,9 @@
       ]
     },
     "node_modules/@rollup/rollup-win32-arm64-msvc": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.28.1.tgz",
-      "integrity": "sha512-wSXmDRVupJstFP7elGMgv+2HqXelQhuNf+IS4V+nUpNVi/GUiBgDmfwD0UGN3pcAnWsgKG3I52wMOBnk1VHr/A==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.29.1.tgz",
+      "integrity": "sha512-F2OiJ42m77lSkizZQLuC+jiZ2cgueWQL5YC9tjo3AgaEw+KJmVxHGSyQfDUoYR9cci0lAywv2Clmckzulcq6ig==",
       "cpu": [
         "arm64"
       ],
@@ -885,9 +1194,9 @@
       ]
     },
     "node_modules/@rollup/rollup-win32-ia32-msvc": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.28.1.tgz",
-      "integrity": "sha512-ZkyTJ/9vkgrE/Rk9vhMXhf8l9D+eAhbAVbsGsXKy2ohmJaWg0LPQLnIxRdRp/bKyr8tXuPlXhIoGlEB5XpJnGA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.29.1.tgz",
+      "integrity": "sha512-rYRe5S0FcjlOBZQHgbTKNrqxCBUmgDJem/VQTCcTnA2KCabYSWQDrytOzX7avb79cAAweNmMUb/Zw18RNd4mng==",
       "cpu": [
         "ia32"
       ],
@@ -899,9 +1208,9 @@
       ]
     },
     "node_modules/@rollup/rollup-win32-x64-msvc": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.28.1.tgz",
-      "integrity": "sha512-ZvK2jBafvttJjoIdKm/Q/Bh7IJ1Ose9IBOwpOXcOvW3ikGTQGmKDgxTC6oCAzW6PynbkKP8+um1du81XJHZ0JA==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.29.1.tgz",
+      "integrity": "sha512-+10CMg9vt1MoHj6x1pxyjPSMjHTIlqs8/tBztXvPAx24SKs9jwVnKqHJumlH/IzhaPUaj3T6T6wfZr8okdXaIg==",
       "cpu": [
         "x64"
       ],
@@ -1052,12 +1361,12 @@
       "license": "MIT"
     },
     "node_modules/@types/node": {
-      "version": "20.17.10",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-20.17.10.tgz",
-      "integrity": "sha512-/jrvh5h6NXhEauFFexRin69nA0uHJ5gwk4iDivp/DeoEua3uwCUto6PC86IpRITBOs4+6i2I56K5x5b6WYGXHA==",
+      "version": "22.10.2",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-22.10.2.tgz",
+      "integrity": "sha512-Xxr6BBRCAOQixvonOye19wnzyDiUtTeqldOOmj3CkeblonbccA12PFwlufvRdrpjXxqnmUaeiU5EOA+7s5diUQ==",
       "license": "MIT",
       "dependencies": {
-        "undici-types": "~6.19.2"
+        "undici-types": "~6.20.0"
       }
     },
     "node_modules/@types/phoenix": {
@@ -1093,6 +1402,16 @@
       },
       "engines": {
         "node": ">=0.4.0"
+      }
+    },
+    "node_modules/acorn-typescript": {
+      "version": "1.4.13",
+      "resolved": "https://registry.npmjs.org/acorn-typescript/-/acorn-typescript-1.4.13.tgz",
+      "integrity": "sha512-xsc9Xv0xlVfwp2o7sQ+GCQ1PgbkdcpWdTzrwXxO3xDMTAywVS3oXVOcOHuRjAPkS4P9b+yc/qNF15460v+jp4Q==",
+      "dev": true,
+      "license": "MIT",
+      "peerDependencies": {
+        "acorn": ">=8.9.0"
       }
     },
     "node_modules/agent-base": {
@@ -1268,25 +1587,6 @@
       },
       "peerDependencies": {
         "svelte": "^4.0.0"
-      }
-    },
-    "node_modules/bits-ui/node_modules/nanoid": {
-      "version": "5.0.9",
-      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-5.0.9.tgz",
-      "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",
-      "dev": true,
-      "funding": [
-        {
-          "type": "github",
-          "url": "https://github.com/sponsors/ai"
-        }
-      ],
-      "license": "MIT",
-      "bin": {
-        "nanoid": "bin/nanoid.js"
-      },
-      "engines": {
-        "node": "^18 || >=20"
       }
     },
     "node_modules/bl": {
@@ -1530,20 +1830,6 @@
         "node": ">=6"
       }
     },
-    "node_modules/code-red": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/code-red/-/code-red-1.0.4.tgz",
-      "integrity": "sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "@jridgewell/sourcemap-codec": "^1.4.15",
-        "@types/estree": "^1.0.1",
-        "acorn": "^8.10.0",
-        "estree-walker": "^3.0.3",
-        "periscopic": "^3.1.0"
-      }
-    },
     "node_modules/color-convert": {
       "version": "2.0.1",
       "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
@@ -1565,12 +1851,12 @@
       "license": "MIT"
     },
     "node_modules/commander": {
-      "version": "10.0.1",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-10.0.1.tgz",
-      "integrity": "sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==",
+      "version": "7.2.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz",
+      "integrity": "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==",
       "license": "MIT",
       "engines": {
-        "node": ">=14"
+        "node": ">= 10"
       }
     },
     "node_modules/concat-map": {
@@ -1592,20 +1878,6 @@
       },
       "engines": {
         "node": ">= 8"
-      }
-    },
-    "node_modules/css-tree": {
-      "version": "2.3.1",
-      "resolved": "https://registry.npmjs.org/css-tree/-/css-tree-2.3.1.tgz",
-      "integrity": "sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "mdn-data": "2.0.30",
-        "source-map-js": "^1.0.1"
-      },
-      "engines": {
-        "node": "^10 || ^12.20.0 || ^14.13.0 || >=15.0.0"
       }
     },
     "node_modules/cssesc": {
@@ -1789,15 +2061,6 @@
       },
       "engines": {
         "node": ">=12"
-      }
-    },
-    "node_modules/d3-dsv/node_modules/commander": {
-      "version": "7.2.0",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz",
-      "integrity": "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==",
-      "license": "MIT",
-      "engines": {
-        "node": ">= 10"
       }
     },
     "node_modules/d3-ease": {
@@ -2209,14 +2472,21 @@
         "node": ">=6"
       }
     },
-    "node_modules/estree-walker": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
-      "integrity": "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==",
+    "node_modules/esm-env": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/esm-env/-/esm-env-1.2.1.tgz",
+      "integrity": "sha512-U9JedYYjCnadUlXk7e1Kr+aENQhtUaoaV9+gZm1T8LC/YBAPJx3NSPIAurFOC0U5vrdSevnUJS2/wUVxGwPhng==",
+      "dev": true,
+      "license": "MIT"
+    },
+    "node_modules/esrap": {
+      "version": "1.3.2",
+      "resolved": "https://registry.npmjs.org/esrap/-/esrap-1.3.2.tgz",
+      "integrity": "sha512-C4PXusxYhFT98GjLSmb20k9PREuUdporer50dhzGuJu9IJXktbMddVCMLAERl5dAHyAi73GWWCE4FVHGP1794g==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "@types/estree": "^1.0.0"
+        "@jridgewell/sourcemap-codec": "^1.4.15"
       }
     },
     "node_modules/execa": {
@@ -2383,6 +2653,12 @@
         "type": "patreon",
         "url": "https://github.com/sponsors/rawify"
       }
+    },
+    "node_modules/fs": {
+      "version": "0.0.1-security",
+      "resolved": "https://registry.npmjs.org/fs/-/fs-0.0.1-security.tgz",
+      "integrity": "sha512-3XY9e1pP0CVEUCdj5BmfIZxRBTSDycnbqhIOGec9QYtmVH2fbLpj86CFWkrNOkt/Fvty4KZG5lTglL9j/gJ87w==",
+      "license": "ISC"
     },
     "node_modules/fs-extra": {
       "version": "11.2.0",
@@ -2590,9 +2866,9 @@
       }
     },
     "node_modules/is-core-module": {
-      "version": "2.16.0",
-      "resolved": "https://registry.npmjs.org/is-core-module/-/is-core-module-2.16.0.tgz",
-      "integrity": "sha512-urTSINYfAYgcbLb0yDQ6egFm6h3Mo1DcF9EkyXSRjjzdHbsulg01qhwWuXdOoUBuTkbQ80KDboXa0vFJ+BDH+g==",
+      "version": "2.16.1",
+      "resolved": "https://registry.npmjs.org/is-core-module/-/is-core-module-2.16.1.tgz",
+      "integrity": "sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -2830,13 +3106,6 @@
         "@jridgewell/sourcemap-codec": "^1.5.0"
       }
     },
-    "node_modules/mdn-data": {
-      "version": "2.0.30",
-      "resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.0.30.tgz",
-      "integrity": "sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==",
-      "dev": true,
-      "license": "CC0-1.0"
-    },
     "node_modules/merge-stream": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/merge-stream/-/merge-stream-2.0.0.tgz",
@@ -2966,9 +3235,9 @@
       }
     },
     "node_modules/nanoid": {
-      "version": "3.3.8",
-      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.8.tgz",
-      "integrity": "sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==",
+      "version": "5.0.9",
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-5.0.9.tgz",
+      "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",
       "dev": true,
       "funding": [
         {
@@ -2978,10 +3247,10 @@
       ],
       "license": "MIT",
       "bin": {
-        "nanoid": "bin/nanoid.cjs"
+        "nanoid": "bin/nanoid.js"
       },
       "engines": {
-        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
+        "node": "^18 || >=20"
       }
     },
     "node_modules/node-domexception": {
@@ -3193,18 +3462,6 @@
         "url": "https://github.com/sponsors/isaacs"
       }
     },
-    "node_modules/periscopic": {
-      "version": "3.1.0",
-      "resolved": "https://registry.npmjs.org/periscopic/-/periscopic-3.1.0.tgz",
-      "integrity": "sha512-vKiQ8RRtkl9P+r/+oefh25C3fhybptkHKCZSPlcXiJux2tJF55GnEj3BVn4A5gKfq9NWWXXrxkHBwVPUfH0opw==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "@types/estree": "^1.0.0",
-        "estree-walker": "^3.0.0",
-        "is-reference": "^3.0.0"
-      }
-    },
     "node_modules/picocolors": {
       "version": "1.1.1",
       "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
@@ -3394,6 +3651,25 @@
       "integrity": "sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==",
       "dev": true,
       "license": "MIT"
+    },
+    "node_modules/postcss/node_modules/nanoid": {
+      "version": "3.3.8",
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.8.tgz",
+      "integrity": "sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "license": "MIT",
+      "bin": {
+        "nanoid": "bin/nanoid.cjs"
+      },
+      "engines": {
+        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
+      }
     },
     "node_modules/prompts": {
       "version": "2.4.2",
@@ -3614,9 +3890,9 @@
       "license": "Unlicense"
     },
     "node_modules/rollup": {
-      "version": "4.28.1",
-      "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.28.1.tgz",
-      "integrity": "sha512-61fXYl/qNVinKmGSTHAZ6Yy8I3YIJC/r2m9feHo6SwVAVcLT5MPwOUFe7EuURA/4m0NR8lXG4BBXuo/IZEsjMg==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.29.1.tgz",
+      "integrity": "sha512-RaJ45M/kmJUzSWDs1Nnd5DdV4eerC98idtUOVr6FfKcgxqvjwHmxc5upLF9qZU9EpsVzzhleFahrT3shLuJzIw==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -3630,25 +3906,25 @@
         "npm": ">=8.0.0"
       },
       "optionalDependencies": {
-        "@rollup/rollup-android-arm-eabi": "4.28.1",
-        "@rollup/rollup-android-arm64": "4.28.1",
-        "@rollup/rollup-darwin-arm64": "4.28.1",
-        "@rollup/rollup-darwin-x64": "4.28.1",
-        "@rollup/rollup-freebsd-arm64": "4.28.1",
-        "@rollup/rollup-freebsd-x64": "4.28.1",
-        "@rollup/rollup-linux-arm-gnueabihf": "4.28.1",
-        "@rollup/rollup-linux-arm-musleabihf": "4.28.1",
-        "@rollup/rollup-linux-arm64-gnu": "4.28.1",
-        "@rollup/rollup-linux-arm64-musl": "4.28.1",
-        "@rollup/rollup-linux-loongarch64-gnu": "4.28.1",
-        "@rollup/rollup-linux-powerpc64le-gnu": "4.28.1",
-        "@rollup/rollup-linux-riscv64-gnu": "4.28.1",
-        "@rollup/rollup-linux-s390x-gnu": "4.28.1",
-        "@rollup/rollup-linux-x64-gnu": "4.28.1",
-        "@rollup/rollup-linux-x64-musl": "4.28.1",
-        "@rollup/rollup-win32-arm64-msvc": "4.28.1",
-        "@rollup/rollup-win32-ia32-msvc": "4.28.1",
-        "@rollup/rollup-win32-x64-msvc": "4.28.1",
+        "@rollup/rollup-android-arm-eabi": "4.29.1",
+        "@rollup/rollup-android-arm64": "4.29.1",
+        "@rollup/rollup-darwin-arm64": "4.29.1",
+        "@rollup/rollup-darwin-x64": "4.29.1",
+        "@rollup/rollup-freebsd-arm64": "4.29.1",
+        "@rollup/rollup-freebsd-x64": "4.29.1",
+        "@rollup/rollup-linux-arm-gnueabihf": "4.29.1",
+        "@rollup/rollup-linux-arm-musleabihf": "4.29.1",
+        "@rollup/rollup-linux-arm64-gnu": "4.29.1",
+        "@rollup/rollup-linux-arm64-musl": "4.29.1",
+        "@rollup/rollup-linux-loongarch64-gnu": "4.29.1",
+        "@rollup/rollup-linux-powerpc64le-gnu": "4.29.1",
+        "@rollup/rollup-linux-riscv64-gnu": "4.29.1",
+        "@rollup/rollup-linux-s390x-gnu": "4.29.1",
+        "@rollup/rollup-linux-x64-gnu": "4.29.1",
+        "@rollup/rollup-linux-x64-musl": "4.29.1",
+        "@rollup/rollup-win32-arm64-msvc": "4.29.1",
+        "@rollup/rollup-win32-ia32-msvc": "4.29.1",
+        "@rollup/rollup-win32-x64-msvc": "4.29.1",
         "fsevents": "~2.3.2"
       }
     },
@@ -3753,6 +4029,15 @@
       },
       "bin": {
         "shadcn-svelte": "dist/index.js"
+      }
+    },
+    "node_modules/shadcn-svelte/node_modules/commander": {
+      "version": "10.0.1",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-10.0.1.tgz",
+      "integrity": "sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=14"
       }
     },
     "node_modules/shebang-command": {
@@ -4022,29 +4307,28 @@
       }
     },
     "node_modules/svelte": {
-      "version": "4.2.19",
-      "resolved": "https://registry.npmjs.org/svelte/-/svelte-4.2.19.tgz",
-      "integrity": "sha512-IY1rnGr6izd10B0A8LqsBfmlT5OILVuZ7XsI0vdGPEvuonFV7NYEUK4dAkm9Zg2q0Um92kYjTpS1CAP3Nh/KWw==",
+      "version": "5.15.0",
+      "resolved": "https://registry.npmjs.org/svelte/-/svelte-5.15.0.tgz",
+      "integrity": "sha512-YWl8rAd4hSjERLtLvP6h2pflGtmrJwv+L12BgrOtHYJCpvLS9WKp/YNAdyolw3FymXtcYZqhSWvWlu5O1X7tgQ==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "@ampproject/remapping": "^2.2.1",
-        "@jridgewell/sourcemap-codec": "^1.4.15",
-        "@jridgewell/trace-mapping": "^0.3.18",
-        "@types/estree": "^1.0.1",
-        "acorn": "^8.9.0",
-        "aria-query": "^5.3.0",
-        "axobject-query": "^4.0.0",
-        "code-red": "^1.0.3",
-        "css-tree": "^2.3.1",
-        "estree-walker": "^3.0.3",
-        "is-reference": "^3.0.1",
+        "@ampproject/remapping": "^2.3.0",
+        "@jridgewell/sourcemap-codec": "^1.5.0",
+        "@types/estree": "^1.0.5",
+        "acorn": "^8.12.1",
+        "acorn-typescript": "^1.4.13",
+        "aria-query": "^5.3.1",
+        "axobject-query": "^4.1.0",
+        "esm-env": "^1.2.1",
+        "esrap": "^1.3.2",
+        "is-reference": "^3.0.3",
         "locate-character": "^3.0.0",
-        "magic-string": "^0.30.4",
-        "periscopic": "^3.1.0"
+        "magic-string": "^0.30.11",
+        "zimmerframe": "^1.1.2"
       },
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       }
     },
     "node_modules/svelte-check": {
@@ -4163,13 +4447,13 @@
       }
     },
     "node_modules/tailwind-variants": {
-      "version": "0.1.20",
-      "resolved": "https://registry.npmjs.org/tailwind-variants/-/tailwind-variants-0.1.20.tgz",
-      "integrity": "sha512-AMh7x313t/V+eTySKB0Dal08RHY7ggYK0MSn/ad8wKWOrDUIzyiWNayRUm2PIJ4VRkvRnfNuyRuKbLV3EN+ewQ==",
+      "version": "0.2.1",
+      "resolved": "https://registry.npmjs.org/tailwind-variants/-/tailwind-variants-0.2.1.tgz",
+      "integrity": "sha512-2xmhAf4UIc3PijOUcJPA1LP4AbxhpcHuHM2C26xM0k81r0maAO6uoUSHl3APmvHZcY5cZCY/bYuJdfFa4eGoaw==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "tailwind-merge": "^1.14.0"
+        "tailwind-merge": "^2.2.0"
       },
       "engines": {
         "node": ">=16.x",
@@ -4177,17 +4461,6 @@
       },
       "peerDependencies": {
         "tailwindcss": "*"
-      }
-    },
-    "node_modules/tailwind-variants/node_modules/tailwind-merge": {
-      "version": "1.14.0",
-      "resolved": "https://registry.npmjs.org/tailwind-merge/-/tailwind-merge-1.14.0.tgz",
-      "integrity": "sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==",
-      "dev": true,
-      "license": "MIT",
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/dcastil"
       }
     },
     "node_modules/tailwindcss": {
@@ -4323,9 +4596,9 @@
       }
     },
     "node_modules/undici-types": {
-      "version": "6.19.8",
-      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.19.8.tgz",
-      "integrity": "sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==",
+      "version": "6.20.0",
+      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.20.0.tgz",
+      "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==",
       "license": "MIT"
     },
     "node_modules/universalify": {
@@ -4637,6 +4910,13 @@
         "node": ">= 14"
       }
     },
+    "node_modules/zimmerframe": {
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/zimmerframe/-/zimmerframe-1.1.2.tgz",
+      "integrity": "sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==",
+      "dev": true,
+      "license": "MIT"
+    },
     "node_modules/zod": {
       "version": "3.24.1",
       "resolved": "https://registry.npmjs.org/zod/-/zod-3.24.1.tgz",
@@ -4648,3 +4928,3339 @@
     }
   }
 }
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PACKAGE.JSON CODE IS BELOW
+{
+  "name": "workout-challenge",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "@tsconfig/svelte": "^5.0.2",
+    "autoprefixer": "^10.4.17",
+    "bits-ui": "^0.19.5",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "lucide-svelte": "^0.344.0",
+    "postcss": "^8.4.35",
+    "svelte": "^5.0.0-next.1",
+    "svelte-check": "^3.6.4",
+    "tailwind-merge": "^2.2.1",
+    "tailwind-variants": "^0.2.0",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.4"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "d3": "^7.8.5",
+    "date-fns": "^3.3.1",
+    "fs": "^0.0.1-security",
+    "shadcn-svelte": "^0.5.0"
+  }
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/POSTCSS.CONFIG.JS CODE IS BELOW
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PROJECT-HIERARCHY.MD CODE IS BELOW
+# Project Structure
+
+project-root/
+  ├─ src/
+  │   ├─ lib/
+  │   │   ├─ components/
+  │   │   │   ├─ Auth.svelte             // Authentication component for login/signup
+  │   │   │   ├─ Calendar.svelte         // Calendar or timeline component for the 90 days
+  │   │   │   ├─ ControlsPanel.svelte    // UI for adjusting sigmoidal parameters & schedule
+  │   │   │   ├─ ProgressChart.svelte    // Chart to display the sigmoidal progression
+  │   │   │   ├─ WorkoutLog.svelte       // Component to log workouts (multiple per day)
+  │   │   │   ├─ AnalyticsPanel.svelte   // Display total workouts, averages, etc.
+  │   │   │   ├─ Layout.svelte           // Main layout wrapper (header, footer, etc.)
+  │   │   │   └─ UI/                     // Folder for any custom wrappers around shadcn-svelte components
+  │   │   ├─ stores/
+  │   │   │   ├─ authStore.js            // Svelte store for authentication state
+  │   │   │   ├─ userPreferencesStore.js // Svelte store for user preferences (days/week, start date)
+  │   │   │   ├─ scheduleStore.js        // Store for projected and completed workouts
+  │   │   │   ├─ analyticsStore.js       // Derived store for computed values (averages, totals)
+  │   │   │   └─ curveParamsStore.js     // Store for sigmoidal curve parameters
+  │   │   ├─ utils/
+  │   │   │   ├─ sigmoidal.js            // Functions to compute sigmoidal progression
+  │   │   │   ├─ localStorageHelpers.js  // Functions for localStorage get/set
+  │   │   │   └─ dateUtils.js            // Helper functions for date math and formatting
+  │   │   ├─ styles/
+  │   │   │   └─ global.css              // Global stylesheet (if needed)
+  │   │   ├─ shadcn/                     // shadcn-svelte components (if you choose to customize)
+  │   │   ├─ supabase.js                 // Supabase client initialization
+  │   │   └─ data/
+  │   │       └─ defaultParams.json      // Default curve parameters and other default settings
+  │   ├─ routes/
+  │   │   └─ +page.svelte               // Main page that imports components and orchestrates the UI
+  │   ├─ app.d.ts                       // (Optional) If you prefer no TS at all, you can remove this
+  │   └─ main.js                        // Main entry point initializing the app
+  ├─ public/
+  │   └─ favicon.png
+  ├─ .env                               // Environment variables for Supabase configuration
+  ├─ svelte.config.js
+  ├─ vite.config.js
+  ├─ package.json
+  ├─ postcss.config.js
+  ├─ tailwind.config.js (if you use Tailwind with shadcn-svelte)
+  └─ README.md
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SHELL.SH CODE IS BELOW
+#!/bin/bash
+
+# Navigate to the project root
+cd project-root
+
+# Create directories
+mkdir -p src/lib/components/UI
+mkdir -p src/lib/stores
+mkdir -p src/lib/utils
+mkdir -p src/lib/styles
+mkdir -p src/lib/shadcn
+mkdir -p src/lib/data
+mkdir -p src/routes
+
+# Create placeholder files if they don't exist
+touch src/lib/components/ProgressChart.svelte
+touch src/lib/components/WorkoutLog.svelte
+touch src/lib/components/Layout.svelte
+touch src/lib/stores/scheduleStore.js
+touch src/lib/stores/analyticsStore.js
+touch src/lib/stores/curveParamsStore.js
+touch src/lib/utils/dateUtils.js
+touch src/lib/styles/global.css
+touch src/lib/data/defaultParams.json
+touch src/routes/+page.svelte
+touch src/app.d.ts
+touch src/main.js
+
+# Notify user
+echo "Project hierarchy has been set up!"
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.SVELTE CODE IS BELOW
+<script>
+  import Layout from './lib/components/Layout.svelte';
+</script>
+
+<Layout />
+
+<style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.D.TS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.HTML CODE IS BELOW
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+		<meta name="viewport" content="width=device-width" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.POSTCSS CODE IS BELOW
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Inter";
+    
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 142.1 76.2% 36.3%;
+    --accent-foreground: 355.7 100% 97.3%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 142.1 70.6% 45.3%;
+    --accent-foreground: 144.9 80.4% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/ENV.D.TS CODE IS BELOW
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COUNTER.SVELTE CODE IS BELOW
+<script>
+  let count = $state(0)
+  const increment = () => {
+    count += 1
+  }
+</script>
+
+<button onclick={increment}>
+  count is {count}
+</button>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/ANALYTICSPANEL.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
+  import type { Workout } from '$lib/types';
+  import { onMount } from 'svelte';
+
+  $: workouts = Array.isArray($schedule) ? $schedule : [];
+  
+  $: {
+    console.log('Schedule store value:', $schedule);
+    console.log('Workouts array:', workouts);
+  }
+
+  $: totalWorkouts = workouts.length;
+  $: totalMinutes = workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0);
+  $: avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
+  
+  // Calculate day streak
+  $: dayStreak = calculateDayStreak(workouts);
+
+  function calculateDayStreak(workouts: Workout[]): number {
+    if (!workouts?.length) return 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get unique dates (in case of multiple workouts per day)
+    const uniqueDates = [...new Set(workouts.map(w => {
+      const date = new Date(w?.date ?? new Date());
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }))].sort((a, b) => b - a); // Sort in descending order
+
+    console.log('Unique workout dates:', uniqueDates.map(ts => new Date(ts).toISOString()));
+
+    let streak = 0;
+    let currentDate = today.getTime();
+
+    // Check if we have a workout today
+    if (uniqueDates[0] === currentDate) {
+      streak = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const expectedDate = currentDate - (86400000 * i);
+        if (uniqueDates[i] === expectedDate) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    } else {
+      // Check if we have a streak ending yesterday
+      const yesterday = today.getTime() - 86400000;
+      if (uniqueDates[0] === yesterday) {
+        streak = 1;
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const expectedDate = yesterday - (86400000 * (i - 1));
+          if (uniqueDates[i] === expectedDate) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('Calculated streak:', streak);
+    return streak;
+  }
+
+  onMount(() => {
+    console.log('AnalyticsPanel mounted, initializing schedule');
+    schedule.initialize();
+  });
+</script>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalWorkouts}</div>
+    <div class="text-sm text-muted-foreground">Total Workouts</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalMinutes}</div>
+    <div class="text-sm text-muted-foreground">Total Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{avgMinutes}</div>
+    <div class="text-sm text-muted-foreground">Avg Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{dayStreak}</div>
+    <div class="text-sm text-muted-foreground">Day Streak</div>
+  </div>
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/AUTH.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { authStore } from '$lib/stores/authStore';
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
+  import type { AuthState } from '$lib/types';
+
+  let email = $state("");
+  let password = $state("");
+  let showAlert = $state(false);
+  let alertVariant = $state<"default" | "destructive">("default");
+  let alertTitle = $state("");
+  let alertDescription = $state("");
+  let authState = $derived($authStore as AuthState);
+
+  function showFeedback(success: boolean, title: string, description: string) {
+    alertVariant = success ? "default" : "destructive";
+    alertTitle = title;
+    alertDescription = description;
+    showAlert = true;
+    
+    // Hide the alert after 3 seconds
+    setTimeout(() => {
+      showAlert = false;
+    }, 3000);
+  }
+
+  async function handleSignIn() {
+    try {
+      const error = await authStore.signIn(email, password);
+      if (error) {
+        throw error;
+      }
+      showFeedback(
+        true,
+        "Success",
+        "You have been logged in successfully."
+      );
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to log in. Please check your credentials and try again."
+      );
+    }
+  }
+
+  async function handleSignUp() {
+    try {
+      const error = await authStore.signUp(email, password);
+      if (error) {
+        throw error;
+      }
+      showFeedback(
+        true,
+        "Success",
+        "Your account has been created successfully."
+      );
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to create account. Please try again."
+      );
+    }
+  }
+</script>
+
+<div class="auth-container">
+  <div class="auth-form">
+    <h2>Welcome</h2>
+    
+    {#if showAlert}
+      <div class="mb-4">
+        <Alert variant={alertVariant}>
+          <AlertTitle>{alertTitle}</AlertTitle>
+          <AlertDescription>{alertDescription}</AlertDescription>
+        </Alert>
+      </div>
+    {/if}
+
+    <form on:submit|preventDefault={handleSignIn} class="space-y-4">
+      <div class="space-y-2">
+        <Label for="email">Email</Label>
+        <Input 
+          type="email" 
+          id="email"
+          placeholder="Enter your email"
+          bind:value={email}
+          disabled={authState.loading}
+        />
+      </div>
+
+      <div class="space-y-2">
+        <Label for="password">Password</Label>
+        <Input 
+          type="password" 
+          id="password"
+          placeholder="Enter your password"
+          bind:value={password}
+          disabled={authState.loading}
+        />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <Button type="submit" variant="default" disabled={authState.loading}>
+          {#if authState.loading}
+            Loading...
+          {:else}
+            Log In
+          {/if}
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          on:click={handleSignUp}
+          disabled={authState.loading}
+        >
+          Sign Up
+        </Button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .auth-container {
+    @apply min-h-screen flex items-center justify-center p-4;
+  }
+
+  .auth-form {
+    @apply w-full max-w-sm bg-card text-card-foreground rounded-lg shadow-lg border p-6;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold mb-6 text-center;
+  }
+</style> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/CALENDAR.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
+  import { userPreferences } from '$lib/stores/userPreferencesStore';
+  import { calculateSigmoidal } from '$lib/utils/sigmoidal';
+  import { formatDate } from '$lib/utils/dateHelpers';
+  import { formatDuration } from '$lib/utils/numberHelpers';
+  import { createEventDispatcher } from 'svelte';
+  import type { Workout, UserPreferences } from '$lib/types';
+
+  const dispatch = createEventDispatcher<{
+    workoutClick: { date: string; proposedDuration: number };
+  }>();
+
+  let selectedDay = $state<string | null>(null);
+  let workouts = $derived($schedule as Workout[]);
+  let prefs = $derived($userPreferences as UserPreferences);
+  
+  function getProposedDuration(day: string): number {
+    if (!prefs) return 30; // Default duration if preferences aren't loaded
+    return calculateSigmoidal(
+      new Date(day),
+      new Date(prefs.startDate),
+      prefs.sigmoidParams
+    );
+  }
+
+  function handleDayClick(day: string): void {
+    selectedDay = day;
+    const proposedDuration = getProposedDuration(day);
+    dispatch('workoutClick', { date: day, proposedDuration });
+  }
+
+  function getDayWorkouts(day: string): Workout[] {
+    return workouts.filter(w => w.date === day);
+  }
+
+  function handleLogWorkout(): void {
+    if (selectedDay) {
+      schedule.addWorkout(selectedDay, getProposedDuration(selectedDay));
+    }
+  }
+
+  function getTotalDuration(date: string): number {
+    return getDayWorkouts(date).reduce((total, w) => total + w.duration, 0);
+  }
+</script>
+
+<div class="calendar">
+  <div class="calendar-header">
+    <button on:click={() => handleDayClick(new Date().toISOString().split('T')[0])}>
+      Today
+    </button>
+  </div>
+
+  <div class="calendar-body">
+    {#each workouts as workout}
+      <div class="calendar-day">
+        <div class="date">{formatDate(workout.date)}</div>
+        <div class="duration">
+          Duration: {formatDuration(workout.duration)}
+        </div>
+        <div class="total">
+          Total: {formatDuration(getTotalDuration(workout.date))}
+        </div>
+      </div>
+    {/each}
+  </div>
+</div>
+
+<style>
+  .calendar {
+    @apply bg-card rounded-lg p-6;
+  }
+
+  .calendar-header {
+    @apply flex justify-between items-center mb-4;
+  }
+
+  .calendar-body {
+    @apply grid gap-4;
+  }
+
+  .calendar-day {
+    @apply border border-border rounded p-4;
+  }
+
+  .date {
+    @apply text-lg font-semibold mb-2;
+  }
+
+  .duration {
+    @apply text-muted-foreground;
+  }
+
+  .total {
+    @apply text-muted-foreground mt-2;
+  }
+
+  button {
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/CONTROLSPANEL.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { userPreferences } from '$lib/stores/userPreferencesStore';
+  import type { SigmoidParams } from '$lib/types';
+  import { getISODateString } from '$lib/utils/dateHelpers';
+  import { formatNumber } from '$lib/utils/numberHelpers';
+  
+  let localParams = $state<SigmoidParams>($userPreferences.sigmoidParams);
+  let localDaysPerWeek = $state<number>($userPreferences.daysPerWeek);
+  let localStartDate = $state<string>(getISODateString($userPreferences.startDate));
+
+  // Keep local state in sync with store
+  $effect(() => {
+    localParams = $userPreferences.sigmoidParams;
+    localDaysPerWeek = $userPreferences.daysPerWeek;
+    localStartDate = getISODateString($userPreferences.startDate);
+  });
+
+  function updateParams(): void {
+    userPreferences.updateSigmoidParams(localParams);
+  }
+
+  function updateDaysPerWeek(): void {
+    userPreferences.setDaysPerWeek(localDaysPerWeek);
+  }
+
+  function updateStartDate(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const date = new Date(target.value);
+    if (!isNaN(date.getTime())) {
+      userPreferences.setStartDate(date.toISOString());
+    }
+  }
+
+  function resetToDefaults(): void {
+    userPreferences.reset();
+  }
+</script>
+
+<div class="controls-panel">
+  <h2>Challenge Settings</h2>
+  
+  <div class="control-section">
+    <h3>Schedule</h3>
+    <div class="control-group">
+      <label>
+        Start Date:
+        <input 
+          type="date" 
+          bind:value={localStartDate}
+          on:change={updateStartDate}
+        />
+      </label>
+    </div>
+    
+    <div class="control-group">
+      <label>
+        Workouts per Week:
+        <input 
+          type="number" 
+          min="1" 
+          max="7" 
+          bind:value={localDaysPerWeek} 
+          on:change={updateDaysPerWeek}
+        />
+      </label>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <h3>Progression Settings</h3>
+    <div class="control-group">
+      <label>
+        Starting Duration (minutes):
+        <input 
+          type="number" 
+          min="1" 
+          max="120" 
+          bind:value={localParams.startMinutes} 
+          on:change={updateParams}
+        />
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Target Duration (minutes):
+        <input 
+          type="number" 
+          min="1" 
+          max="180" 
+          bind:value={localParams.endMinutes} 
+          on:change={updateParams}
+        />
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Progression Steepness:
+        <input 
+          type="range" 
+          min="0.01" 
+          max="0.2" 
+          step="0.01" 
+          bind:value={localParams.steepness} 
+          on:change={updateParams}
+        />
+        <span class="value-display">{formatNumber(localParams.steepness, 2)}</span>
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Midpoint (day):
+        <input 
+          type="range" 
+          min="1" 
+          max="90" 
+          bind:value={localParams.midpoint} 
+          on:change={updateParams}
+        />
+        <span class="value-display">Day {localParams.midpoint}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <button class="reset-button" on:click={resetToDefaults}>
+      Reset to Defaults
+    </button>
+  </div>
+</div>
+
+<style>
+  .controls-panel {
+    @apply bg-card rounded-lg p-6;
+  }
+
+  .control-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    @apply border border-border rounded;
+  }
+
+  .control-group {
+    margin: 1rem 0;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    @apply text-muted-foreground;
+  }
+
+  input {
+    padding: 0.5rem;
+    @apply border border-border rounded bg-card text-foreground;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .value-display {
+    font-size: 0.9em;
+    @apply text-muted-foreground;
+  }
+
+  .reset-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .reset-button:hover {
+    background: hsl(var(--primary) / 0.9);
+  }
+
+  h2, h3 {
+    margin: 0 0 1rem 0;
+  }
+
+  h3 {
+    @apply text-muted-foreground;
+    font-size: 1.1em;
+  }
+
+  @media (max-width: 768px) {
+    .controls-panel {
+      padding: 1rem;
+    }
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/LAYOUT.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { authStore } from '$lib/stores/authStore';
+  import { Button } from "$lib/components/UI/button";
+  import ModeToggle from "$lib/components/UI/mode-toggle.svelte";
+  import { LogOut } from 'lucide-svelte';
+  import type { AuthState } from '$lib/types';
+
+  let authState = $derived($authStore as AuthState);
+
+  async function handleSignOut() {
+    await authStore.signOut();
+  }
+</script>
+
+<div class="layout">
+  <header>
+    <div class="header-content">
+      <h1>Workout Challenge</h1>
+      <div class="header-actions">
+        <ModeToggle />
+        {#if authState.user}
+          <Button variant="ghost" size="icon" on:click={handleSignOut}>
+            <LogOut class="h-4 w-4" />
+            <span class="sr-only">Sign out</span>
+          </Button>
+        {/if}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>
+    <p>Built with ❤️ by Kurt</p>
+  </footer>
+</div>
+
+<style>
+  .layout {
+    @apply min-h-screen flex flex-col;
+  }
+
+  header {
+    @apply border-b;
+  }
+
+  .header-content {
+    @apply container mx-auto px-4 h-14 flex items-center justify-between;
+  }
+
+  h1 {
+    @apply text-lg font-semibold;
+  }
+
+  .header-actions {
+    @apply flex items-center gap-2;
+  }
+
+  main {
+    @apply flex-1 container mx-auto px-4 py-8;
+  }
+
+  footer {
+    @apply border-t py-6 text-center text-sm text-muted-foreground;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/PROGRESSCHART.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
+  import { userPreferences } from '$lib/stores/userPreferencesStore';
+  import { calculateSigmoidal } from '$lib/utils/sigmoidal';
+  import { formatDuration } from '$lib/utils/numberHelpers';
+  import type { Workout, UserPreferences } from '$lib/types';
+
+  interface ChartPoint {
+    date: Date;
+    actual: number;
+    target: number;
+  }
+
+  let workouts = $derived($schedule as Workout[]);
+  let prefs = $derived($userPreferences as UserPreferences);
+
+  let chartData = $derived<ChartPoint[]>(() => {
+    if (!workouts || !prefs) return [];
+
+    return workouts.map(workout => ({
+      date: new Date(workout.date),
+      actual: workout.duration,
+      target: calculateSigmoidal(
+        new Date(workout.date),
+        new Date(prefs.startDate),
+        prefs.sigmoidParams
+      )
+    })).sort((a, b) => a.date.getTime() - b.date.getTime());
+  });
+
+  let maxDuration = $derived(() => {
+    if (!chartData.length) return 60;
+    const maxActual = Math.max(...chartData.map(d => d.actual));
+    const maxTarget = Math.max(...chartData.map(d => d.target));
+    return Math.max(maxActual, maxTarget);
+  });
+</script>
+
+<div class="chart-container">
+  <h2>Progress Chart</h2>
+  
+  <div class="chart">
+    {#if chartData.length > 0}
+      <svg viewBox="0 0 600 400" class="chart-svg">
+        <!-- Y-axis -->
+        <line x1="50" y1="350" x2="50" y2="50" class="axis" />
+        <!-- X-axis -->
+        <line x1="50" y1="350" x2="550" y2="350" class="axis" />
+        
+        <!-- Data points -->
+        {#each chartData as point, i}
+          {@const x = 50 + (500 * i / (chartData.length - 1 || 1))}
+          {@const yActual = 350 - (300 * point.actual / maxDuration)}
+          {@const yTarget = 350 - (300 * point.target / maxDuration)}
+          
+          <!-- Target line -->
+          <line 
+            x1={i > 0 ? 50 + (500 * (i-1) / (chartData.length - 1)) : x}
+            y1={i > 0 ? 350 - (300 * chartData[i-1].target / maxDuration) : yTarget}
+            x2={x}
+            y2={yTarget}
+            class="target-line"
+          />
+          
+          <!-- Actual duration point -->
+          <circle 
+            cx={x}
+            cy={yActual}
+            r="4"
+            class="data-point"
+          >
+            <title>
+              {formatDuration(point.actual)} / {formatDuration(point.target)}
+            </title>
+          </circle>
+        {/each}
+      </svg>
+      
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-color actual"></span>
+          <span>Actual Duration</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color target"></span>
+          <span>Target Duration</span>
+        </div>
+      </div>
+    {:else}
+      <div class="no-data">
+        No workout data available
+      </div>
+    {/if}
+  </div>
+</div>
+
+<style>
+  .chart-container {
+    @apply bg-card rounded-lg p-6;
+  }
+
+  h2 {
+    @apply text-lg font-semibold mb-4;
+  }
+
+  .chart {
+    @apply relative;
+    aspect-ratio: 3/2;
+  }
+
+  .chart-svg {
+    @apply w-full h-full;
+  }
+
+  .axis {
+    @apply stroke-border stroke-2;
+  }
+
+  .target-line {
+    @apply stroke-primary stroke-[1.5] opacity-50;
+  }
+
+  .data-point {
+    @apply fill-primary;
+  }
+
+  .legend {
+    @apply flex gap-4 justify-center mt-4;
+  }
+
+  .legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .legend-color {
+    @apply w-4 h-4 rounded-full;
+  }
+
+  .legend-color.actual {
+    @apply bg-primary;
+  }
+
+  .legend-color.target {
+    @apply bg-primary opacity-50;
+  }
+
+  .no-data {
+    @apply flex items-center justify-center h-full text-muted-foreground;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/SETTINGSMODAL.SVELTE CODE IS BELOW
+<!-- Modal container -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" on:click|self={() => dispatch('close')}>
+  <div class="min-h-[calc(100vh-2rem)] flex items-center justify-center">
+    <div class="w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border">
+      <!-- Header with close button -->
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-lg font-semibold">Challenge Settings</h2>
+        <Button variant="ghost" size="icon" on:click={() => dispatch('close')}>
+          <X class="h-4 w-4" />
+          <span class="sr-only">Close</span>
+        </Button>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="p-4 max-h-[calc(80vh-8rem)] overflow-y-auto">
+        {#if showAlert}
+          <div class="mb-4">
+            <Alert variant={alertVariant}>
+              <AlertTitle>{alertTitle}</AlertTitle>
+              <AlertDescription>{alertDescription}</AlertDescription>
+            </Alert>
+          </div>
+        {/if}
+
+        <form on:submit|preventDefault={handleUpdate} class="space-y-4">
+          <div class="space-y-2">
+            <Label for="startDate">Start Date</Label>
+            <Input 
+              type="date" 
+              id="startDate"
+              bind:value={localStartDate}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="daysPerWeek">Days Per Week</Label>
+            <Input 
+              type="number" 
+              id="daysPerWeek"
+              min="1"
+              max="7"
+              bind:value={localDaysPerWeek}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="startingMinutes">Starting Minutes</Label>
+            <Input 
+              type="number" 
+              id="startingMinutes"
+              min="1"
+              bind:value={localParams.startMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="endingMinutes">Target Minutes</Label>
+            <Input 
+              type="number" 
+              id="endingMinutes"
+              min="1"
+              bind:value={localParams.endMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="steepness">Progression Steepness</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="steepness"
+                min="0.01"
+                max="0.2"
+                step="0.01"
+                bind:value={localParams.steepness}
+                class="flex-1"
+              />
+              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">
+                {formatNumber(localParams.steepness, 2)}
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <Label for="midpoint">Midpoint (Days)</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="midpoint"
+                min="1"
+                max="90"
+                bind:value={localParams.midpoint}
+                class="flex-1"
+              />
+              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">
+                Day {localParams.midpoint}
+              </span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer with buttons -->
+      <div class="flex flex-col sm:flex-row justify-between gap-4 p-4 border-t">
+        <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
+        <div class="flex gap-2">
+          <Button variant="outline" class="flex-1 sm:flex-none" on:click={() => dispatch('close')}>Cancel</Button>
+          <Button variant="default" class="flex-1 sm:flex-none" on:click={handleUpdate}>Update</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
+  import { X } from 'lucide-svelte';
+  import { userPreferences } from '$lib/stores/userPreferencesStore';
+  import { getISODateString } from '$lib/utils/dateHelpers';
+  import { formatNumber } from '$lib/utils/numberHelpers';
+  import type { SigmoidParams } from '$lib/types';
+
+  const dispatch = createEventDispatcher();
+
+  let localParams = $state<SigmoidParams>($userPreferences.sigmoidParams);
+  let localDaysPerWeek = $state<number>($userPreferences.daysPerWeek);
+  let localStartDate = $state<string>(getISODateString($userPreferences.startDate));
+
+  let showAlert = $state(false);
+  let alertVariant = $state<"default" | "destructive">("default");
+  let alertTitle = $state("");
+  let alertDescription = $state("");
+
+  // Keep local state in sync with store
+  $effect(() => {
+    localParams = $userPreferences.sigmoidParams;
+    localDaysPerWeek = $userPreferences.daysPerWeek;
+    localStartDate = getISODateString($userPreferences.startDate);
+  });
+
+  function showFeedback(success: boolean, title: string, description: string) {
+    alertVariant = success ? "default" : "destructive";
+    alertTitle = title;
+    alertDescription = description;
+    showAlert = true;
+    
+    // Hide the alert after 3 seconds
+    setTimeout(() => {
+      showAlert = false;
+    }, 3000);
+  }
+
+  async function handleUpdate() {
+    try {
+      await userPreferences.updateSigmoidParams(localParams);
+      await userPreferences.setDaysPerWeek(localDaysPerWeek);
+      const date = new Date(localStartDate);
+      if (!isNaN(date.getTime())) {
+        await userPreferences.setStartDate(date.toISOString());
+      }
+      
+      showFeedback(
+        true,
+        "Settings Updated",
+        "Your challenge settings have been saved successfully."
+      );
+      
+      setTimeout(() => {
+        dispatch('close');
+      }, 1000);
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to update settings. Please try again."
+      );
+    }
+  }
+
+  async function resetToDefaults() {
+    try {
+      await userPreferences.reset();
+      showFeedback(
+        true,
+        "Settings Reset",
+        "Your challenge settings have been reset to defaults."
+      );
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to reset settings. Please try again."
+      );
+    }
+  }
+</script> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT-DESCRIPTION.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("text-sm [&_p]:leading-relaxed", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT-TITLE.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let level = "h5";
+	export { className as class };
+</script>
+
+<svelte:element
+	this={level}
+	class={cn("mb-1 font-medium leading-none tracking-tight", className)}
+	{...$$restProps}
+>
+	<slot />
+</svelte:element>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT.SVELTE CODE IS BELOW
+<script>
+	import { alertVariants } from "./index.js";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let variant = "default";
+	export { className as class };
+</script>
+
+<div class={cn(alertVariants({ variant }), className)} {...$$restProps} role="alert">
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./alert.svelte";
+import Description from "./alert-description.svelte";
+import Title from "./alert-title.svelte";
+export const alertVariants = tv({
+	base: "[&>svg]:text-foreground relative w-full rounded-lg border p-4 [&:has(svg)]:pl-11 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
+	variants: {
+		variant: {
+			default: "bg-background text-foreground",
+			destructive:
+				"border-destructive/50 text-destructive text-destructive dark:border-destructive [&>svg]:text-destructive",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+	},
+});
+export {
+	Root,
+	Description,
+	Title,
+	//
+	Root as Alert,
+	Description as AlertDescription,
+	Title as AlertTitle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/BUTTON/BUTTON.SVELTE CODE IS BELOW
+<script>
+	import { Button as ButtonPrimitive } from "bits-ui";
+	import { buttonVariants } from "./index.js";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let variant = "default";
+	export let size = "default";
+	export let builders = [];
+	export { className as class };
+</script>
+
+<ButtonPrimitive.Root
+	{builders}
+	class={cn(buttonVariants({ variant, size, className }))}
+	type="button"
+	{...$$restProps}
+	on:click
+	on:keydown
+>
+	<slot />
+</ButtonPrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/BUTTON/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./button.svelte";
+const buttonVariants = tv({
+	base: "ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+	variants: {
+		variant: {
+			default: "bg-primary text-primary-foreground hover:bg-primary/90",
+			destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+			outline:
+				"border-input bg-background hover:bg-accent hover:text-accent-foreground border",
+			secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+			ghost: "hover:bg-accent hover:text-accent-foreground",
+			link: "text-primary underline-offset-4 hover:underline",
+		},
+		size: {
+			default: "h-10 px-4 py-2",
+			sm: "h-9 rounded-md px-3",
+			lg: "h-11 rounded-md px-8",
+			icon: "h-10 w-10",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default",
+	},
+});
+export {
+	Root,
+	//
+	Root as Button,
+	buttonVariants,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-CONTENT.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("p-6", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-DESCRIPTION.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<p class={cn("text-muted-foreground text-sm", className)} {...$$restProps}>
+	<slot />
+</p>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-FOOTER.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("flex items-center p-6 pt-0", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-HEADER.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("flex flex-col space-y-1.5 p-6 pb-0", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-TITLE.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let tag = "h3";
+	export { className as class };
+</script>
+
+<svelte:element
+	this={tag}
+	class={cn("text-lg font-semibold leading-none tracking-tight", className)}
+	{...$$restProps}
+>
+	<slot />
+</svelte:element>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div
+	class={cn("bg-card text-card-foreground rounded-lg border shadow-sm", className)}
+	{...$$restProps}
+>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/INDEX.JS CODE IS BELOW
+import Root from "./card.svelte";
+import Content from "./card-content.svelte";
+import Description from "./card-description.svelte";
+import Footer from "./card-footer.svelte";
+import Header from "./card-header.svelte";
+import Title from "./card-title.svelte";
+export {
+	Root,
+	Content,
+	Description,
+	Footer,
+	Header,
+	Title,
+	//
+	Root as Card,
+	Content as CardContent,
+	Description as CardDescription,
+	Footer as CardFooter,
+	Header as CardHeader,
+	Title as CardTitle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/INPUT/INDEX.JS CODE IS BELOW
+import Root from "./input.svelte";
+export {
+	Root,
+	//
+	Root as Input,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/INPUT/INPUT.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value = undefined;
+	export { className as class };
+	export let readonly = undefined;
+</script>
+
+<input
+	class={cn(
+		"border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+		className
+	)}
+	bind:value
+	{readonly}
+	on:blur
+	on:change
+	on:click
+	on:focus
+	on:focusin
+	on:focusout
+	on:keydown
+	on:keypress
+	on:keyup
+	on:mouseover
+	on:mouseenter
+	on:mouseleave
+	on:mousemove
+	on:paste
+	on:input
+	on:wheel|passive
+	{...$$restProps}
+/>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/LABEL/INDEX.JS CODE IS BELOW
+import Root from "./label.svelte";
+export {
+	Root,
+	//
+	Root as Label,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/LABEL/LABEL.SVELTE CODE IS BELOW
+<script>
+	import { Label as LabelPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<LabelPrimitive.Root
+	class={cn(
+		"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+		className
+	)}
+	{...$$restProps}
+	on:mousedown
+>
+	<slot />
+</LabelPrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/MODE-TOGGLE.SVELTE CODE IS BELOW
+<script lang="ts">
+  import ThemeToggle from './theme-toggle.svelte';
+</script>
+
+<ThemeToggle /> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/INDEX.JS CODE IS BELOW
+import { Tabs as TabsPrimitive } from "bits-ui";
+import Content from "./tabs-content.svelte";
+import List from "./tabs-list.svelte";
+import Trigger from "./tabs-trigger.svelte";
+const Root = TabsPrimitive.Root;
+export {
+	Root,
+	Content,
+	List,
+	Trigger,
+	//
+	Root as Tabs,
+	Content as TabsContent,
+	List as TabsList,
+	Trigger as TabsTrigger,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-CONTENT.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value;
+	export { className as class };
+</script>
+
+<TabsPrimitive.Content
+	class={cn(
+		"ring-offset-background focus-visible:ring-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+		className
+	)}
+	{value}
+	{...$$restProps}
+>
+	<slot />
+</TabsPrimitive.Content>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-LIST.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<TabsPrimitive.List
+	class={cn(
+		"bg-muted text-muted-foreground inline-flex h-10 items-center justify-center rounded-md p-1",
+		className
+	)}
+	{...$$restProps}
+>
+	<slot />
+</TabsPrimitive.List>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-TRIGGER.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value;
+	export { className as class };
+</script>
+
+<TabsPrimitive.Trigger
+	class={cn(
+		"ring-offset-background focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm",
+		className
+	)}
+	{value}
+	{...$$restProps}
+	on:click
+>
+	<slot />
+</TabsPrimitive.Trigger>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/THEME-TOGGLE.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { theme } from '$lib/stores/themeStore';
+  import { Button } from './button';
+  import { Sun, Moon } from 'lucide-svelte';
+</script>
+
+<Button
+  variant="ghost"
+  size="icon"
+  on:click={() => theme.toggle()}
+  class="text-foreground"
+>
+  {#if $theme === 'dark'}
+    <Sun class="h-4 w-4" />
+  {:else}
+    <Moon class="h-4 w-4" />
+  {/if}
+  <span class="sr-only">Toggle theme</span>
+</Button> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./toggle.svelte";
+export const toggleVariants = tv({
+	base: "ring-offset-background hover:bg-muted hover:text-muted-foreground focus-visible:ring-ring data-[state=on]:bg-accent data-[state=on]:text-accent-foreground inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+	variants: {
+		variant: {
+			default: "bg-transparent",
+			outline:
+				"border-input hover:bg-accent hover:text-accent-foreground border bg-transparent",
+		},
+		size: {
+			default: "h-10 px-3",
+			sm: "h-9 px-2.5",
+			lg: "h-11 px-5",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default",
+	},
+});
+export {
+	Root,
+	//
+	Root as Toggle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/INDEX.TS CODE IS BELOW
+import { cva } from "class-variance-authority";
+
+export { default as Toggle } from "./toggle.svelte";
+
+export const toggleVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+  {
+    variants: {
+      variant: {
+        default: "bg-transparent",
+        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+      },
+      size: {
+        default: "h-10 px-3",
+        sm: "h-9 px-2.5",
+        lg: "h-11 px-5",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/TOGGLE.SVELTE CODE IS BELOW
+<script lang="ts">
+	import { cn } from "$lib/utils";
+	import { Toggle as TogglePrimitive } from "bits-ui";
+	import { toggleVariants } from "./index.js";
+
+	let className: string | undefined | null = undefined;
+	export { className as class };
+	export let pressed = false;
+	export let variant: "default" | "outline" = "default";
+	export let size: "default" | "sm" | "lg" = "default";
+	export let isTotal = false;
+</script>
+
+<TogglePrimitive.Root
+	class={cn(toggleVariants({ variant, size, className }), isTotal ? 'total-button' : '')}
+	bind:pressed
+	on:click
+	{...$$restProps}
+>
+	<slot />
+</TogglePrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/WORKOUTLOG.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { schedule } from "$lib/stores/scheduleStore";
+  import { workoutTypes } from "$lib/stores/workoutTypeStore";
+  import { format } from "date-fns";
+  import { createEventDispatcher } from "svelte";
+  import { X } from 'lucide-svelte';
+  import type { Workout, WorkoutType } from "$lib/types";
+
+  const dispatch = createEventDispatcher();
+
+  const props = $props({
+    selectedDate: null as string | null,
+    proposedDuration: 30,
+    editMode: false,
+    workoutId: null as string | null,
+    onComplete: () => {}
+  });
+
+  let duration = $state(props.proposedDuration);
+  let date = $state(props.selectedDate ? new Date(props.selectedDate) : new Date());
+  let editMode = $state(props.editMode);
+  let workoutId = $state(props.workoutId);
+  let selectedType = $state<string | null>(null);
+  let workouts = $derived($schedule as Workout[] || []);
+  let types = $derived($workoutTypes as WorkoutType[] || []);
+  let recentWorkouts = $derived(workouts.slice(0, 5));
+  let formattedDate = $derived(format(date, "MM/dd/yy"));
+
+  $effect(() => {
+    duration = props.proposedDuration;
+  });
+
+  $effect(() => {
+    if (props.selectedDate) {
+      date = new Date(props.selectedDate);
+    }
+  });
+
+  $effect(() => {
+    editMode = props.editMode;
+    workoutId = props.workoutId;
+  });
+
+  $effect.pre(() => {
+    workoutTypes.initialize();
+  });
+
+  async function handleSubmit(): Promise<void> {
+    if (editMode && workoutId) {
+      await schedule.updateWorkout(workoutId, date.toISOString(), duration, selectedType);
+    } else {
+      await schedule.addWorkout(date.toISOString(), duration, selectedType);
+    }
+    props.onComplete();
+  }
+
+  async function handleDelete(id: string): Promise<void> {
+    if (confirm("Are you sure you want to delete this workout?")) {
+      await schedule.deleteWorkout(id);
+    }
+  }
+
+  function handleEdit(workout: Workout): void {
+    date = new Date(workout.date);
+    duration = workout.duration;
+    workoutId = workout.id;
+    selectedType = workout.type ?? null;
+    editMode = true;
+  }
+
+  function handleClose(): void {
+    props.onComplete();
+  }
+
+  function getWorkoutTypeColor(typeId: string | null | undefined): string {
+    if (!typeId) return 'transparent';
+    const type = types.find(t => t.id === typeId);
+    return type?.color ?? 'transparent';
+  }
+
+  function getWorkoutTypeName(typeId: string | null | undefined): string {
+    if (!typeId) return '';
+    const type = types.find(t => t.id === typeId);
+    return type?.name ?? '';
+  }
+</script>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b pb-4">
+    <h2 class="text-lg font-semibold">{editMode ? 'Edit' : 'Log'} Workout</h2>
+    <Button 
+      variant="ghost" 
+      size="icon"
+      on:click={handleClose}
+    >
+      <X class="h-4 w-4" />
+      <span class="sr-only">Close</span>
+    </Button>
+  </div>
+
+  <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
+    <div class="space-y-4">
+      <div class="grid gap-2">
+        <Label for="date">Date</Label>
+        <Input 
+          type="date" 
+          id="date"
+          bind:value={date}
+          class="w-full"
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="duration">Duration (minutes)</Label>
+        <Input 
+          type="number" 
+          id="duration"
+          bind:value={duration}
+          min="1"
+          class="w-full"
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="type">Type</Label>
+        <select 
+          id="type"
+          bind:value={selectedType}
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+        >
+          <option value={null}>Select a type</option>
+          {#each types as type}
+            <option value={type.id}>{type.name}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <Button type="submit">
+        {editMode ? 'Update' : 'Add'} Workout
+      </Button>
+    </div>
+  </form>
+
+  {#if recentWorkouts.length > 0}
+    <div class="space-y-4">
+      <h3 class="font-medium text-sm text-foreground">Recent Workouts</h3>
+      <div class="border rounded-lg divide-y">
+        {#each recentWorkouts as workout}
+          <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <div 
+                  class="w-3 h-3 rounded-full" 
+                  style="background-color: {getWorkoutTypeColor(workout.type)};"
+                />
+                <p class="text-sm font-medium">{format(new Date(workout.date), "MMM d, yyyy")}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <p class="text-sm text-muted-foreground">{workout.duration} minutes</p>
+                {#if workout.type}
+                  <span class="text-xs text-muted-foreground">•</span>
+                  <p class="text-xs text-muted-foreground">{getWorkoutTypeName(workout.type)}</p>
+                {/if}
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                on:click={() => handleEdit(workout)}
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                class="text-destructive hover:text-destructive"
+                on:click={() => handleDelete(workout.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/WORKOUTTYPEMANAGER.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { workoutTypes } from "$lib/stores/workoutTypeStore";
+  import type { WorkoutType } from "$lib/types";
+
+  let name = $state("");
+  let color = $state("#000000");
+  let editMode = $state(false);
+  let editingId = $state<string | null>(null);
+  let types = $derived($workoutTypes as WorkoutType[] || []);
+
+  $effect.pre(() => {
+    workoutTypes.initialize();
+  });
+
+  async function handleSubmit() {
+    if (editMode && editingId) {
+      await workoutTypes.updateWorkoutType(editingId, name, color);
+      editMode = false;
+      editingId = null;
+    } else {
+      await workoutTypes.addWorkoutType(name, color);
+    }
+    name = "";
+    color = "#000000";
+  }
+
+  async function handleDelete(id: string) {
+    if (confirm("Are you sure you want to delete this workout type?")) {
+      await workoutTypes.deleteWorkoutType(id);
+    }
+  }
+
+  function handleEdit(type: WorkoutType) {
+    name = type.name;
+    color = type.color;
+    editingId = type.id;
+    editMode = true;
+  }
+</script>
+
+<div class="space-y-6">
+  <form class="space-y-4" on:submit|preventDefault={handleSubmit}>
+    <div class="grid gap-2">
+      <Label for="name">Name</Label>
+      <Input 
+        type="text" 
+        id="name"
+        bind:value={name}
+        placeholder="e.g., Running, Cycling, etc."
+        required
+        class="w-full"
+      />
+    </div>
+
+    <div class="grid gap-2">
+      <Label for="color">Color</Label>
+      <Input 
+        type="color" 
+        id="color"
+        bind:value={color}
+        class="h-10 w-full"
+      />
+    </div>
+
+    <div class="flex justify-end">
+      <Button type="submit">
+        {editMode ? 'Update' : 'Add'} Workout Type
+      </Button>
+    </div>
+  </form>
+
+  {#if types.length > 0}
+    <div class="space-y-4">
+      <h3 class="font-medium text-sm text-foreground">Workout Types</h3>
+      <div class="border rounded-lg divide-y">
+        {#each types as type}
+          <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
+            <div class="flex items-center space-x-3">
+              <div 
+                class="w-4 h-4 rounded-full" 
+                style="background-color: {type.color};"
+              />
+              <p class="text-sm font-medium">{type.name}</p>
+            </div>
+            <div class="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                on:click={() => handleEdit(type)}
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                class="text-destructive hover:text-destructive"
+                on:click={() => handleDelete(type.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+</div> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/DATA/DEFAULTPARAMS.JSON CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/SERVICES/SUPABASE.JS CODE IS BELOW
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+export async function saveWorkout(workout) {
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert([{
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      date: workout.date,
+      duration: workout.duration,
+      created_at: new Date().toISOString()
+    }]);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getWorkouts() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (error) throw error;
+  return data;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/AUTHSTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { AuthState, User } from '$lib/types';
+
+interface AuthStore {
+  subscribe: Writable<AuthState>['subscribe'];
+  initialize: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<Error | undefined>;
+  signUp: (email: string, password: string) => Promise<Error | undefined>;
+  signOut: () => Promise<void>;
+}
+
+function createAuthStore(): AuthStore {
+  const { subscribe, set, update }: Writable<AuthState> = writable({
+    user: null,
+    loading: true
+  });
+
+  return {
+    subscribe,
+    initialize: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        set({ user: null, loading: false });
+        return;
+      }
+
+      if (session?.user) {
+        set({
+          user: {
+            id: session.user.id,
+            email: session.user.email || ''
+          },
+          loading: false
+        });
+      } else {
+        set({ user: null, loading: false });
+      }
+    },
+    signIn: async (email: string, password: string) => {
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Error signing in:', error);
+        return error;
+      }
+
+      if (user) {
+        set({
+          user: {
+            id: user.id,
+            email: user.email || ''
+          },
+          loading: false
+        });
+      }
+    },
+    signUp: async (email: string, password: string) => {
+      const { data: { user }, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Error signing up:', error);
+        return error;
+      }
+
+      if (user) {
+        set({
+          user: {
+            id: user.id,
+            email: user.email || ''
+          },
+          loading: false
+        });
+      }
+    },
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error('Error signing out:', error);
+        return;
+      }
+
+      set({ user: null, loading: false });
+    }
+  };
+}
+
+export const authStore = createAuthStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/SCHEDULESTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { Workout } from '$lib/types';
+
+interface ScheduleStore {
+  subscribe: Writable<Workout[]>['subscribe'];
+  initialize: () => Promise<void>;
+  addWorkout: (date: string, duration: number, type?: string | null) => Promise<void>;
+  updateWorkout: (id: string, date: string, duration: number, type?: string | null) => Promise<void>;
+  deleteWorkout: (id: string) => Promise<void>;
+}
+
+function createScheduleStore(): ScheduleStore {
+  const { subscribe, set, update }: Writable<Workout[]> = writable([]);
+
+  return {
+    subscribe,
+    initialize: async () => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching workouts:', error);
+        return;
+      }
+
+      console.log('Fetched workouts from database:', data);
+      set(data || []);
+    },
+    addWorkout: async (date: string, duration: number, type?: string | null) => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .insert([{ date, duration, type }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding workout:', error);
+        return;
+      }
+
+      update(workouts => [...workouts, data]);
+    },
+    updateWorkout: async (id: string, date: string, duration: number, type?: string | null) => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .update({ date, duration, type })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating workout:', error);
+        return;
+      }
+
+      update(workouts => workouts.map(w => w.id === id ? data : w));
+    },
+    deleteWorkout: async (id: string) => {
+      const { error } = await supabase
+        .from('workouts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting workout:', error);
+        return;
+      }
+
+      update(workouts => workouts.filter(w => w.id !== id));
+    }
+  };
+}
+
+export const schedule = createScheduleStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/THEMESTORE.TS CODE IS BELOW
+import { writable } from 'svelte/store';
+
+type Theme = 'light' | 'dark';
+
+function createThemeStore() {
+  // Get initial theme from localStorage or default to 'dark'
+  const initialTheme = (typeof window !== 'undefined' && localStorage.getItem('theme') as Theme) || 'dark';
+  
+  const { subscribe, set, update } = writable<Theme>(initialTheme);
+
+  // Initialize the DOM with the initial theme
+  if (typeof window !== 'undefined') {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(initialTheme);
+  }
+
+  return {
+    subscribe,
+    set: (value: Theme) => {
+      localStorage.setItem('theme', value);
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(value);
+      set(value);
+    },
+    toggle: () => {
+      update(currentTheme => {
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(newTheme);
+        return newTheme;
+      });
+    }
+  };
+}
+
+export const theme = createThemeStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/USERPREFERENCESSTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorageHelpers';
+import { ValidationError, logError } from '../utils/errorHandling';
+import type { SigmoidParams, UserPreferences } from '$lib/types';
+
+interface UserPreferencesStore {
+  subscribe: Writable<UserPreferences>['subscribe'];
+  setDaysPerWeek: (days: number) => void;
+  setStartDate: (date: string) => void;
+  updateSigmoidParams: (params: Partial<SigmoidParams>) => void;
+  reset: () => void;
+}
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  daysPerWeek: 3,
+  startDate: new Date().toISOString(),
+  sigmoidParams: {
+    startMinutes: 15,
+    endMinutes: 90,
+    steepness: 0.1,
+    midpoint: 45
+  }
+};
+
+function validatePreferences(prefs: UserPreferences): void {
+  if (prefs.daysPerWeek < 1 || prefs.daysPerWeek > 7) {
+    throw new ValidationError('Days per week must be between 1 and 7');
+  }
+
+  const { startMinutes, endMinutes, steepness, midpoint } = prefs.sigmoidParams;
+  
+  if (startMinutes < 1 || startMinutes > endMinutes) {
+    throw new ValidationError('Invalid start minutes');
+  }
+  
+  if (endMinutes > 240) {
+    throw new ValidationError('End minutes cannot exceed 240');
+  }
+  
+  if (steepness <= 0 || steepness > 1) {
+    throw new ValidationError('Steepness must be between 0 and 1');
+  }
+  
+  if (midpoint < 1 || midpoint > 90) {
+    throw new ValidationError('Midpoint must be between 1 and 90');
+  }
+}
+
+function createUserPreferencesStore(): UserPreferencesStore {
+  let stored: UserPreferences | null = null;
+  try {
+    stored = loadFromLocalStorage('userPreferences');
+    if (stored) {
+      validatePreferences(stored);
+    }
+  } catch (error) {
+    logError(error, 'Loading user preferences');
+    stored = DEFAULT_PREFERENCES;
+  }
+
+  const store = writable<UserPreferences>(stored || DEFAULT_PREFERENCES);
+
+  return {
+    subscribe: store.subscribe,
+    
+    setDaysPerWeek: (days: number) => {
+      try {
+        store.update(prefs => {
+          const newPrefs = { ...prefs, daysPerWeek: days };
+          validatePreferences(newPrefs);
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Setting days per week');
+        throw error;
+      }
+    },
+
+    setStartDate: (date: string) => {
+      try {
+        const parsedDate = new Date(date);
+        if (isNaN(parsedDate.getTime())) {
+          throw new ValidationError('Invalid date format');
+        }
+        
+        store.update(prefs => {
+          const newPrefs = { ...prefs, startDate: date };
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Setting start date');
+        throw error;
+      }
+    },
+
+    updateSigmoidParams: (params: Partial<SigmoidParams>) => {
+      try {
+        store.update(prefs => {
+          const newPrefs = {
+            ...prefs,
+            sigmoidParams: { ...prefs.sigmoidParams, ...params }
+          };
+          validatePreferences(newPrefs);
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Updating sigmoid parameters');
+        throw error;
+      }
+    },
+
+    reset: () => {
+      try {
+        store.set(DEFAULT_PREFERENCES);
+        saveToLocalStorage('userPreferences', DEFAULT_PREFERENCES);
+      } catch (error) {
+        logError(error, 'Resetting preferences');
+        throw error;
+      }
+    }
+  };
+}
+
+export const userPreferences = createUserPreferencesStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/WORKOUTTYPESTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { WorkoutType } from '$lib/types';
+
+function createWorkoutTypeStore() {
+  const { subscribe, set, update }: Writable<WorkoutType[]> = writable([]);
+
+  return {
+    subscribe,
+    initialize: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('No authenticated user');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('workout_types')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching workout types:', error);
+        return;
+      }
+
+      set(data || []);
+    },
+    addWorkoutType: async (name: string, color: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No authenticated user');
+      }
+
+      const { data, error } = await supabase
+        .from('workout_types')
+        .insert([{ name, color, user_id: user.id }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding workout type:', error);
+        return;
+      }
+
+      update(types => [...types, data]);
+    },
+    updateWorkoutType: async (id: string, name: string, color: string) => {
+      const { data, error } = await supabase
+        .from('workout_types')
+        .update({ name, color })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating workout type:', error);
+        return;
+      }
+
+      update(types => types.map(t => t.id === id ? data : t));
+    },
+    deleteWorkoutType: async (id: string) => {
+      const { error } = await supabase
+        .from('workout_types')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting workout type:', error);
+        return;
+      }
+
+      update(types => types.filter(t => t.id !== id));
+    }
+  };
+}
+
+export const workoutTypes = createWorkoutTypeStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STYLES/GLOBAL.CSS CODE IS BELOW
+/* Reset and base styles */
+@layer base {
+  :root {
+    /* Additional colors not in shadcn's default theme */
+    --success: 122 39% 49%;
+    --success-foreground: 122 41% 45%;
+  }
+
+  .dark {
+    /* Dark mode values for additional colors */
+    --success: 122 39% 49%;
+    --success-foreground: 122 41% 45%;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  @apply bg-background text-foreground;
+  min-height: 100vh;
+}
+
+/* Common utility classes */
+.card {
+  @apply bg-card rounded-lg p-6 border border-border;
+}
+
+.text-muted {
+  @apply text-muted-foreground;
+}
+
+.text-success {
+  color: hsl(var(--success));
+}
+
+/* Form elements */
+input, button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+/* Responsive text sizing */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/SUPABASE.JS CODE IS BELOW
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey) 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/SUPABASECLIENT.TS CODE IS BELOW
+import { createClient } from '@supabase/supabase-js';
+import type { Workout } from './types';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+export async function saveWorkout(workout: Pick<Workout, 'date' | 'duration'>) {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert([{
+      user_id: user.id,
+      date: workout.date,
+      duration: workout.duration,
+      created_at: new Date().toISOString()
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getWorkouts() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (error) throw error;
+  return data;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/TYPES.TS CODE IS BELOW
+export interface SigmoidParams {
+  startMinutes: number;
+  endMinutes: number;
+  steepness: number;
+  midpoint: number;
+}
+
+export interface UserPreferences {
+  daysPerWeek: number;
+  startDate: string;
+  sigmoidParams: SigmoidParams;
+}
+
+export interface WorkoutClickEvent {
+  date: string;
+  proposedDuration: number;
+}
+
+export interface EditWorkoutEvent {
+  id: string;
+  date: string;
+  duration: number;
+}
+
+export interface Workout {
+  id: string;
+  date: string;
+  duration: number;
+  created_at: string;
+  type?: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  loading: boolean;
+}
+
+export interface ScheduleState {
+  workouts: Workout[];
+  startDate: string;
+  duration: number;
+}
+
+export interface WorkoutType {
+  id: string;
+  name: string;
+  color: string;
+  created_at: string;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/DATEHELPERS.TS CODE IS BELOW
+/**
+ * Formats a date for display
+ * @param date The date to format
+ * @param options The Intl.DateTimeFormatOptions to use
+ * @returns The formatted date string
+ */
+export function formatDate(
+  date: Date | string,
+  options: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  }
+): string {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Gets the number of days between two dates
+ * @param date1 The first date
+ * @param date2 The second date
+ * @returns The number of days between the dates
+ */
+export function getDaysBetween(date1: Date | string, date2: Date | string): number {
+  const d1 = date1 instanceof Date ? date1 : new Date(date1);
+  const d2 = date2 instanceof Date ? date2 : new Date(date2);
+  const diffTime = Math.abs(d2.getTime() - d1.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Gets the ISO string date without time
+ * @param date The date to format
+ * @returns The ISO string date without time
+ */
+export function getISODateString(date: Date | string): string {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj.toISOString().split('T')[0];
+}
+
+/**
+ * Checks if a date is valid
+ * @param date The date to check
+ * @returns true if the date is valid
+ */
+export function isValidDate(date: Date | string): boolean {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj instanceof Date && !isNaN(dateObj.getTime());
+}
+
+/**
+ * Gets the start of the day for a date
+ * @param date The date to get the start of day for
+ * @returns The start of the day
+ */
+export function getStartOfDay(date: Date | string): Date {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  dateObj.setHours(0, 0, 0, 0);
+  return dateObj;
+}
+
+/**
+ * Gets the end of the day for a date
+ * @param date The date to get the end of day for
+ * @returns The end of the day
+ */
+export function getEndOfDay(date: Date | string): Date {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  dateObj.setHours(23, 59, 59, 999);
+  return dateObj;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/ERRORHANDLING.TS CODE IS BELOW
+/**
+ * Custom error class for validation errors
+ */
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+/**
+ * Logs an error with context
+ * @param error The error to log
+ * @param context The context in which the error occurred
+ */
+export function logError(error: unknown, context: string): void {
+  if (error instanceof Error) {
+    console.error(`Error in ${context}:`, {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+  } else {
+    console.error(`Unknown error in ${context}:`, error);
+  }
+}
+
+/**
+ * Checks if an error is a ValidationError
+ * @param error The error to check
+ * @returns true if the error is a ValidationError
+ */
+export function isValidationError(error: unknown): error is ValidationError {
+  return error instanceof ValidationError;
+}
+
+/**
+ * Formats an error message for display
+ * @param error The error to format
+ * @returns A user-friendly error message
+ */
+export function formatErrorMessage(error: unknown): string {
+  if (error instanceof ValidationError) {
+    return error.message;
+  }
+  if (error instanceof Error) {
+    return 'An unexpected error occurred. Please try again.';
+  }
+  return 'Something went wrong. Please try again.';
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/LOCALSTORAGEHELPERS.TS CODE IS BELOW
+/**
+ * Loads data from localStorage
+ * @param key The key to load from localStorage
+ * @returns The parsed data or null if not found
+ */
+export function loadFromLocalStorage<T>(key: string): T | null {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.error(`Error loading from localStorage (${key}):`, error);
+    return null;
+  }
+}
+
+/**
+ * Saves data to localStorage
+ * @param key The key to save to localStorage
+ * @param data The data to save
+ * @returns true if successful, false otherwise
+ */
+export function saveToLocalStorage<T>(key: string, data: T): boolean {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (error) {
+    console.error(`Error saving to localStorage (${key}):`, error);
+    return false;
+  }
+}
+
+/**
+ * Removes data from localStorage
+ * @param key The key to remove from localStorage
+ * @returns true if successful, false otherwise
+ */
+export function removeFromLocalStorage(key: string): boolean {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    console.error(`Error removing from localStorage (${key}):`, error);
+    return false;
+  }
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/NUMBERHELPERS.TS CODE IS BELOW
+/**
+ * Clamps a number between a minimum and maximum value
+ * @param value The value to clamp
+ * @param min The minimum value
+ * @param max The maximum value
+ * @returns The clamped value
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+/**
+ * Formats a number with a specific number of decimal places
+ * @param value The value to format
+ * @param decimals The number of decimal places
+ * @returns The formatted number
+ */
+export function formatNumber(value: number, decimals: number = 0): string {
+  return value.toFixed(decimals);
+}
+
+/**
+ * Formats a duration in minutes to a human-readable string
+ * @param minutes The duration in minutes
+ * @returns The formatted duration string
+ */
+export function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours === 0) {
+    return `${minutes} min`;
+  }
+
+  if (remainingMinutes === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr ${remainingMinutes} min`;
+}
+
+/**
+ * Calculates the percentage of a value between a min and max
+ * @param value The current value
+ * @param min The minimum value
+ * @param max The maximum value
+ * @returns The percentage (0-100)
+ */
+export function calculatePercentage(value: number, min: number, max: number): number {
+  if (min === max) return 0;
+  const percentage = ((value - min) / (max - min)) * 100;
+  return clamp(percentage, 0, 100);
+}
+
+/**
+ * Rounds a number to the nearest step
+ * @param value The value to round
+ * @param step The step size
+ * @returns The rounded value
+ */
+export function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step;
+}
+
+/**
+ * Formats a number as a percentage string
+ * @param value The value to format
+ * @param decimals The number of decimal places
+ * @returns The formatted percentage string
+ */
+export function formatPercentage(value: number, decimals: number = 0): string {
+  return `${formatNumber(value, decimals)}%`;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/SIGMOIDAL.TS CODE IS BELOW
+import type { SigmoidParams } from '$lib/types';
+
+/**
+ * Calculates the target duration for a given day using a sigmoid function
+ * @param currentDate The date to calculate the duration for
+ * @param startDate The start date of the challenge
+ * @param params The sigmoid function parameters
+ * @returns The target duration in minutes
+ */
+export function calculateSigmoidal(
+  currentDate: Date,
+  startDate: Date,
+  params: SigmoidParams
+): number {
+  const daysDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const { startMinutes, endMinutes, steepness, midpoint } = params;
+
+  // If before start date, return start minutes
+  if (daysDiff < 0) return startMinutes;
+
+  // If after 90 days, return end minutes
+  if (daysDiff > 90) return endMinutes;
+
+  // Calculate sigmoid value
+  const x = daysDiff - midpoint;
+  const sigmoid = 1 / (1 + Math.exp(-steepness * x));
+
+  // Scale sigmoid to our range
+  const range = endMinutes - startMinutes;
+  const scaledValue = startMinutes + (range * sigmoid);
+
+  return Math.round(scaledValue);
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS.JS CODE IS BELOW
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { cubicOut } from "svelte/easing";
+
+export function cn(...inputs) {
+	return twMerge(clsx(inputs));
+}
+
+export const flyAndScale = (
+	node,
+	params = { y: -8, x: 0, start: 0.95, duration: 150 }
+) => {
+	const style = getComputedStyle(node);
+	const transform = style.transform === "none" ? "" : style.transform;
+
+	const scaleConversion = (valueA, scaleA, scaleB) => {
+		const [minA, maxA] = scaleA;
+		const [minB, maxB] = scaleB;
+
+		const percentage = (valueA - minA) / (maxA - minA);
+		const valueB = percentage * (maxB - minB) + minB;
+
+		return valueB;
+	};
+
+	const styleToString = (style) => {
+		return Object.keys(style).reduce((str, key) => {
+			if (style[key] === undefined) return str;
+			return str + `${key}:${style[key]};`;
+		}, "");
+	};
+
+	return {
+		duration: params.duration ?? 200,
+		delay: 0,
+		css: (t) => {
+			const y = scaleConversion(t, [0, 1], [params.y ?? 5, 0]);
+			const x = scaleConversion(t, [0, 1], [params.x ?? 0, 0]);
+			const scale = scaleConversion(t, [0, 1], [params.start ?? 0.95, 1]);
+
+			return styleToString({
+				transform: `${transform} translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+				opacity: t
+			});
+		},
+		easing: cubicOut
+	};
+};
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS.TS CODE IS BELOW
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/MAIN.JS CODE IS BELOW
+import './app.postcss';
+import App from './App.svelte';
+import { mount } from 'svelte';
+
+const app = mount(App, {
+  target: document.getElementById('app'),
+});
+
+export default app;
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/ROUTES/+LAYOUT.SVELTE CODE IS BELOW
+<script lang="ts">
+  import '../app.postcss';
+  import { theme } from '$lib/stores/themeStore';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    // Check system preference if no theme is saved
+    if (!localStorage.getItem('theme')) {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      theme.set(systemPrefersDark ? 'dark' : 'light');
+    }
+  });
+</script>
+
+<div class="min-h-screen bg-background text-foreground antialiased">
+  <slot />
+</div> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/ROUTES/+PAGE.SVELTE CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/VITE-ENV.D.TS CODE IS BELOW
+/// <reference types="svelte" />
+/// <reference types="vite/client" />
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SUPABASE-INSTRUCTIONS.MD CODE IS BELOW
+System (to LLM): You are an experienced Svelte and JavaScript developer with in-depth knowledge of Vite, Supabase, and frontend integration best practices. You have expertise in refactoring existing codebases to incorporate database and authentication functionalities from Supabase, while preserving or improving the project’s current structure and features.
+
+User (to LLM):
+I have an existing Svelte + Vite project that I’d like to integrate with Supabase for authentication, data persistence, and real-time database functionalities. I’d like to:
+
+Project Overview:
+Currently, the app runs locally as a static front-end.
+The app uses localStorage to persist user preferences and workout logs for a 90-day workout challenge.
+The project has components for displaying a workout schedule, logging workouts, showing a sigmoidal curve of workout durations, and providing analytics on completed workouts.
+Integration Goals:
+Replace or supplement localStorage-based persistence with a Supabase Postgres database.
+Implement user authentication (email/password and possibly OAuth).
+Store user-specific workout data and preferences in Supabase tables.
+When a user logs in, load their workout data from the database and keep it updated in real-time.
+Use Row Level Security (RLS) in Supabase to ensure users can only access their own data.
+Handle logout by clearing user-specific data from stores.
+Changes Needed:
+Add the @supabase/supabase-js dependency and initialize the Supabase client.
+Create a simple auth flow: a login form and logic to handle sign-up and sign-in.
+Create database tables in Supabase (e.g., users, workouts, preferences) and integrate them into the Svelte app.
+Add logic to load the user’s data on login and store it in Svelte stores.
+Update functions that currently read/write localStorage to instead interact with Supabase (or use localStorage as a secondary cache).
+Show code examples or step-by-step instructions for:
+Initializing Supabase.
+Calling Supabase auth methods.
+Querying and mutating data from the database.
+Managing auth state in Svelte stores.
+Applying RLS policies in Supabase for security.
+Project Structure:
+Retain existing components and structure as much as possible.
+Implement new Svelte stores for Supabase session/user state.
+Modify data flow from components (e.g., the WorkoutLog or AnalyticsPanel) to use database queries rather than local data.
+Use derived stores for analytics that recompute when workout data changes.
+Additional Guidance:
+Provide best practices for handling auth state changes (e.g., using supabase.auth.onAuthStateChange).
+Show how to handle optimistic UI updates or loading states while data is fetched from Supabase.
+Suggest testing strategies for the new auth and data layers.
+Please provide:
+
+A step-by-step approach to refactor the code.
+Example code snippets for key integration points (e.g., initializing Supabase, logging in, querying workouts).
+Instructions for setting up the database schema and applying RLS policies.
+Guidance on how to gracefully handle user sessions, logging out, and cleaning up user data in the UI.
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SVELTE.CONFIG.JS CODE IS BELOW
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+/** @type {import('@sveltejs/vite-plugin-svelte').SvelteConfig} */
+export default {
+  // Let Vite handle TypeScript + PostCSS + etc. for .svelte
+  preprocess: vitePreprocess(),
+
+  compilerOptions: {
+    dev: true,
+    runes: true,
+    compatibility: {
+      componentApi: 5
+    }
+  }
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/TAILWIND.CONFIG.JS CODE IS BELOW
+import { fontFamily } from "tailwindcss/defaultTheme";
+
+/** @type {import('tailwindcss').Config} */
+const config = {
+	darkMode: ["class"],
+	content: ["./src/**/*.{html,js,svelte,ts}"],
+	safelist: ["dark"],
+	theme: {
+		container: {
+			center: true,
+			padding: "2rem",
+			screens: {
+				"2xl": "1400px"
+			}
+		},
+		extend: {
+			fontFamily: {
+				sans: ["Inter var", "Inter", ...fontFamily.sans]
+			},
+			colors: {
+				border: "hsl(var(--border) / <alpha-value>)",
+				input: "hsl(var(--input) / <alpha-value>)",
+				ring: "hsl(var(--ring) / <alpha-value>)",
+				background: "hsl(var(--background) / <alpha-value>)",
+				foreground: "hsl(var(--foreground) / <alpha-value>)",
+				primary: {
+					DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+					foreground: "hsl(var(--primary-foreground) / <alpha-value>)"
+				},
+				secondary: {
+					DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+					foreground: "hsl(var(--secondary-foreground) / <alpha-value>)"
+				},
+				destructive: {
+					DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+					foreground: "hsl(var(--destructive-foreground) / <alpha-value>)"
+				},
+				muted: {
+					DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+					foreground: "hsl(var(--muted-foreground) / <alpha-value>)"
+				},
+				accent: {
+					DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+					foreground: "hsl(var(--accent-foreground) / <alpha-value>)"
+				},
+				popover: {
+					DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+					foreground: "hsl(var(--popover-foreground) / <alpha-value>)"
+				},
+				card: {
+					DEFAULT: "hsl(var(--card) / <alpha-value>)",
+					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
+				}
+			},
+			borderRadius: {
+				lg: "var(--radius)",
+				md: "calc(var(--radius) - 2px)",
+				sm: "calc(var(--radius) - 4px)"
+			}
+		}
+	},
+	plugins: [require("tailwindcss-animate")]
+};
+
+export default config;
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/TSCONFIG.JSON CODE IS BELOW
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"]
+    },
+    "types": ["svelte", "vite/client"]
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/TSCONFIG.NODE.JSON CODE IS BELOW
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true
+  },
+  "include": ["vite.config.ts"]
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/VERCEL.JSON CODE IS BELOW
+{
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/VITE.CONFIG.JS CODE IS BELOW
+import { defineConfig } from 'vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import path from 'path'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [svelte()],
+  base: './',
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  },
+  resolve: {
+    alias: {
+      $lib: path.resolve('./src/lib')
+    }
+  },
+  css: {
+    postcss: './postcss.config.js'
+  }
+})
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/VITE.CONFIG.TS CODE IS BELOW
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [
+    svelte({
+      compilerOptions: {
+        runes: true,
+        compatibility: {
+          componentApi: 5
+        }
+      }
+    })
+  ],
+  resolve: {
+    alias: {
+      $lib: path.resolve('./src/lib')
+    },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.svelte']
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  },
+  optimizeDeps: {
+    exclude: ['@supabase/supabase-js']
+  }
+}); 

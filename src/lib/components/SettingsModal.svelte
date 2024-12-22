@@ -1,10 +1,20 @@
 <!-- Modal container -->
-<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" on:click|self={() => dispatch('close')}>
+<div 
+  class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" 
+  on:click|self={() => dispatch('close')}
+  on:keydown={(e) => e.key === 'Escape' && dispatch('close')}
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="settings-modal-title"
+>
   <div class="min-h-[calc(100vh-2rem)] flex items-center justify-center">
-    <div class="w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border">
+    <div 
+      class="w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border"
+      role="document"
+    >
       <!-- Header with close button -->
       <div class="flex items-center justify-between p-4 border-b">
-        <h2 class="text-lg font-semibold">Challenge Settings</h2>
+        <h2 id="settings-modal-title" class="text-lg font-semibold">Challenge Settings</h2>
         <Button variant="ghost" size="icon" on:click={() => dispatch('close')}>
           <X class="h-4 w-4" />
           <span class="sr-only">Close</span>

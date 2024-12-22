@@ -147,13 +147,21 @@
 
   <!-- Modals -->
   {#if showWorkoutModal}
-    <div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click={closeModal}>
+    <div 
+      class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" 
+      on:click={closeModal}
+      on:keydown={handleKeydown}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="workout-modal-title"
+    >
       <div 
         class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-xl"
         on:click|stopPropagation
+        role="document"
       >
         <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-          <h2 class="font-semibold leading-none tracking-tight">
+          <h2 id="workout-modal-title" class="font-semibold leading-none tracking-tight">
             {editMode ? 'Edit Workout' : 'Log Workout'}
           </h2>
         </div>

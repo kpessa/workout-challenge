@@ -1,12 +1,13 @@
-<script>
+<script lang="ts">
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
   import { calculateSigmoidal } from '../utils/sigmoidal';
+  import type { CalendarWorkout } from '$lib/types';
   
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
   let showWorkoutForm = false;
-  let selectedDay = null;
+  let selectedDay: CalendarWorkout | null = null;
   let workoutDuration = 30;
 
   // Filter workouts for current month
@@ -19,7 +20,7 @@
   $: workoutDays = monthlyWorkouts.map(day => ({
     ...day,
     targetDuration: calculateSigmoidal(day.day, $userPreferences.sigmoidParams)
-  }));
+  })) as CalendarWorkout[];
 
   function previousMonth() {
     if (currentMonth === 0) {
@@ -82,9 +83,11 @@
       <div 
         class="workout-day" 
         on:click={() => onWorkoutClick(day.date)}
+        on:keydown={(e) => e.key === 'Enter' && onWorkoutClick(day.date)}
         role="button"
         tabindex="0"
         class:completed={day.completed}
+        aria-label={`Workout for ${formatDate(day.date)}`}
       >
         <label class="checkbox-label">
           <input
@@ -92,7 +95,7 @@
             checked={day.completed}
             on:click|preventDefault={() => handleCheckboxClick(day)}
           />
-          <span class="checkmark"></span>
+          <span class="checkmark" aria-hidden="true"></span>
           <div class="day-info">
             <span class="date">{formatDate(day.date)}</span>
             <span class="target">Target: {Math.round(day.targetDuration)}min</span>
