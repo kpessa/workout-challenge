@@ -43,6 +43,7 @@ function createScheduleStore() {
                 id: payload.new.id,
                 date: payload.new.date,
                 duration: payload.new.duration,
+                workout_type_id: payload.new.workout_type_id,
                 created_at: payload.new.created_at,
                 user_id: payload.new.user_id
               }]);
@@ -70,7 +71,10 @@ function createScheduleStore() {
 
         const { data, error } = await supabase
           .from('workouts')
-          .select('*')
+          .select(`
+            *,
+            workout_type:workout_types(*)
+          `)
           .eq('user_id', user.id)
           .order('date', { ascending: true });
 
@@ -85,7 +89,7 @@ function createScheduleStore() {
         set([]);
       }
     },
-    addWorkout: async (date: string, duration: number) => {
+    addWorkout: async (date: string, duration: number, workoutTypeId: string) => {
       try {
         validateWorkout(date, duration);
         
@@ -97,7 +101,14 @@ function createScheduleStore() {
 
         const { data, error } = await supabase
           .from('workouts')
-          .insert([{ date, duration, user_id: user.id }])
+          .insert([
+            { 
+              date, 
+              duration,
+              workout_type_id: workoutTypeId,
+              user_id: user.id 
+            }
+          ])
           .select()
           .single();
 
@@ -112,7 +123,7 @@ function createScheduleStore() {
         return null;
       }
     },
-    updateWorkout: async (id: string, date: string, duration: number) => {
+    updateWorkout: async (id: string, date: string, duration: number, workoutTypeId: string) => {
       try {
         validateWorkout(date, duration);
         
@@ -124,9 +135,12 @@ function createScheduleStore() {
 
         const { data, error } = await supabase
           .from('workouts')
-          .update({ date, duration })
+          .update({ 
+            date, 
+            duration,
+            workout_type_id: workoutTypeId 
+          })
           .eq('id', id)
-          .eq('user_id', user.id)
           .select()
           .single();
 

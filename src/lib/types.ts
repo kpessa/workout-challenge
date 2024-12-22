@@ -1,7 +1,18 @@
+export interface WorkoutType {
+  id: string;
+  name: string;
+  color: string;
+  user_id: string;
+  created_at: string;
+}
+
 export interface Workout {
   id: string;
   date: string;
   duration: number;
+  workout_type_id: string;
+  workout_type?: WorkoutType;
+  user_id: string;
   created_at: string;
 }
 
@@ -46,11 +57,4 @@ export interface SigmoidParams {
   endMinutes: number;
   steepness: number;
   midpoint: number;
-}
-
-export interface WorkoutType {
-  id: string;
-  name: string;
-  created_at: string;
-  user_id: string;
 } 

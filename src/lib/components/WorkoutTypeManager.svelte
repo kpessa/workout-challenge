@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
-  import { Input } from "$lib/components/UI/input";
-  import { Label } from "$lib/components/UI/label";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import { workoutTypes } from "$lib/stores/workoutTypeStore";
   import type { WorkoutType } from "$lib/types";
   import { onMount } from "svelte";
+  import { X } from 'lucide-svelte';
+  import * as Dialog from "$lib/components/ui/dialog";
 
   let name = "";
   let color = "#000000";
@@ -43,8 +45,15 @@
   }
 </script>
 
-<div class="space-y-6">
-  <form class="space-y-4" on:submit|preventDefault={handleSubmit}>
+<Dialog.Header>
+  <Dialog.Title>Manage Workout Types</Dialog.Title>
+  <Dialog.Description>
+    Create and manage your workout types.
+  </Dialog.Description>
+</Dialog.Header>
+
+<form class="space-y-4 py-4" on:submit|preventDefault={handleSubmit}>
+  <div class="grid gap-4">
     <div class="grid gap-2">
       <Label for="name">Name</Label>
       <Input 
@@ -53,60 +62,67 @@
         bind:value={name}
         placeholder="e.g., Running, Cycling, etc."
         required
-        class="w-full"
       />
     </div>
 
     <div class="grid gap-2">
       <Label for="color">Color</Label>
-      <Input 
-        type="color" 
-        id="color"
-        bind:value={color}
-        class="h-10 w-full"
-      />
-    </div>
-
-    <div class="flex justify-end">
-      <Button type="submit">
-        {editMode ? 'Update' : 'Add'} Workout Type
-      </Button>
-    </div>
-  </form>
-
-  {#if types.length > 0}
-    <div class="space-y-4">
-      <h3 class="font-medium text-sm text-foreground">Workout Types</h3>
-      <div class="border rounded-lg divide-y">
-        {#each types as type}
-          <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
-            <div class="flex items-center space-x-3">
-              <div 
-                class="w-4 h-4 rounded-full" 
-                style="background-color: {type.color};"
-              />
-              <p class="text-sm font-medium">{type.name}</p>
-            </div>
-            <div class="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                on:click={() => handleEdit(type)}
-              >
-                Edit
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                class="text-destructive hover:text-destructive"
-                on:click={() => handleDelete(type.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        {/each}
+      <div class="flex gap-2">
+        <Input 
+          type="color" 
+          id="color"
+          bind:value={color}
+          class="h-10 w-20 p-1"
+        />
+        <Input 
+          type="text" 
+          bind:value={color}
+          placeholder="#000000"
+          class="flex-1"
+        />
       </div>
     </div>
-  {/if}
-</div> 
+  </div>
+
+  <Dialog.Footer>
+    <Button type="submit" class="w-full">
+      {editMode ? 'Update' : 'Add'} Workout Type
+    </Button>
+  </Dialog.Footer>
+</form>
+
+{#if types.length > 0}
+  <div class="space-y-4">
+    <h3 class="text-sm font-medium">Workout Types</h3>
+    <div class="rounded-md border">
+      {#each types as type}
+        <div class="flex items-center justify-between p-4 border-b last:border-0">
+          <div class="flex items-center gap-3">
+            <div 
+              class="w-4 h-4 rounded-full" 
+              style="background-color: {type.color};"
+            />
+            <span class="text-sm font-medium">{type.name}</span>
+          </div>
+          <div class="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              on:click={() => handleEdit(type)}
+            >
+              Edit
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              class="text-destructive hover:text-destructive"
+              on:click={() => handleDelete(type.id)}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  </div>
+{/if} 
