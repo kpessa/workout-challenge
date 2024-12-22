@@ -1,3 +1,331 @@
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/README.MD CODE IS BELOW
+# Svelte + Vite
+
+This template should help get you started developing with Svelte in Vite.
+
+## Recommended IDE Setup
+
+[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+
+## Need an official Svelte framework?
+
+Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+
+## Technical considerations
+
+**Why use this over SvelteKit?**
+
+- It brings its own routing solution which might not be preferable for some users.
+- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+
+This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+
+Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+
+**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+
+Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+
+**Why include `.vscode/extensions.json`?**
+
+Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+
+**Why enable `checkJs` in the JS template?**
+
+It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+
+**Why is HMR not preserving my local component state?**
+
+HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+
+If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+
+```js
+// store.js
+// An extremely simple external store
+import { writable } from 'svelte/store'
+export default writable(0)
+```
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/COMPONENTS.JSON CODE IS BELOW
+{
+	"$schema": "https://shadcn-svelte.com/schema.json",
+	"style": "default",
+	"tailwind": {
+		"config": "tailwind.config.js",
+		"css": "src/app.css",
+		"baseColor": "slate"
+	},
+	"aliases": {
+		"components": "$lib/components",
+		"utils": "$lib/utils"
+	},
+	"typescript": false
+}
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/INDEX.HTML CODE IS BELOW
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="90-Day Workout Challenge - Track your fitness journey with a progressive workout schedule" />
+    <title>90-Day Workout Challenge</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/INSTRUCTIONS.MD CODE IS BELOW
+# Workout Challenge Application Requirements
+
+## Setup & Frameworks
+
+- Use Svelte 5 + Vite as the build setup
+- Use JavaScript (no TypeScript)
+- Use shadcn-svelte for UI components and styling
+- Use Supabase for backend and authentication
+- Deploy as a static site build
+
+## Core Features
+
+### Authentication & User Management
+- Email/password authentication via Supabase
+- User profile management
+- Secure data access with Row Level Security (RLS)
+- Handle login, logout, and session persistence
+
+### Workout Challenge Timeline
+- 90-day (3-month) workout challenge timeline
+- Sigmoidal progression curve: 15 minutes (Day 1) to 90 minutes (Day 90)
+- Adjustable parameters:
+  - Start time
+  - End time
+  - Steepness
+  - Midpoint
+- User-configurable workout days per week (e.g., 3 or 4)
+- Visual states:
+  - Projected workouts: low-alpha or dotted outlines
+  - Completed workouts: fully opaque
+- Multiple workout sessions per day allowed
+
+### Analytics
+- Total workouts completed
+- Average workouts per week
+- Average total workout time per week
+- Real-time updates when data changes
+
+## Data Persistence
+- Primary storage in Supabase database:
+  - User preferences
+  - Completed workouts
+  - Curve parameters
+- Optional localStorage for offline functionality
+- Real-time sync with Supabase
+
+## Calendar Integration
+- Configurable start date
+- Calendar/timeline view for 90 days
+- Sync with database on changes
+
+## Implementation Details
+
+### Database Schema
+- users (managed by Supabase Auth)
+- user_preferences
+  - days_per_week
+  - start_date
+  - sigmoid_params (JSON)
+- workouts
+  - user_id (with RLS)
+  - date
+  - duration
+  - created_at
+
+### Component Structure
+- Modular components for each major feature
+- Responsive design principles
+- shadcn-svelte integration for UI elements
+- Auth components for user management
+
+### Data Flow
+- Centralized state management using Svelte stores
+- Integration with Supabase client
+- Real-time analytics updates
+- Persistent storage synchronization
+- Error handling for network issues
+
+### Security
+- Row Level Security (RLS) policies
+- Secure authentication flow
+- Protected API endpoints
+- Data validation
+
+### Testing Strategy
+- Unit tests for sigmoidal calculations
+- Integration tests for workout logging
+- Storage persistence verification
+- Authentication flow testing
+- Database operation testing
+
+### Error Handling
+- Graceful degradation when offline
+- User-friendly error messages
+- Loading states during data fetches
+- Retry mechanisms for failed operations
+
+### Deployment
+- Environment variable management
+- Build optimization
+- Supabase project configuration
+- Static site hosting (Vercel/Netlify)
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/JSCONFIG.JSON CODE IS BELOW
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    /**
+     * svelte-preprocess cannot figure out whether you have
+     * a value or a type, so tell TypeScript to enforce using
+     * `import type` instead of `import` for Types.
+     */
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    /**
+     * To have warnings / errors of the Svelte compiler at the
+     * correct position, enable source maps by default.
+     */
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    /**
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable this if you'd like to use dynamic types.
+     */
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"]
+    }
+  },
+  /**
+   * Use global.d.ts instead of compilerOptions.types
+   * to avoid limiting type declarations.
+   */
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte"]
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/MERGE_REPO.JS CODE IS BELOW
+import { readdir, stat, mkdir, access } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
+
+async function selectFiles(currentDir, excludePatterns) {
+  const selectedFiles = [];
+
+  const files = await readdir(currentDir);
+  for (const file of files) {
+    // Skip files/directories that match exclude patterns
+    if (excludePatterns.some(pattern => {
+      if (pattern instanceof RegExp) {
+        return pattern.test(file);
+      }
+      return file === pattern || file.startsWith(pattern);
+    })) {
+      continue;
+    }
+
+    const filePath = join(currentDir, file);
+    const stats = await stat(filePath);
+
+    if (stats.isDirectory()) {
+      const subFiles = await selectFiles(filePath, excludePatterns);
+      selectedFiles.push(...subFiles);
+    } else {
+      selectedFiles.push(filePath);
+    }
+  }
+
+  return selectedFiles;
+}
+
+async function mergeFiles(selectedFiles, outputFilePath) {
+  let mergedContent = '';
+
+  for (const filePath of selectedFiles) {
+    const fileContent = await readFile(filePath, 'utf-8');
+    const sectionHeader = `\n${filePath.toUpperCase()} CODE IS BELOW\n`;
+    mergedContent += sectionHeader + fileContent + '\n';
+  }
+
+  await writeFile(outputFilePath, mergedContent);
+}
+
+async function createOutputDirectory(outputDirPath) {
+  try {
+    await access(outputDirPath);
+  } catch (error) {
+    await mkdir(outputDirPath);
+  }
+}
+
+function getTimestampedFileName() {
+  const timestamp = new Date().toISOString().replace(/:/g, '-');
+  return `merged-repo-${timestamp}.txt`;
+}
+
+async function main() {
+  try {
+    const currentDir = process.cwd();
+
+    console.log('Automatically selecting and merging files...');
+    const excludePatterns = [
+      'node_modules',
+      '.git',
+      '.env',
+      '.DS_Store',
+      'dist',
+      'build',
+      'coverage',
+      /^\./,  // Hidden files
+      /\.log$/,
+      /\.map$/,
+      'llm_text_transcripts',
+      /\.(jpg|jpeg|png|gif|ico|svg|mp4|mov|avi|mp3|wav|pdf)$/i
+    ];
+    
+    const selectedFiles = await selectFiles(currentDir, excludePatterns);
+    console.log(`Found ${selectedFiles.length} files to merge.`);
+
+    const outputDirName = 'llm_text_transcripts';
+    const outputDirPath = join(currentDir, outputDirName);
+    await createOutputDirectory(outputDirPath);
+
+    const outputFileName = getTimestampedFileName();
+    const outputFilePath = join(outputDirPath, outputFileName);
+    await mergeFiles(selectedFiles, outputFilePath);
+
+    console.log(`Merged repository saved to: ${outputFilePath}`);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+main();
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PACKAGE-LOCK.JSON CODE IS BELOW
 {
   "name": "workout-challenge",
   "version": "0.0.0",
@@ -3781,3 +4109,3836 @@
     }
   }
 }
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PACKAGE.JSON CODE IS BELOW
+{
+  "name": "workout-challenge",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.2",
+    "autoprefixer": "^10.4.20",
+    "bits-ui": "^0.22.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-svelte": "^0.469.0",
+    "postcss": "^8.4.49",
+    "svelte": "^5.14.3",
+    "tailwind-merge": "^2.5.5",
+    "tailwind-variants": "^0.3.0",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
+    "vite": "^6.0.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
+    "fs": "^0.0.1-security",
+    "shadcn-svelte": "^0.14.0"
+  }
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/POSTCSS.CONFIG.JS CODE IS BELOW
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/PROJECT-HIERARCHY.MD CODE IS BELOW
+# Project Structure
+
+project-root/
+  ├─ src/
+  │   ├─ lib/
+  │   │   ├─ components/
+  │   │   │   ├─ Auth.svelte             // Authentication component for login/signup
+  │   │   │   ├─ Calendar.svelte         // Calendar or timeline component for the 90 days
+  │   │   │   ├─ ControlsPanel.svelte    // UI for adjusting sigmoidal parameters & schedule
+  │   │   │   ├─ ProgressChart.svelte    // Chart to display the sigmoidal progression
+  │   │   │   ├─ WorkoutLog.svelte       // Component to log workouts (multiple per day)
+  │   │   │   ├─ AnalyticsPanel.svelte   // Display total workouts, averages, etc.
+  │   │   │   ├─ Layout.svelte           // Main layout wrapper (header, footer, etc.)
+  │   │   │   └─ UI/                     // Folder for any custom wrappers around shadcn-svelte components
+  │   │   ├─ stores/
+  │   │   │   ├─ authStore.js            // Svelte store for authentication state
+  │   │   │   ├─ userPreferencesStore.js // Svelte store for user preferences (days/week, start date)
+  │   │   │   ├─ scheduleStore.js        // Store for projected and completed workouts
+  │   │   │   ├─ analyticsStore.js       // Derived store for computed values (averages, totals)
+  │   │   │   └─ curveParamsStore.js     // Store for sigmoidal curve parameters
+  │   │   ├─ utils/
+  │   │   │   ├─ sigmoidal.js            // Functions to compute sigmoidal progression
+  │   │   │   ├─ localStorageHelpers.js  // Functions for localStorage get/set
+  │   │   │   └─ dateUtils.js            // Helper functions for date math and formatting
+  │   │   ├─ styles/
+  │   │   │   └─ global.css              // Global stylesheet (if needed)
+  │   │   ├─ shadcn/                     // shadcn-svelte components (if you choose to customize)
+  │   │   ├─ supabase.js                 // Supabase client initialization
+  │   │   └─ data/
+  │   │       └─ defaultParams.json      // Default curve parameters and other default settings
+  │   ├─ routes/
+  │   │   └─ +page.svelte               // Main page that imports components and orchestrates the UI
+  │   ├─ app.d.ts                       // (Optional) If you prefer no TS at all, you can remove this
+  │   └─ main.js                        // Main entry point initializing the app
+  ├─ public/
+  │   └─ favicon.png
+  ├─ .env                               // Environment variables for Supabase configuration
+  ├─ svelte.config.js
+  ├─ vite.config.js
+  ├─ package.json
+  ├─ postcss.config.js
+  ├─ tailwind.config.js (if you use Tailwind with shadcn-svelte)
+  └─ README.md
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SHELL.SH CODE IS BELOW
+#!/bin/bash
+
+# Navigate to the project root
+cd project-root
+
+# Create directories
+mkdir -p src/lib/components/UI
+mkdir -p src/lib/stores
+mkdir -p src/lib/utils
+mkdir -p src/lib/styles
+mkdir -p src/lib/shadcn
+mkdir -p src/lib/data
+mkdir -p src/routes
+
+# Create placeholder files if they don't exist
+touch src/lib/components/ProgressChart.svelte
+touch src/lib/components/WorkoutLog.svelte
+touch src/lib/components/Layout.svelte
+touch src/lib/stores/scheduleStore.js
+touch src/lib/stores/analyticsStore.js
+touch src/lib/stores/curveParamsStore.js
+touch src/lib/utils/dateUtils.js
+touch src/lib/styles/global.css
+touch src/lib/data/defaultParams.json
+touch src/routes/+page.svelte
+touch src/app.d.ts
+touch src/main.js
+
+# Notify user
+echo "Project hierarchy has been set up!"
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.SVELTE CODE IS BELOW
+<script>
+  import Layout from './lib/components/Layout.svelte';
+</script>
+
+<Layout />
+
+<style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.CSS CODE IS BELOW
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.D.TS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/APP.POSTCSS CODE IS BELOW
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COUNTER.SVELTE CODE IS BELOW
+<script>
+  let count = $state(0)
+  const increment = () => {
+    count += 1
+  }
+</script>
+
+<button onclick={increment}>
+  count is {count}
+</button>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/ANALYTICSPANEL.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
+  import type { Workout } from '$lib/types';
+  import { onMount } from 'svelte';
+
+  $: workouts = Array.isArray($schedule) ? $schedule : [];
+  
+  $: {
+    console.log('Schedule store value:', $schedule);
+    console.log('Workouts array:', workouts);
+  }
+
+  $: totalWorkouts = workouts.length;
+  $: totalMinutes = workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0);
+  $: avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
+  
+  // Calculate day streak
+  $: dayStreak = calculateDayStreak(workouts);
+
+  function calculateDayStreak(workouts: Workout[]): number {
+    if (!workouts?.length) return 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get unique dates (in case of multiple workouts per day)
+    const uniqueDates = [...new Set(workouts.map(w => {
+      const date = new Date(w?.date ?? new Date());
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }))].sort((a, b) => b - a); // Sort in descending order
+
+    console.log('Unique workout dates:', uniqueDates.map(ts => new Date(ts).toISOString()));
+
+    let streak = 0;
+    let currentDate = today.getTime();
+
+    // Check if we have a workout today
+    if (uniqueDates[0] === currentDate) {
+      streak = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const expectedDate = currentDate - (86400000 * i);
+        if (uniqueDates[i] === expectedDate) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    } else {
+      // Check if we have a streak ending yesterday
+      const yesterday = today.getTime() - 86400000;
+      if (uniqueDates[0] === yesterday) {
+        streak = 1;
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const expectedDate = yesterday - (86400000 * (i - 1));
+          if (uniqueDates[i] === expectedDate) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('Calculated streak:', streak);
+    return streak;
+  }
+
+  onMount(() => {
+    console.log('AnalyticsPanel mounted, initializing schedule');
+    schedule.initialize();
+  });
+</script>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalWorkouts}</div>
+    <div class="text-sm text-muted-foreground">Total Workouts</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalMinutes}</div>
+    <div class="text-sm text-muted-foreground">Total Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{avgMinutes}</div>
+    <div class="text-sm text-muted-foreground">Avg Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{dayStreak}</div>
+    <div class="text-sm text-muted-foreground">Day Streak</div>
+  </div>
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/AUTH.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { authStore } from '$lib/stores/authStore';
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import type { AuthError } from '@supabase/supabase-js';
+
+  let email = '';
+  let password = '';
+  let isSignUp = false;
+  let error: AuthError | null = null;
+  let loading = false;
+
+  async function handleSubmit() {
+    if (!email || !password) return;
+
+    loading = true;
+    error = null;
+
+    try {
+      if (isSignUp) {
+        error = await authStore.signUp(email, password);
+      } else {
+        error = await authStore.signIn(email, password);
+      }
+    } catch (e) {
+      console.error('Auth error:', e);
+      error = e as AuthError;
+    } finally {
+      loading = false;
+    }
+  }
+
+  function toggleMode() {
+    isSignUp = !isSignUp;
+    error = null;
+  }
+</script>
+
+<div class="flex min-h-[calc(100vh-14rem)] items-center justify-center">
+  <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+    <div class="flex flex-col space-y-2 text-center">
+      <h1 class="text-2xl font-semibold tracking-tight">
+        {isSignUp ? 'Create an account' : 'Welcome back'}
+      </h1>
+      <p class="text-sm text-muted-foreground">
+        {isSignUp 
+          ? 'Enter your email below to create your account' 
+          : 'Enter your email below to sign in to your account'}
+      </p>
+    </div>
+
+    <div class="grid gap-6">
+      <form on:submit|preventDefault={handleSubmit} class="grid gap-4">
+        <div class="grid gap-2">
+          <div class="grid gap-1">
+            <label for="email" class="sr-only">Email</label>
+            <Input
+              id="email"
+              placeholder="name@example.com"
+              type="email"
+              bind:value={email}
+              disabled={loading}
+              required
+            />
+          </div>
+          <div class="grid gap-1">
+            <label for="password" class="sr-only">Password</label>
+            <Input
+              id="password"
+              placeholder="Password"
+              type="password"
+              bind:value={password}
+              disabled={loading}
+              required
+            />
+          </div>
+        </div>
+        {#if error}
+          <div class="text-sm text-destructive">
+            {error.message}
+          </div>
+        {/if}
+        <Button type="submit" disabled={loading}>
+          {#if loading}
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          {:else}
+            {isSignUp ? 'Sign Up' : 'Sign In'}
+          {/if}
+        </Button>
+      </form>
+
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <span class="w-full border-t" />
+        </div>
+        <div class="relative flex justify-center text-xs uppercase">
+          <span class="bg-background px-2 text-muted-foreground">
+            Or
+          </span>
+        </div>
+      </div>
+
+      <Button variant="outline" type="button" on:click={toggleMode}>
+        {isSignUp ? 'Sign In' : 'Create Account'}
+      </Button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px);
+  }
+</style> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/CALENDAR.SVELTE CODE IS BELOW
+<script>
+  import { schedule } from '../stores/scheduleStore';
+  import { userPreferences } from '../stores/userPreferencesStore';
+  import { calculateSigmoidal } from '../utils/sigmoidal';
+  
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+  let showWorkoutForm = false;
+  let selectedDay = null;
+  let workoutDuration = 30;
+
+  // Filter workouts for current month
+  $: monthlyWorkouts = $schedule.filter(day => {
+    const date = new Date(day.date);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  });
+
+  // Calculate target duration for each day
+  $: workoutDays = monthlyWorkouts.map(day => ({
+    ...day,
+    targetDuration: calculateSigmoidal(day.day, $userPreferences.sigmoidParams)
+  }));
+
+  function previousMonth() {
+    if (currentMonth === 0) {
+      currentMonth = 11;
+      currentYear--;
+    } else {
+      currentMonth--;
+    }
+  }
+
+  function nextMonth() {
+    if (currentMonth === 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else {
+      currentMonth++;
+    }
+  }
+
+  function formatDate(date) {
+    return new Date(date).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  function handleCheckboxClick(day) {
+    if (!day.completed) {
+      selectedDay = day;
+      showWorkoutForm = true;
+    }
+  }
+
+  function submitWorkout() {
+    if (selectedDay && workoutDuration > 0) {
+      schedule.logWorkout(new Date(selectedDay.date), workoutDuration);
+      showWorkoutForm = false;
+      selectedDay = null;
+      workoutDuration = 30;
+    }
+  }
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  export let onWorkoutClick = (date) => {};
+</script>
+
+<div class="calendar">
+  <div class="calendar-header">
+    <button class="nav-button" on:click={previousMonth}>&lt;</button>
+    <h2>{monthNames[currentMonth]} {currentYear}</h2>
+    <button class="nav-button" on:click={nextMonth}>&gt;</button>
+  </div>
+
+  <div class="workout-grid">
+    {#each workoutDays as day}
+      <div 
+        class="workout-day" 
+        on:click={() => onWorkoutClick(day.date)}
+        role="button"
+        tabindex="0"
+        class:completed={day.completed}
+      >
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            checked={day.completed}
+            on:click|preventDefault={() => handleCheckboxClick(day)}
+          />
+          <span class="checkmark"></span>
+          <div class="day-info">
+            <span class="date">{formatDate(day.date)}</span>
+            <span class="target">Target: {Math.round(day.targetDuration)}min</span>
+            {#if day.completed}
+              <span class="completed-duration">
+                Completed: {day.workouts.reduce((total, w) => total + w.duration, 0)}min
+              </span>
+            {/if}
+          </div>
+        </label>
+      </div>
+    {/each}
+  </div>
+
+  {#if showWorkoutForm}
+    <div class="workout-form-overlay">
+      <div class="workout-form">
+        <h3>Log Workout for {selectedDay ? formatDate(selectedDay.date) : ''}</h3>
+        <div class="form-group">
+          <label for="duration">Duration (minutes):</label>
+          <input
+            id="duration"
+            type="number"
+            min="1"
+            max="240"
+            bind:value={workoutDuration}
+          />
+        </div>
+        <div class="form-actions">
+          <button class="cancel-button" on:click={() => showWorkoutForm = false}>
+            Cancel
+          </button>
+          <button class="submit-button" on:click={submitWorkout}>
+            Save Workout
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>
+
+<style>
+  .calendar {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+
+  .workout-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .workout-day {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .workout-day.completed {
+    border-color: var(--success-color);
+    background: rgba(76, 175, 80, 0.1);
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    display: none;
+  }
+
+  .checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .workout-day.completed .checkmark {
+    background: var(--success-color);
+    border-color: var(--success-color);
+  }
+
+  .workout-day.completed .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+  }
+
+  .day-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-grow: 1;
+  }
+
+  .date {
+    font-weight: bold;
+  }
+
+  .target {
+    font-size: 0.9em;
+    color: var(--text-muted);
+  }
+
+  .completed-duration {
+    color: var(--success-color);
+    font-size: 0.9em;
+  }
+
+  .workout-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .workout-form {
+    background: var(--bg-color);
+    padding: 2rem;
+    border-radius: 8px;
+    min-width: 300px;
+  }
+
+  .form-group {
+    margin: 1.5rem 0;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+
+  .submit-button {
+    background: var(--success-color);
+    color: white;
+  }
+
+  .cancel-button {
+    background: var(--text-muted);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .calendar {
+      padding: 1rem;
+    }
+
+    .workout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/CONTROLSPANEL.SVELTE CODE IS BELOW
+<script>
+  import { userPreferences } from '../stores/userPreferencesStore';
+  
+  let localParams = $userPreferences.sigmoidParams;
+  let localDaysPerWeek = $userPreferences.daysPerWeek;
+  let localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+
+  function updateParams() {
+    userPreferences.updateSigmoidParams(localParams);
+  }
+
+  function updateDaysPerWeek() {
+    userPreferences.setDaysPerWeek(localDaysPerWeek);
+  }
+
+  function updateStartDate(event) {
+    const date = new Date(event.target.value);
+    if (!isNaN(date.getTime())) {
+      userPreferences.setStartDate(date.toISOString());
+    }
+  }
+
+  function resetToDefaults() {
+    userPreferences.reset();
+    localParams = $userPreferences.sigmoidParams;
+    localDaysPerWeek = $userPreferences.daysPerWeek;
+    localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+  }
+</script>
+
+<div class="controls-panel">
+  <h2>Challenge Settings</h2>
+  
+  <div class="control-section">
+    <h3>Schedule</h3>
+    <div class="control-group">
+      <label>
+        Start Date:
+        <input 
+          type="date" 
+          bind:value={localStartDate}
+          on:change={updateStartDate}
+        />
+      </label>
+    </div>
+    
+    <div class="control-group">
+      <label>
+        Workouts per Week:
+        <input 
+          type="number" 
+          min="1" 
+          max="7" 
+          bind:value={localDaysPerWeek} 
+          on:change={updateDaysPerWeek}
+        />
+      </label>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <h3>Progression Settings</h3>
+    <div class="control-group">
+      <label>
+        Starting Duration (minutes):
+        <input 
+          type="number" 
+          min="1" 
+          max="120" 
+          bind:value={localParams.startMinutes} 
+          on:change={updateParams}
+        />
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Target Duration (minutes):
+        <input 
+          type="number" 
+          min="1" 
+          max="180" 
+          bind:value={localParams.endMinutes} 
+          on:change={updateParams}
+        />
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Progression Steepness:
+        <input 
+          type="range" 
+          min="0.01" 
+          max="0.2" 
+          step="0.01" 
+          bind:value={localParams.steepness} 
+          on:change={updateParams}
+        />
+        <span class="value-display">{localParams.steepness.toFixed(2)}</span>
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        Midpoint (day):
+        <input 
+          type="range" 
+          min="1" 
+          max="90" 
+          bind:value={localParams.midpoint} 
+          on:change={updateParams}
+        />
+        <span class="value-display">Day {localParams.midpoint}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <button class="reset-button" on:click={resetToDefaults}>
+      Reset to Defaults
+    </button>
+  </div>
+</div>
+
+<style>
+  .controls-panel {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .control-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+
+  .control-group {
+    margin: 1rem 0;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--text-muted);
+  }
+
+  input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .value-display {
+    font-size: 0.9em;
+    color: var(--text-muted);
+  }
+
+  .reset-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .reset-button:hover {
+    background: #ff2d00;
+  }
+
+  h2, h3 {
+    margin: 0 0 1rem 0;
+  }
+
+  h3 {
+    color: var(--text-muted);
+    font-size: 1.1em;
+  }
+
+  @media (max-width: 768px) {
+    .controls-panel {
+      padding: 1rem;
+    }
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/LAYOUT.SVELTE CODE IS BELOW
+<script lang="ts">
+  import Calendar from './Calendar.svelte';
+  import ProgressChart from './ProgressChart.svelte';
+  import WorkoutLog from './WorkoutLog.svelte';
+  import AnalyticsPanel from './AnalyticsPanel.svelte';
+  import Auth from './Auth.svelte';
+  import SettingsModal from './SettingsModal.svelte';
+  import { authStore } from '$lib/stores/authStore';
+  import { onMount } from 'svelte';
+  import { schedule } from '$lib/stores/scheduleStore';
+  import { Button } from "$lib/components/UI/button";
+  import type { WorkoutClickEvent, EditWorkoutEvent } from '$lib/types';
+  import ThemeToggle from '$lib/components/UI/theme-toggle.svelte';
+  import { Plus, Settings2, LogOut } from 'lucide-svelte';
+
+  let showWorkoutModal = false;
+  let showSettingsModal = false;
+  let selectedDate: string | null = null;
+  let proposedDuration = 30;
+  let editMode = false;
+  let workoutId: string | null = null;
+
+  function handleWorkoutClick(event: CustomEvent<WorkoutClickEvent>) {
+    selectedDate = event.detail.date;
+    proposedDuration = event.detail.proposedDuration;
+    editMode = false;
+    workoutId = null;
+    showWorkoutModal = true;
+  }
+
+  function handleEditWorkout(event: CustomEvent<EditWorkoutEvent>) {
+    console.log('Editing workout with data:', event.detail);
+    selectedDate = event.detail.date;
+    proposedDuration = event.detail.duration;
+    workoutId = event.detail.id;
+    editMode = true;
+    showWorkoutModal = true;
+  }
+
+  function openWorkoutLog(date: string | null = null) {
+    selectedDate = date;
+    proposedDuration = 30; // Reset to default when manually opening
+    editMode = false;
+    showWorkoutModal = true;
+  }
+
+  function closeModal() {
+    showWorkoutModal = false;
+    selectedDate = null;
+    proposedDuration = 30;
+    editMode = false;
+    workoutId = null;
+  }
+
+  function openSettings() {
+    showSettingsModal = true;
+  }
+
+  function signOut() {
+    authStore.signOut();
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      if (showWorkoutModal) {
+        closeModal();
+      }
+      if (showSettingsModal) {
+        showSettingsModal = false;
+      }
+    }
+  }
+
+  onMount(() => {
+    schedule.initialize();
+  });
+</script>
+
+<svelte:window on:keydown={handleKeydown}/>
+
+<div class="flex min-h-screen flex-col bg-background">
+  <!-- Navbar -->
+  <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div class="container flex h-14 items-center">
+      <div class="flex flex-1 items-center justify-between">
+        <div class="flex items-center gap-6 md:gap-8">
+          <h1 class="text-lg font-semibold tracking-tight">90-Day Challenge</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" on:click={() => openWorkoutLog()}>
+            <Plus class="h-4 w-4" />
+            <span class="sr-only">Add workout</span>
+          </Button>
+          <Button variant="ghost" size="icon" on:click={openSettings}>
+            <Settings2 class="h-4 w-4" />
+            <span class="sr-only">Settings</span>
+          </Button>
+          <Button variant="ghost" size="icon" on:click={signOut}>
+            <LogOut class="h-4 w-4" />
+            <span class="sr-only">Sign out</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 container py-6 md:py-8 gap-6 md:gap-8">
+    {#if $authStore.loading}
+      <div class="flex items-center justify-center h-[calc(100vh-10rem)]">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    {:else if !$authStore.user}
+      <Auth />
+    {:else}
+      <div class="flex flex-col gap-6 md:gap-8">
+        <!-- Progress Chart -->
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6 h-[350px] sm:h-[500px] relative">
+            <ProgressChart 
+              on:workoutClick={handleWorkoutClick}
+              on:editWorkout={handleEditWorkout}
+              on:dateClick={(event) => openWorkoutLog(event.detail.date)}
+            />
+          </div>
+        </div>
+
+        <!-- Analytics Panel -->
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6">
+            <AnalyticsPanel />
+          </div>
+        </div>
+      </div>
+    {/if}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t py-6 md:py-0">
+    <div class="container flex h-14 items-center justify-center">
+      <p class="text-sm text-muted-foreground">
+        Track your progress and stay motivated! 💪
+      </p>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  {#if showWorkoutModal}
+    <div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click={closeModal}>
+      <div 
+        class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-xl"
+        on:click|stopPropagation
+      >
+        <div class="flex flex-col space-y-1.5 text-center sm:text-left">
+          <h2 class="font-semibold leading-none tracking-tight">
+            {editMode ? 'Edit Workout' : 'Log Workout'}
+          </h2>
+        </div>
+        <div class="overflow-y-auto">
+          <WorkoutLog 
+            {selectedDate}
+            {proposedDuration}
+            {editMode}
+            {workoutId}
+            onComplete={closeModal}
+          />
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Settings Modal -->
+  {#if showSettingsModal}
+    <SettingsModal on:close={() => showSettingsModal = false} />
+  {/if}
+</div>
+
+<style>
+  /* Remove any custom styles that might interfere with theming */
+  :global(body) {
+    margin: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/PROGRESSCHART.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import * as d3 from 'd3';
+  import { schedule } from '../stores/scheduleStore';
+  import { userPreferences } from '../stores/userPreferencesStore';
+  import { calculateSigmoidal } from '../utils/sigmoidal';
+  import { Button } from "$lib/components/UI/button";
+  import * as Tabs from "$lib/components/UI/tabs";
+  import { timeFormat } from 'd3-time-format';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
+
+  let chartContainer;
+  let currentPage = 0;
+  let svg;
+  let dailyWorkouts = [];
+  let containerWidth;
+  let containerHeight;
+  
+  // Default to week view on mobile
+  let isMonthView = typeof window !== 'undefined' ? window.innerWidth >= 800 : true;
+  let viewMode = isMonthView ? 'month' : 'week';
+
+  // Chart dimensions
+  $: margin = {
+    top: 20,
+    right: containerWidth < 800 ? 40 : 40,  // Consistent right margin
+    bottom: containerWidth < 800 ? 60 : 70,  // Increased bottom margin for rotated labels on mobile
+    left: containerWidth < 800 ? 45 : 75     // Adjusted left margin for y-axis labels
+  };
+  
+  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
+  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
+
+  $: {
+    // Update viewMode whenever isMonthView changes
+    viewMode = isMonthView ? 'month' : 'week';
+    // Recalculate workout days when viewMode changes
+    if (userPreferencesData && scheduleData) {
+      calculateWorkoutDays();
+    }
+  }
+
+  // Use time scale for x-axis with proper padding
+  function createScales() {
+    if (!width || !height || !dailyWorkouts.length) return null;
+
+    const x = d3.scaleBand()
+      .domain(dailyWorkouts.map(d => new Date(d.date).toDateString()))
+      .range([0, width])
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(dailyWorkouts, d => Math.max(d.total, 100)) || 100])
+      .range([height, 0]);
+
+    return { x, y };
+  }
+
+  // Format date based on view mode and screen size
+  $: formatDate = (date) => {
+    const d = new Date(date);
+    if (containerWidth < 800) {  // Updated breakpoint
+      // Shorter format below 800px
+      return d3.timeFormat('%a')(d);
+    }
+    return d3.timeFormat('%a, %m/%d')(d);
+  };
+
+  function updateDimensions() {
+    if (chartContainer) {
+      const rect = chartContainer.getBoundingClientRect();
+      containerWidth = rect.width;
+      containerHeight = rect.height;
+    }
+  }
+
+  // Update chart dimensions on resize
+  function handleResize() {
+    updateDimensions();
+    if (svg) {
+      const svgElement = d3.select(chartContainer).select('svg');
+      svgElement
+        .attr('width', containerWidth)
+        .attr('height', containerHeight);
+      updateChart();
+    }
+  }
+
+  // Navigation functions
+  function previousPeriod() {
+    if (currentPage > 0) {
+      currentPage--;
+      calculateWorkoutDays();
+    }
+  }
+
+  function nextPeriod() {
+    const maxPages = viewMode === 'month' ? 3 : 12; // 3 months or 12 weeks
+    if (currentPage < maxPages - 1) {
+      currentPage++;
+      calculateWorkoutDays();
+    }
+  }
+
+  function handleViewModeChange(value: string) {
+    console.log('View mode change:', { value, currentMode: viewMode });
+    isMonthView = value === 'month';
+    console.log('Updated isMonthView:', isMonthView);
+    currentPage = 0; // Reset to first page when switching views
+  }
+
+  let scheduleData;
+  let userPreferencesData;
+
+  schedule.subscribe(value => {
+    scheduleData = value;
+    calculateWorkoutDays();
+  });
+
+  userPreferences.subscribe(value => {
+    userPreferencesData = value;
+    calculateWorkoutDays();
+  });
+
+  function calculateWorkoutDays() {
+    if (!userPreferencesData || !scheduleData) return;
+    
+    console.log('Calculating workout days:', { viewMode, currentPage, isMonthView });
+    
+    const startDate = new Date(userPreferencesData.startDate);
+    const daysPerWeek = userPreferencesData.daysPerWeek;
+    
+    // Calculate start and end dates based on view mode
+    const pageStartDate = new Date(startDate);
+    const daysToAdd = viewMode === 'month' ? currentPage * 30 : currentPage * 7;
+    pageStartDate.setDate(pageStartDate.getDate() + daysToAdd);
+    
+    // Always adjust to the nearest Sunday for consistent week boundaries
+    const dayOfWeek = pageStartDate.getDay();
+    pageStartDate.setDate(pageStartDate.getDate() - dayOfWeek);
+    
+    const pageEndDate = new Date(pageStartDate);
+    // Set period length based on view mode
+    const periodLength = viewMode === 'month' ? 29 : 6; // 30 days for month, 7 days for week
+    pageEndDate.setDate(pageEndDate.getDate() + periodLength);
+
+    console.log('Date range:', {
+      start: pageStartDate.toDateString(),
+      end: pageEndDate.toDateString(),
+      periodLength,
+      viewMode
+    });
+
+    // Ensure we include all dates in the range, not just those with workouts
+    const allDates = [];
+    const currentDate = new Date(pageStartDate);
+    
+    while (currentDate <= pageEndDate) {
+      allDates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Group recorded workouts by date
+    const workoutsByDate = scheduleData
+      .filter(workout => {
+        const workoutDate = new Date(workout.date);
+        return workoutDate >= pageStartDate && workoutDate <= pageEndDate;
+      })
+      .reduce((acc, workout) => {
+        const dateStr = new Date(workout.date).toDateString();
+        if (!acc[dateStr]) {
+          acc[dateStr] = [];
+        }
+        acc[dateStr].push({
+          id: workout.id,
+          date: new Date(workout.date),
+          duration: workout.duration,
+          created_at: workout.created_at
+        });
+        return acc;
+      }, {});
+
+    // Create base workout days for all dates in range
+    const workoutDays = allDates.map(date => {
+      const dateStr = date.toDateString();
+      const workouts = workoutsByDate[dateStr] || [];
+      const dayNum = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      
+      return {
+        date,
+        day: dayNum,
+        completed: workouts.length > 0,
+        workouts: workouts.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+        proposed: 0,
+        total: workouts.reduce((sum, w) => sum + w.duration, 0)
+      };
+    });
+
+    // Track which dates already have recorded workouts
+    const recordedDates = new Set(Object.keys(workoutsByDate));
+
+    // Now add proposed workouts
+    let currentWeekWorkouts = 0;
+    let weekStartDate = new Date(pageStartDate);
+
+    workoutDays.forEach(day => {
+      const dayOfWeek = day.date.getDay();
+      
+      // Reset week counter on Sundays
+      if (dayOfWeek === 0) {
+        currentWeekWorkouts = 0;
+        weekStartDate = new Date(day.date);
+      }
+
+      // Count recorded workouts this week
+      if (dayOfWeek === 0 || day.date.toDateString() === pageStartDate.toDateString()) {
+        const weekEnd = new Date(weekStartDate);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        currentWeekWorkouts = Array.from(recordedDates)
+          .filter(dateStr => {
+            const date = new Date(dateStr);
+            return date >= weekStartDate && date <= weekEnd;
+          }).length;
+      }
+
+      // Only propose a workout if conditions are met
+      if (!recordedDates.has(day.date.toDateString()) && 
+          dayOfWeek !== 0 && 
+          currentWeekWorkouts < daysPerWeek) {
+        
+        const targetTime = Math.round(calculateSigmoidal(day.day, userPreferencesData.sigmoidParams));
+        day.proposed = targetTime;
+        day.total = targetTime;
+        currentWeekWorkouts++;
+      }
+    });
+
+    dailyWorkouts = workoutDays;
+    requestAnimationFrame(updateChart);
+  }
+
+  function handleWorkoutClick(workout) {
+    if (workout && workout.proposed > 0) {
+      dispatch('workoutClick', {
+        date: workout.date.toISOString(),
+        proposedDuration: workout.proposed
+      });
+    }
+  }
+
+  function handleEditWorkout(workout) {
+    if (workout && workout.date) {
+      const workoutData = {
+        date: workout.date.toISOString(),
+        duration: workout.duration,
+        id: workout.id
+      };
+      dispatch('editWorkout', workoutData);
+    }
+  }
+
+  function handleDeleteWorkout(workout) {
+    if (workout && workout.date && workout.id) {
+      dispatch('deleteWorkout', {
+        date: workout.date.toISOString(),
+        id: workout.id
+      });
+    }
+  }
+
+  function calculateCurrentPage() {
+    const today = new Date();
+    const startDate = new Date(userPreferencesData.startDate);
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (viewMode === 'month') {
+      return Math.floor(diffDays / 30);
+    } else {
+      return Math.floor(diffDays / 7);
+    }
+  }
+
+  function goToToday() {
+    currentPage = calculateCurrentPage();
+    calculateWorkoutDays();
+  }
+
+  onMount(() => {
+    // Create the SVG
+    updateDimensions();
+    
+    const svgElement = d3.select(chartContainer)
+      .append('svg')
+      .attr('width', containerWidth)
+      .attr('height', containerHeight)
+      .attr('class', 'chart-svg');
+    
+    // The 'inner' group using margin convention - removed manual offset
+    svg = svgElement
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Add grid lines container
+    svg.append('g')
+      .attr('class', 'grid-lines');
+
+    // Add axes
+    svg.append('g')
+      .attr('class', 'x-axis');
+
+    svg.append('g')
+      .attr('class', 'y-axis');
+
+    // Add axis labels
+    svg.append('text')
+      .attr('class', 'y-axis-label')
+      .attr('transform', 'rotate(-90)')
+      .attr('text-anchor', 'middle');
+
+    // Initial update
+    calculateWorkoutDays();
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (svgElement) {
+        svgElement.remove();
+      }
+      svg = null;
+    };
+  });
+
+  function updateChart() {
+    if (!svg || !dailyWorkouts.length || !width || !height) return;
+
+    const scales = createScales();
+    if (!scales) return;
+    const { x, y } = scales;
+
+    // Remove old elements
+    svg.selectAll('.day-group').remove();
+    svg.selectAll('.current-day-line').remove();
+    svg.selectAll('.week-boundary-line').remove();
+    svg.selectAll('.current-day-background').remove();
+    svg.selectAll('.chart-border').remove();
+    svg.selectAll('.click-overlay').remove();
+
+    // Add click overlay first (behind everything else)
+    const overlay = svg.append('g')
+      .attr('class', 'click-overlay');
+
+    // Add clickable rectangles for each day
+    overlay.selectAll('rect')
+      .data(dailyWorkouts)
+      .join('rect')
+      .attr('x', d => x(new Date(d.date).toDateString()))
+      .attr('y', 0)
+      .attr('width', x.bandwidth())
+      .attr('height', height)
+      .attr('fill', 'transparent')
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        // Don't trigger if we clicked on a bar
+        if (event.target === event.currentTarget) {
+          const clickedDate = new Date(d.date);
+          // Set to noon to avoid timezone issues
+          clickedDate.setHours(12, 0, 0, 0);
+          dispatch('dateClick', {
+            date: clickedDate.toISOString()
+          });
+        }
+      });
+
+    // Add top and right borders
+    const border = svg.append('g')
+      .attr('class', 'chart-border');
+
+    // Top border
+    border.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', 0)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
+
+    // Right border
+    border.append('line')
+      .attr('x1', width)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
+
+    // Add current day background and line
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toDateString();
+    
+    // Add current day indicator if today is in view
+    const todayInView = dailyWorkouts.some(d => d.date.toDateString() === todayStr);
+
+    if (todayInView) {
+      svg.append('rect')
+        .attr('class', 'current-day-background')
+        .attr('x', x(todayStr))
+        .attr('y', 0)
+        .attr('width', x.bandwidth())
+        .attr('height', height)
+        .attr('fill', 'rgb(59, 130, 246)')  // Using tailwind blue-500
+        .attr('opacity', 0.15);
+    }
+
+    // Add week boundaries in month view
+    if (viewMode === 'month') {
+      dailyWorkouts.forEach((d, i) => {
+        const date = new Date(d.date);
+        // If it's Sunday (start of week)
+        if (date.getDay() === 0) {
+          const xPos = x(date.toDateString());
+          svg.append('rect')
+            .attr('class', 'week-boundary-line')
+            .attr('x', xPos - 1)  // Center the line
+            .attr('y', 0)
+            .attr('width', 2)
+            .attr('height', height)
+            .attr('fill', 'currentColor')
+            .attr('opacity', 0.2);
+        }
+      });
+    }
+
+    // Create day groups after boundaries so bars are on top
+    const dayGroups = svg.selectAll('.day-group')
+      .data(dailyWorkouts)
+      .enter()
+      .append('g')
+      .attr('class', 'day-group')
+      .attr('transform', d => `translate(${x(new Date(d.date).toDateString())},0)`);
+
+    const barWidth = x.bandwidth();
+
+    // Add completed workout bars (stacked) and labels
+    dayGroups.each(function(d) {
+      const group = d3.select(this);
+      let stackHeight = 0;
+
+      // Add bars for each workout in the day
+      if (d.workouts && d.workouts.length > 0) {
+        d.workouts.forEach((workout) => {
+          group.append('rect')
+            .attr('class', 'completed-rect')
+            .attr('y', y(stackHeight + workout.duration))
+            .attr('height', height - y(workout.duration))
+            .attr('width', barWidth)
+            .attr('x', 0)
+            .style('cursor', 'pointer')
+            .on('click', () => handleEditWorkout(workout));
+
+          stackHeight += workout.duration;
+        });
+
+        // Add total duration label for recorded workouts
+        group.append('text')
+          .attr('class', 'duration-label')
+          .attr('x', barWidth / 2)
+          .attr('y', y(stackHeight) - 5)
+          .attr('text-anchor', 'middle')
+          .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
+          .style('fill', 'var(--muted-foreground)')
+          .text(stackHeight);
+      }
+
+      // Add proposed workout bar and label if it exists
+      if (d.proposed > 0) {
+        group.append('rect')
+          .attr('class', 'proposed-rect')
+          .attr('y', y(d.proposed))
+          .attr('height', height - y(d.proposed))
+          .attr('width', barWidth)
+          .attr('x', 0)
+          .style('cursor', 'pointer')
+          .on('click', () => handleWorkoutClick(d));
+
+        // Add proposed duration label
+        const labelY = d.workouts.length > 0 ? y(stackHeight) - 20 : y(d.proposed) - 5;
+        group.append('text')
+          .attr('class', 'duration-label proposed')
+          .attr('x', barWidth / 2)
+          .attr('y', labelY)
+          .attr('text-anchor', 'middle')
+          .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
+          .style('fill', 'var(--muted-foreground)')
+          .style('opacity', 0.7)
+          .text(`${d.proposed}`);
+      }
+    });
+
+    // Update X-axis with explicit styling
+    svg.select('.x-axis')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x)
+        .tickFormat(formatDate)
+        .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
+          .filter((_, i) => {
+            if (containerWidth < 800) {  // Updated breakpoint
+              // Show fewer ticks below 800px
+              return i % 2 === 0;
+            } else if (viewMode === 'month') {
+              return i % 3 === 0;
+            } else {
+              return i % 2 === 0;
+            }
+          })))
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', containerWidth < 800 ? '-.5em' : '-.8em')  // Updated breakpoint
+      .attr('dy', containerWidth < 800 ? '.1em' : '.15em')   // Updated breakpoint
+      .attr('transform', containerWidth < 800 ? 'rotate(-45)' : 'rotate(-35)');  // Updated breakpoint
+
+    // Update Y-axis with explicit styling
+    svg.select('.y-axis')
+      .call(d3.axisLeft(y)
+        .ticks(containerWidth < 800 ? 4 : 5)  // Updated breakpoint
+        .tickFormat(d => d))
+      .selectAll('text')
+      .attr('dx', containerWidth < 800 ? '0' : '0.25em');  // Updated breakpoint
+
+    // Update grid lines with explicit styling
+    svg.select('.grid-lines')
+      .selectAll('line')
+      .data(y.ticks(containerWidth < 800 ? 4 : 5))  // Updated breakpoint
+      .join('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', d => y(d))
+      .attr('y2', d => y(d))
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-opacity', 0.15)
+      .attr('stroke-dasharray', '2,2');
+
+    // Update Y-axis label with explicit styling
+    svg.select('.y-axis-label')
+      .attr('x', -height / 2)
+      .attr('y', -margin.left + (containerWidth < 800 ? 8 : 35))  // Updated breakpoint
+      .attr('fill', 'var(--muted-foreground)')
+      .style('font-size', containerWidth < 800 ? '0.7rem' : '1rem')  // Updated breakpoint
+      .text('Min');
+  }
+</script>
+
+<!-- Chart container -->
+<div class="chart-container">
+  <!-- Navigation controls above chart -->
+  <div class="flex justify-center items-center gap-2 mb-4">
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={previousPeriod} 
+      disabled={currentPage === 0}
+    >
+      ←
+    </Button>
+    <Button 
+      variant="outline"
+      size="sm"
+      class="h-7 px-2"
+      on:click={goToToday}
+    >
+      Today
+    </Button>
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={nextPeriod} 
+      disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
+    >
+      →
+    </Button>
+  </div>
+
+  <!-- Chart area -->
+  <div class="chart" bind:this={chartContainer}>
+    <!-- SVG will be added here by D3 -->
+  </div>
+
+  <!-- View mode toggle below chart -->
+  <div class="flex justify-center mt-4">
+    <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
+      <Tabs.List>
+        <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
+        <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
+      </Tabs.List>
+    </Tabs.Root>
+  </div>
+</div>
+
+<style>
+  :root {
+    --success-color: #28a745;
+    --border-color: #333333;
+    --muted-foreground: #666666;
+    --background: #ffffff;
+  }
+
+  .chart-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart {
+    flex: 1;
+    min-height: 0; /* Important for flex container */
+    position: relative;
+    width: 100%;
+  }
+
+  :global(.chart-svg) {
+    width: 100%;
+    height: 100%;
+    overflow: visible;  /* Allow axis labels to overflow */
+  }
+
+  :global(.x-axis), :global(.y-axis) {
+    color: var(--muted-foreground);
+  }
+
+  :global(.x-axis path), :global(.y-axis path),
+  :global(.x-axis line), :global(.y-axis line) {
+    stroke: var(--border-color);
+    stroke-width: 1px;
+    stroke-opacity: 0.5;
+  }
+
+  :global(.x-axis text), :global(.y-axis text) {
+    fill: var(--muted-foreground);
+    font-size: 0.7rem;
+  }
+
+  :global(.completed-rect) {
+    fill: var(--success-color);
+    stroke: var(--border-color);
+    stroke-width: 1px;
+    stroke-opacity: 0.5;
+    transition: filter 0.2s ease-in-out;
+  }
+
+  :global(.completed-rect:hover) {
+    filter: brightness(1.1);
+  }
+
+  :global(.proposed-rect) {
+    fill: transparent;
+    stroke: var(--border-color);
+    stroke-width: 1.5px;
+    stroke-opacity: 0.5;
+    stroke-dasharray: 4,4;
+    transition: fill 0.2s ease-in-out;
+  }
+
+  :global(.proposed-rect:hover) {
+    fill: rgba(40, 167, 69, 0.1);
+  }
+
+  :global(.grid-lines line) {
+    stroke: var(--border-color);
+    stroke-opacity: 0.15;
+    stroke-dasharray: 2,2;
+  }
+
+  :global(.current-day-background) {
+    pointer-events: none;
+    fill: rgb(59, 130, 246);  /* tailwind blue-500 */
+    opacity: 0.15;  /* Increased from 0.08 */
+  }
+
+  :global(.week-boundary-line) {
+    pointer-events: none;
+    color: var(--border);
+  }
+
+  :global(.duration-label) {
+    pointer-events: none;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  :global(.duration-label.proposed) {
+    opacity: 0.7;
+  }
+
+  @media (min-width: 800px) {  /* Updated breakpoint */
+    :global(.chart-svg) {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .chart-container {
+      position: relative;
+      padding-right: 1rem;
+    }
+
+    .chart {
+      position: relative;
+    }
+
+    :global(.x-axis text), :global(.y-axis text) {
+      font-size: 0.9rem;
+    }
+
+    :global(.x-axis path), :global(.y-axis path),
+    :global(.x-axis line), :global(.y-axis line) {
+      stroke-width: 1.5px;
+    }
+
+    :global(.completed-rect) {
+      stroke-width: 1.5px;
+    }
+
+    :global(.proposed-rect) {
+      stroke-width: 2px;
+    }
+
+    :global(.grid-lines line) {
+      stroke-opacity: 0.15;
+      stroke-width: 1.5px;
+    }
+
+    :global(.week-boundary-line) {
+      stroke-width: 2.5px;
+      stroke-opacity: 0.8;
+      opacity: 0.25 !important;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --success-color: #28a745;
+      --border-color: #666666;
+      --muted-foreground: #999999;
+      --background: transparent;
+    }
+  }
+
+  /* Remove any styles that might interfere with shadcn tabs */
+  :global(.chart-container [data-state="active"]) {
+    background-color: unset !important;
+    color: unset !important;
+  }
+
+  /* Add proper tab styling */
+  :global(.chart-container [role="tablist"]) {
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 0;
+    background: none;
+  }
+
+  :global(.chart-container [role="tab"]) {
+    height: 100%;
+    border-radius: 0.375rem;
+    border: none;
+    background: none;
+    color: var(--muted-foreground);
+  }
+
+  :global(.chart-container [role="tab"][data-state="active"]) {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+
+  @media (max-width: 800px) {
+    .chart {
+      width: 100%;
+      height: calc(100% - 4rem);
+      margin-right: 0; /* Removed negative margin */
+    }
+
+    :global(.x-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.y-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.duration-label) {
+      font-size: 0.6rem;
+    }
+  }
+
+  :global(.tabs-list) {
+    margin-bottom: 0;
+  }
+</style>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/SETTINGSMODAL.SVELTE CODE IS BELOW
+<!-- Modal container -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click|self={() => dispatch('close')}>
+  <div class="fixed inset-x-4 top-[50%] translate-y-[-50%] sm:inset-x-auto sm:left-[50%] sm:translate-x-[-50%] sm:max-w-lg w-full">
+    <div class="relative bg-card text-card-foreground rounded-lg shadow-lg border">
+      <!-- Header with close button -->
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-lg font-semibold">Challenge Settings</h2>
+        <Button variant="ghost" size="icon" on:click={() => dispatch('close')}>
+          <X class="h-4 w-4" />
+          <span class="sr-only">Close</span>
+        </Button>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="p-4 max-h-[calc(80vh-8rem)] overflow-y-auto">
+        {#if showAlert}
+          <div class="mb-4">
+            <Alert variant={alertVariant}>
+              <AlertTitle>{alertTitle}</AlertTitle>
+              <AlertDescription>{alertDescription}</AlertDescription>
+            </Alert>
+          </div>
+        {/if}
+
+        <form on:submit|preventDefault={handleUpdate} class="space-y-4">
+          <div class="space-y-2">
+            <Label for="startDate">Start Date</Label>
+            <Input 
+              type="date" 
+              id="startDate"
+              bind:value={localStartDate}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="daysPerWeek">Days Per Week</Label>
+            <Input 
+              type="number" 
+              id="daysPerWeek"
+              min="1"
+              max="7"
+              bind:value={localDaysPerWeek}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="startingMinutes">Starting Minutes</Label>
+            <Input 
+              type="number" 
+              id="startingMinutes"
+              min="1"
+              bind:value={localParams.startMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="endingMinutes">Target Minutes</Label>
+            <Input 
+              type="number" 
+              id="endingMinutes"
+              min="1"
+              bind:value={localParams.endMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="steepness">Progression Steepness</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="steepness"
+                min="0.01"
+                max="0.2"
+                step="0.01"
+                bind:value={localParams.steepness}
+              />
+              <span class="text-sm text-muted-foreground w-12">{localParams.steepness.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <Label for="midpoint">Midpoint (Days)</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="midpoint"
+                min="1"
+                max="90"
+                bind:value={localParams.midpoint}
+              />
+              <span class="text-sm text-muted-foreground w-12">Day {localParams.midpoint}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer with buttons -->
+      <div class="flex justify-between p-4 border-t">
+        <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
+        <div class="flex gap-2">
+          <Button variant="outline" on:click={() => dispatch('close')}>Cancel</Button>
+          <Button variant="default" on:click={handleUpdate}>Update</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
+  import { X } from 'lucide-svelte';
+  import { userPreferences } from '../stores/userPreferencesStore';
+
+  const dispatch = createEventDispatcher();
+
+  let localParams = $userPreferences.sigmoidParams;
+  let localDaysPerWeek = $userPreferences.daysPerWeek;
+  let localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+
+  let showAlert = false;
+  let alertVariant: "default" | "destructive" = "default";
+  let alertTitle = "";
+  let alertDescription = "";
+
+  function showFeedback(success: boolean, title: string, description: string) {
+    alertVariant = success ? "default" : "destructive";
+    alertTitle = title;
+    alertDescription = description;
+    showAlert = true;
+    
+    // Hide the alert after 3 seconds
+    setTimeout(() => {
+      showAlert = false;
+    }, 3000);
+  }
+
+  async function handleUpdate() {
+    try {
+      await userPreferences.updateSigmoidParams(localParams);
+      await userPreferences.setDaysPerWeek(localDaysPerWeek);
+      const date = new Date(localStartDate);
+      if (!isNaN(date.getTime())) {
+        await userPreferences.setStartDate(date.toISOString());
+      }
+      
+      showFeedback(
+        true,
+        "Settings Updated",
+        "Your challenge settings have been saved successfully."
+      );
+      
+      setTimeout(() => {
+        dispatch('close');
+      }, 1000);
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to update settings. Please try again."
+      );
+    }
+  }
+
+  async function resetToDefaults() {
+    try {
+      await userPreferences.reset();
+      localParams = $userPreferences.sigmoidParams;
+      localDaysPerWeek = $userPreferences.daysPerWeek;
+      localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+      
+      showFeedback(
+        true,
+        "Settings Reset",
+        "Your challenge settings have been reset to defaults."
+      );
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to reset settings. Please try again."
+      );
+    }
+  }
+</script> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT-DESCRIPTION.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("text-sm [&_p]:leading-relaxed", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT-TITLE.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let level = "h5";
+	export { className as class };
+</script>
+
+<svelte:element
+	this={level}
+	class={cn("mb-1 font-medium leading-none tracking-tight", className)}
+	{...$$restProps}
+>
+	<slot />
+</svelte:element>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/ALERT.SVELTE CODE IS BELOW
+<script>
+	import { alertVariants } from "./index.js";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let variant = "default";
+	export { className as class };
+</script>
+
+<div class={cn(alertVariants({ variant }), className)} {...$$restProps} role="alert">
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/ALERT/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./alert.svelte";
+import Description from "./alert-description.svelte";
+import Title from "./alert-title.svelte";
+export const alertVariants = tv({
+	base: "[&>svg]:text-foreground relative w-full rounded-lg border p-4 [&:has(svg)]:pl-11 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
+	variants: {
+		variant: {
+			default: "bg-background text-foreground",
+			destructive:
+				"border-destructive/50 text-destructive text-destructive dark:border-destructive [&>svg]:text-destructive",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+	},
+});
+export {
+	Root,
+	Description,
+	Title,
+	//
+	Root as Alert,
+	Description as AlertDescription,
+	Title as AlertTitle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/BUTTON/BUTTON.SVELTE CODE IS BELOW
+<script>
+	import { Button as ButtonPrimitive } from "bits-ui";
+	import { buttonVariants } from "./index.js";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let variant = "default";
+	export let size = "default";
+	export let builders = [];
+	export { className as class };
+</script>
+
+<ButtonPrimitive.Root
+	{builders}
+	class={cn(buttonVariants({ variant, size, className }))}
+	type="button"
+	{...$$restProps}
+	on:click
+	on:keydown
+>
+	<slot />
+</ButtonPrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/BUTTON/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./button.svelte";
+const buttonVariants = tv({
+	base: "ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+	variants: {
+		variant: {
+			default: "bg-primary text-primary-foreground hover:bg-primary/90",
+			destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+			outline:
+				"border-input bg-background hover:bg-accent hover:text-accent-foreground border",
+			secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+			ghost: "hover:bg-accent hover:text-accent-foreground",
+			link: "text-primary underline-offset-4 hover:underline",
+		},
+		size: {
+			default: "h-10 px-4 py-2",
+			sm: "h-9 rounded-md px-3",
+			lg: "h-11 rounded-md px-8",
+			icon: "h-10 w-10",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default",
+	},
+});
+export {
+	Root,
+	//
+	Root as Button,
+	buttonVariants,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-CONTENT.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("p-6", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-DESCRIPTION.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<p class={cn("text-muted-foreground text-sm", className)} {...$$restProps}>
+	<slot />
+</p>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-FOOTER.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("flex items-center p-6 pt-0", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-HEADER.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div class={cn("flex flex-col space-y-1.5 p-6 pb-0", className)} {...$$restProps}>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD-TITLE.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let tag = "h3";
+	export { className as class };
+</script>
+
+<svelte:element
+	this={tag}
+	class={cn("text-lg font-semibold leading-none tracking-tight", className)}
+	{...$$restProps}
+>
+	<slot />
+</svelte:element>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/CARD.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<div
+	class={cn("bg-card text-card-foreground rounded-lg border shadow-sm", className)}
+	{...$$restProps}
+>
+	<slot />
+</div>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/CARD/INDEX.JS CODE IS BELOW
+import Root from "./card.svelte";
+import Content from "./card-content.svelte";
+import Description from "./card-description.svelte";
+import Footer from "./card-footer.svelte";
+import Header from "./card-header.svelte";
+import Title from "./card-title.svelte";
+export {
+	Root,
+	Content,
+	Description,
+	Footer,
+	Header,
+	Title,
+	//
+	Root as Card,
+	Content as CardContent,
+	Description as CardDescription,
+	Footer as CardFooter,
+	Header as CardHeader,
+	Title as CardTitle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/INPUT/INDEX.JS CODE IS BELOW
+import Root from "./input.svelte";
+export {
+	Root,
+	//
+	Root as Input,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/INPUT/INPUT.SVELTE CODE IS BELOW
+<script>
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value = undefined;
+	export { className as class };
+	export let readonly = undefined;
+</script>
+
+<input
+	class={cn(
+		"border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+		className
+	)}
+	bind:value
+	{readonly}
+	on:blur
+	on:change
+	on:click
+	on:focus
+	on:focusin
+	on:focusout
+	on:keydown
+	on:keypress
+	on:keyup
+	on:mouseover
+	on:mouseenter
+	on:mouseleave
+	on:mousemove
+	on:paste
+	on:input
+	on:wheel|passive
+	{...$$restProps}
+/>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/LABEL/INDEX.JS CODE IS BELOW
+import Root from "./label.svelte";
+export {
+	Root,
+	//
+	Root as Label,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/LABEL/LABEL.SVELTE CODE IS BELOW
+<script>
+	import { Label as LabelPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<LabelPrimitive.Root
+	class={cn(
+		"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+		className
+	)}
+	{...$$restProps}
+	on:mousedown
+>
+	<slot />
+</LabelPrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/INDEX.JS CODE IS BELOW
+import { Tabs as TabsPrimitive } from "bits-ui";
+import Content from "./tabs-content.svelte";
+import List from "./tabs-list.svelte";
+import Trigger from "./tabs-trigger.svelte";
+const Root = TabsPrimitive.Root;
+export {
+	Root,
+	Content,
+	List,
+	Trigger,
+	//
+	Root as Tabs,
+	Content as TabsContent,
+	List as TabsList,
+	Trigger as TabsTrigger,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-CONTENT.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value;
+	export { className as class };
+</script>
+
+<TabsPrimitive.Content
+	class={cn(
+		"ring-offset-background focus-visible:ring-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+		className
+	)}
+	{value}
+	{...$$restProps}
+>
+	<slot />
+</TabsPrimitive.Content>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-LIST.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export { className as class };
+</script>
+
+<TabsPrimitive.List
+	class={cn(
+		"bg-muted text-muted-foreground inline-flex h-10 items-center justify-center rounded-md p-1",
+		className
+	)}
+	{...$$restProps}
+>
+	<slot />
+</TabsPrimitive.List>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TABS/TABS-TRIGGER.SVELTE CODE IS BELOW
+<script>
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	let className = undefined;
+	export let value;
+	export { className as class };
+</script>
+
+<TabsPrimitive.Trigger
+	class={cn(
+		"ring-offset-background focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm",
+		className
+	)}
+	{value}
+	{...$$restProps}
+	on:click
+>
+	<slot />
+</TabsPrimitive.Trigger>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/THEME-TOGGLE.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { theme } from '$lib/stores/themeStore';
+  import { Button } from './button';
+  import { Sun, Moon } from 'lucide-svelte';
+</script>
+
+<Button
+  variant="ghost"
+  size="icon"
+  on:click={() => theme.toggle()}
+  class="text-foreground"
+>
+  {#if $theme === 'dark'}
+    <Sun class="h-4 w-4" />
+  {:else}
+    <Moon class="h-4 w-4" />
+  {/if}
+  <span class="sr-only">Toggle theme</span>
+</Button> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/INDEX.JS CODE IS BELOW
+import { tv } from "tailwind-variants";
+import Root from "./toggle.svelte";
+export const toggleVariants = tv({
+	base: "ring-offset-background hover:bg-muted hover:text-muted-foreground focus-visible:ring-ring data-[state=on]:bg-accent data-[state=on]:text-accent-foreground inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+	variants: {
+		variant: {
+			default: "bg-transparent",
+			outline:
+				"border-input hover:bg-accent hover:text-accent-foreground border bg-transparent",
+		},
+		size: {
+			default: "h-10 px-3",
+			sm: "h-9 px-2.5",
+			lg: "h-11 px-5",
+		},
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default",
+	},
+});
+export {
+	Root,
+	//
+	Root as Toggle,
+};
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/INDEX.TS CODE IS BELOW
+import { cva } from "class-variance-authority";
+
+export { default as Toggle } from "./toggle.svelte";
+
+export const toggleVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+  {
+    variants: {
+      variant: {
+        default: "bg-transparent",
+        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+      },
+      size: {
+        default: "h-10 px-3",
+        sm: "h-9 px-2.5",
+        lg: "h-11 px-5",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/UI/TOGGLE/TOGGLE.SVELTE CODE IS BELOW
+<script lang="ts">
+	import { cn } from "$lib/utils";
+	import { Toggle as TogglePrimitive } from "bits-ui";
+	import { toggleVariants } from "./index.js";
+
+	let className: string | undefined | null = undefined;
+	export { className as class };
+	export let pressed = false;
+	export let variant: "default" | "outline" = "default";
+	export let size: "default" | "sm" | "lg" = "default";
+</script>
+
+<TogglePrimitive.Root
+	class={cn(toggleVariants({ variant, size, className }))}
+	bind:pressed
+	on:click
+	{...$$restProps}
+>
+	<slot />
+</TogglePrimitive.Root>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/COMPONENTS/WORKOUTLOG.SVELTE CODE IS BELOW
+<script lang="ts">
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { schedule } from "$lib/stores/scheduleStore";
+  import { format } from "date-fns";
+  import { createEventDispatcher } from "svelte";
+
+  export let selectedDate: string | null = null;
+  export let proposedDuration = 30;
+  export let editMode = false;
+  export let workoutId: string | null = null;
+  export let onComplete: () => void;
+
+  let duration = proposedDuration;
+  let date = selectedDate ? new Date(selectedDate) : new Date();
+  $: workouts = $schedule?.workouts || [];
+  $: recentWorkouts = workouts.slice(0, 5);
+
+  $: formattedDate = format(date, "MM/dd/yy");
+
+  async function handleSubmit() {
+    if (editMode && workoutId) {
+      await schedule.updateWorkout(workoutId, date.toISOString(), duration);
+    } else {
+      await schedule.addWorkout(date.toISOString(), duration);
+    }
+    onComplete();
+  }
+
+  async function handleDelete(id: string) {
+    if (confirm("Are you sure you want to delete this workout?")) {
+      await schedule.deleteWorkout(id);
+    }
+  }
+
+  function handleEdit(workout: any) {
+    date = new Date(workout.date);
+    duration = workout.duration;
+    workoutId = workout.id;
+    editMode = true;
+  }
+</script>
+
+<form class="space-y-6" on:submit|preventDefault={handleSubmit}>
+  <div class="space-y-4">
+    <div class="grid gap-2">
+      <Label for="date">Date</Label>
+      <Input 
+        type="date" 
+        id="date"
+        bind:value={date}
+        class="w-full"
+      />
+    </div>
+
+    <div class="grid gap-2">
+      <Label for="duration">Duration (minutes)</Label>
+      <Input 
+        type="number" 
+        id="duration"
+        bind:value={duration}
+        min="1"
+        class="w-full"
+      />
+    </div>
+  </div>
+
+  <div class="flex justify-end">
+    <Button type="submit">
+      {editMode ? 'Update' : 'Add'} Workout
+    </Button>
+  </div>
+
+  {#if recentWorkouts.length > 0}
+    <div class="space-y-4">
+      <h3 class="font-medium text-sm text-foreground">Recent Workouts</h3>
+      <div class="border rounded-lg divide-y">
+        {#each recentWorkouts as workout}
+          <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
+            <div class="space-y-1">
+              <p class="text-sm font-medium">{format(new Date(workout.date), "MMM d, yyyy")}</p>
+              <p class="text-sm text-muted-foreground">{workout.duration} minutes</p>
+            </div>
+            <div class="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                on:click={() => handleEdit(workout)}
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                class="text-destructive hover:text-destructive"
+                on:click={() => handleDelete(workout.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+</form>
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/DATA/DEFAULTPARAMS.JSON CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/SERVICES/SUPABASE.JS CODE IS BELOW
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+export async function saveWorkout(workout) {
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert([{
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      date: workout.date,
+      duration: workout.duration,
+      created_at: new Date().toISOString()
+    }]);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getWorkouts() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (error) throw error;
+  return data;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/ANALYTICSSTORE.JS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/AUTHSTORE.JS CODE IS BELOW
+import { writable } from 'svelte/store';
+import { supabase } from '../services/supabase';
+
+function createAuthStore() {
+  const { subscribe, set, update } = writable({
+    user: null,
+    loading: true,
+  });
+
+  // Initialize the store with the current session
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    set({
+      user: session?.user ?? null,
+      loading: false,
+    });
+  });
+
+  // Listen for auth changes
+  supabase.auth.onAuthStateChange((_event, session) => {
+    set({
+      user: session?.user ?? null,
+      loading: false,
+    });
+  });
+
+  return {
+    subscribe,
+    getUser: () => {
+      const unsubscribe = subscribe(state => {
+        if (!state.loading) {
+          return state.user;
+        }
+      });
+      unsubscribe();
+      return null;
+    },
+    signIn: async (email, password) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+    },
+    signUp: async (email, password) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) throw error;
+    },
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
+  };
+}
+
+export const authStore = createAuthStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/AUTHSTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { AuthState, User } from '$lib/types';
+
+function createAuthStore() {
+  const { subscribe, set, update }: Writable<AuthState> = writable({
+    user: null,
+    loading: true
+  });
+
+  return {
+    subscribe,
+    initialize: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        set({ user: null, loading: false });
+        return;
+      }
+
+      if (session?.user) {
+        set({
+          user: {
+            id: session.user.id,
+            email: session.user.email || ''
+          },
+          loading: false
+        });
+      } else {
+        set({ user: null, loading: false });
+      }
+    },
+    signIn: async (email: string, password: string) => {
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Error signing in:', error);
+        return error;
+      }
+
+      if (user) {
+        set({
+          user: {
+            id: user.id,
+            email: user.email || ''
+          },
+          loading: false
+        });
+      }
+    },
+    signUp: async (email: string, password: string) => {
+      const { data: { user }, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Error signing up:', error);
+        return error;
+      }
+
+      if (user) {
+        set({
+          user: {
+            id: user.id,
+            email: user.email || ''
+          },
+          loading: false
+        });
+      }
+    },
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error('Error signing out:', error);
+        return;
+      }
+
+      set({ user: null, loading: false });
+    }
+  };
+}
+
+export const authStore = createAuthStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/CURVEPARAMSSTORE.JS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/SCHEDULESTORE.JS CODE IS BELOW
+import { writable } from 'svelte/store';
+import { userPreferences } from './userPreferencesStore';
+import { ValidationError, logError } from '../utils/errorHandling';
+import { saveWorkout, getWorkouts, supabase } from '../services/supabase';
+import { authStore } from './authStore';
+
+function validateWorkout(date, duration) {
+  if (isNaN(new Date(date).getTime())) {
+    throw new ValidationError('Invalid workout date');
+  }
+  
+  if (duration <= 0 || duration > 240) {
+    throw new ValidationError('Workout duration must be between 1 and 240 minutes');
+  }
+}
+
+function createScheduleStore() {
+  const store = writable([]);
+
+  // Subscribe to real-time changes
+  let subscription;
+  
+  authStore.subscribe(({ user }) => {
+    if (user) {
+      subscription = supabase
+        .channel('workouts')
+        .on('postgres_changes', 
+          { event: 'INSERT', schema: 'public', table: 'workouts' },
+          async (payload) => {
+            if (payload.new.user_id === user.id) {
+              // Add the new workout to the store
+              store.update(workouts => [...workouts, {
+                date: payload.new.date,
+                duration: payload.new.duration,
+                created_at: payload.new.created_at
+              }]);
+            }
+          }
+        )
+        .subscribe();
+    } else if (subscription) {
+      subscription.unsubscribe();
+    }
+  });
+
+  return {
+    subscribe: store.subscribe,
+    
+    initialize: async () => {
+      try {
+        const user = await supabase.auth.getUser();
+        console.log('Current user:', user.data.user);
+        
+        if (user.data.user) {
+          const workouts = await getWorkouts();
+          console.log('Fetched workouts from database:', workouts);
+          
+          // Ensure all necessary fields are included
+          const processedWorkouts = workouts.map(workout => ({
+            id: workout.id,
+            date: workout.date,
+            duration: workout.duration,
+            created_at: workout.created_at,
+            user_id: workout.user_id
+          }));
+          
+          store.set(processedWorkouts);
+        }
+      } catch (error) {
+        logError(error, 'Initializing schedule');
+        throw error;
+      }
+    },
+
+    logWorkout: async (date, duration) => {
+      try {
+        validateWorkout(date, duration);
+        
+        // Save to Supabase first
+        await saveWorkout({
+          date: date.toISOString(),
+          duration
+        });
+        
+        // Local state will be updated via the real-time subscription
+      } catch (error) {
+        logError(error, 'Logging workout');
+        throw error;
+      }
+    },
+
+    updateWorkout: async (date, duration, workoutId) => {
+      try {
+        validateWorkout(date, duration);
+        
+        if (!workoutId) {
+          throw new Error('No workout ID provided for update');
+        }
+
+        // Update in Supabase using workout ID
+        const { data, error } = await supabase
+          .from('workouts')
+          .update({ 
+            date: date.toISOString(),
+            duration 
+          })
+          .eq('id', workoutId);
+
+        if (error) throw error;
+
+        // Update local state using workout ID
+        store.update(workouts => workouts.map(workout => 
+          workout.id === workoutId
+            ? { ...workout, date: date.toISOString(), duration }
+            : workout
+        ));
+
+      } catch (error) {
+        logError(error, 'Updating workout');
+        throw error;
+      }
+    },
+
+    deleteWorkout: async (date, workoutId) => {
+      try {
+        if (!workoutId) {
+          console.error('No workout ID provided for deletion');
+          throw new Error('No workout ID provided for deletion');
+        }
+
+        console.log('Deleting workout:', { id: workoutId });
+        
+        // Delete from Supabase using only the workout ID
+        const { error } = await supabase
+          .from('workouts')
+          .delete()
+          .eq('id', workoutId);
+
+        if (error) {
+          console.error('Error deleting workout:', error);
+          throw error;
+        }
+
+        console.log('Successfully deleted workout from database');
+
+        // Update local state
+        store.update(workouts => {
+          const updatedWorkouts = workouts.filter(workout => workout.id !== workoutId);
+          console.log('Updated workouts after deletion:', updatedWorkouts);
+          return updatedWorkouts;
+        });
+
+      } catch (error) {
+        console.error('Error in deleteWorkout:', error);
+        throw error;
+      }
+    }
+  };
+}
+
+export const schedule = createScheduleStore();
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/SCHEDULESTORE.TS CODE IS BELOW
+import { writable, type Writable } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { Workout } from '$lib/types';
+
+function createScheduleStore() {
+  const { subscribe, set, update }: Writable<Workout[]> = writable([]);
+
+  return {
+    subscribe,
+    initialize: async () => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching workouts:', error);
+        return;
+      }
+
+      console.log('Fetched workouts from database:', data);
+      set(data || []);
+    },
+    addWorkout: async (date: string, duration: number) => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .insert([{ date, duration }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding workout:', error);
+        return;
+      }
+
+      update(workouts => [...workouts, data]);
+    },
+    updateWorkout: async (id: string, date: string, duration: number) => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .update({ date, duration })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating workout:', error);
+        return;
+      }
+
+      update(workouts => workouts.map(w => w.id === id ? data : w));
+    },
+    deleteWorkout: async (id: string) => {
+      const { error } = await supabase
+        .from('workouts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting workout:', error);
+        return;
+      }
+
+      update(workouts => workouts.filter(w => w.id !== id));
+    }
+  };
+}
+
+export const schedule = createScheduleStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/THEMESTORE.TS CODE IS BELOW
+import { writable } from 'svelte/store';
+
+type Theme = 'light' | 'dark';
+
+function createThemeStore() {
+  const { subscribe, set, update } = writable<Theme>('dark');
+
+  return {
+    subscribe,
+    set: (value: Theme) => {
+      localStorage.setItem('theme', value);
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(value);
+      set(value);
+    },
+    toggle: () => {
+      update(currentTheme => {
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(newTheme);
+        return newTheme;
+      });
+    }
+  };
+}
+
+export const theme = createThemeStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/USERPREFERENCES.JS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STORES/USERPREFERENCESSTORE.JS CODE IS BELOW
+import { writable } from 'svelte/store';
+import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorageHelpers';
+import { ValidationError, logError } from '../utils/errorHandling';
+
+const DEFAULT_PREFERENCES = {
+  daysPerWeek: 3,
+  startDate: new Date().toISOString(),
+  sigmoidParams: {
+    startMinutes: 15,
+    endMinutes: 90,
+    steepness: 0.1,
+    midpoint: 45
+  }
+};
+
+function validatePreferences(prefs) {
+  if (prefs.daysPerWeek < 1 || prefs.daysPerWeek > 7) {
+    throw new ValidationError('Days per week must be between 1 and 7');
+  }
+
+  const { startMinutes, endMinutes, steepness, midpoint } = prefs.sigmoidParams;
+  
+  if (startMinutes < 1 || startMinutes > endMinutes) {
+    throw new ValidationError('Invalid start minutes');
+  }
+  
+  if (endMinutes > 240) {
+    throw new ValidationError('End minutes cannot exceed 240');
+  }
+  
+  if (steepness <= 0 || steepness > 1) {
+    throw new ValidationError('Steepness must be between 0 and 1');
+  }
+  
+  if (midpoint < 1 || midpoint > 90) {
+    throw new ValidationError('Midpoint must be between 1 and 90');
+  }
+}
+
+function createUserPreferencesStore() {
+  let stored;
+  try {
+    stored = loadFromLocalStorage('userPreferences');
+    if (stored) {
+      validatePreferences(stored);
+    }
+  } catch (error) {
+    logError(error, 'Loading user preferences');
+    stored = DEFAULT_PREFERENCES;
+  }
+
+  const store = writable(stored || DEFAULT_PREFERENCES);
+
+  return {
+    subscribe: store.subscribe,
+    
+    setDaysPerWeek: (days) => {
+      try {
+        store.update(prefs => {
+          const newPrefs = { ...prefs, daysPerWeek: days };
+          validatePreferences(newPrefs);
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Setting days per week');
+        throw error;
+      }
+    },
+
+    setStartDate: (date) => {
+      try {
+        const parsedDate = new Date(date);
+        if (isNaN(parsedDate.getTime())) {
+          throw new ValidationError('Invalid date format');
+        }
+        
+        store.update(prefs => {
+          const newPrefs = { ...prefs, startDate: date };
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Setting start date');
+        throw error;
+      }
+    },
+
+    updateSigmoidParams: (params) => {
+      try {
+        store.update(prefs => {
+          const newPrefs = {
+            ...prefs,
+            sigmoidParams: { ...prefs.sigmoidParams, ...params }
+          };
+          validatePreferences(newPrefs);
+          saveToLocalStorage('userPreferences', newPrefs);
+          return newPrefs;
+        });
+      } catch (error) {
+        logError(error, 'Updating sigmoid parameters');
+        throw error;
+      }
+    },
+
+    reset: () => {
+      try {
+        store.set(DEFAULT_PREFERENCES);
+        saveToLocalStorage('userPreferences', DEFAULT_PREFERENCES);
+      } catch (error) {
+        logError(error, 'Resetting preferences');
+        throw error;
+      }
+    }
+  };
+}
+
+export const userPreferences = createUserPreferencesStore(); 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/STYLES/GLOBAL.CSS CODE IS BELOW
+/* Reset and base styles */
+:root {
+  --primary-color: #ff3e00;
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --text-muted: #888;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --success-color: #4CAF50;
+  --hover-success: #45a049;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+/* Common utility classes */
+.card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+/* Form elements */
+input, button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff2d00;
+}
+
+/* Responsive text sizing */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/SUPABASE.JS CODE IS BELOW
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey) 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/TYPES.TS CODE IS BELOW
+export interface Workout {
+  id: string;
+  date: string;
+  duration: number;
+  created_at: string;
+}
+
+export interface WorkoutClickEvent {
+  date: string;
+  proposedDuration: number;
+}
+
+export interface EditWorkoutEvent {
+  id: string;
+  date: string;
+  duration: number;
+}
+
+export interface User {
+  id: string;
+  email: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  loading: boolean;
+}
+
+export interface ScheduleState {
+  workouts: Workout[];
+  startDate: string;
+  duration: number;
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/DATEUTILS.JS CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/ERRORHANDLING.JS CODE IS BELOW
+// Custom error types
+export class StorageError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'StorageError';
+  }
+}
+
+export class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+// Error logging utility
+export function logError(error, context = '') {
+  console.error(`[${error.name}] ${context}: ${error.message}`);
+  // You could add additional error reporting here (e.g., to a service)
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/LOCALSTORAGEHELPERS.JS CODE IS BELOW
+import { StorageError } from './errorHandling';
+
+export function saveToLocalStorage(key, value) {
+  try {
+    const serialized = JSON.stringify(value);
+    localStorage.setItem(key, serialized);
+  } catch (error) {
+    throw new StorageError(
+      `Failed to save data for key "${key}": ${error.message}`
+    );
+  }
+}
+
+export function loadFromLocalStorage(key) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    throw new StorageError(
+      `Failed to load data for key "${key}": ${error.message}`
+    );
+  }
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS/SIGMOIDAL.JS CODE IS BELOW
+export function calculateSigmoidal(day, params) {
+  const { startMinutes, endMinutes, steepness, midpoint } = params;
+  return startMinutes + (endMinutes - startMinutes) / 
+    (1 + Math.exp(-steepness * (day - midpoint)));
+}
+
+export function generateWorkoutSchedule(startDate, daysPerWeek, totalDays = 90) {
+  const schedule = [];
+  let currentDate = new Date(startDate);
+  let workoutCount = 0;
+
+  while (workoutCount < totalDays) {
+    const dayOfWeek = currentDate.getDay();
+    // Assuming we want to spread workouts evenly through the week
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
+      schedule.push({
+        date: new Date(currentDate),
+        day: workoutCount + 1,
+        completed: false,
+        workouts: []
+      });
+      workoutCount++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return schedule;
+}
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS.JS CODE IS BELOW
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { cubicOut } from "svelte/easing";
+
+export function cn(...inputs) {
+	return twMerge(clsx(inputs));
+}
+
+export const flyAndScale = (
+	node,
+	params = { y: -8, x: 0, start: 0.95, duration: 150 }
+) => {
+	const style = getComputedStyle(node);
+	const transform = style.transform === "none" ? "" : style.transform;
+
+	const scaleConversion = (valueA, scaleA, scaleB) => {
+		const [minA, maxA] = scaleA;
+		const [minB, maxB] = scaleB;
+
+		const percentage = (valueA - minA) / (maxA - minA);
+		const valueB = percentage * (maxB - minB) + minB;
+
+		return valueB;
+	};
+
+	const styleToString = (style) => {
+		return Object.keys(style).reduce((str, key) => {
+			if (style[key] === undefined) return str;
+			return str + `${key}:${style[key]};`;
+		}, "");
+	};
+
+	return {
+		duration: params.duration ?? 200,
+		delay: 0,
+		css: (t) => {
+			const y = scaleConversion(t, [0, 1], [params.y ?? 5, 0]);
+			const x = scaleConversion(t, [0, 1], [params.x ?? 0, 0]);
+			const scale = scaleConversion(t, [0, 1], [params.start ?? 0.95, 1]);
+
+			return styleToString({
+				transform: `${transform} translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+				opacity: t
+			});
+		},
+		easing: cubicOut
+	};
+};
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/LIB/UTILS.TS CODE IS BELOW
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/MAIN.JS CODE IS BELOW
+import './app.css';
+import App from './App.svelte';
+import { mount } from 'svelte';
+
+const app = mount(App, {
+  target: document.getElementById('app'),
+});
+
+export default app;
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/ROUTES/+LAYOUT.SVELTE CODE IS BELOW
+<script lang="ts">
+  import '../app.css';
+  import { theme } from '$lib/stores/themeStore';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    // Default to dark mode
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.classList.add(savedTheme);
+    theme.set(savedTheme as 'light' | 'dark');
+
+    // Listen for theme changes
+    return theme.subscribe(value => {
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(value);
+    });
+  });
+</script>
+
+<div class="min-h-screen bg-background">
+  <slot />
+</div> 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/ROUTES/+PAGE.SVELTE CODE IS BELOW
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SRC/VITE-ENV.D.TS CODE IS BELOW
+/// <reference types="svelte" />
+/// <reference types="vite/client" />
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SUPABASE-INSTRUCTIONS.MD CODE IS BELOW
+System (to LLM): You are an experienced Svelte and JavaScript developer with in-depth knowledge of Vite, Supabase, and frontend integration best practices. You have expertise in refactoring existing codebases to incorporate database and authentication functionalities from Supabase, while preserving or improving the project’s current structure and features.
+
+User (to LLM):
+I have an existing Svelte + Vite project that I’d like to integrate with Supabase for authentication, data persistence, and real-time database functionalities. I’d like to:
+
+Project Overview:
+Currently, the app runs locally as a static front-end.
+The app uses localStorage to persist user preferences and workout logs for a 90-day workout challenge.
+The project has components for displaying a workout schedule, logging workouts, showing a sigmoidal curve of workout durations, and providing analytics on completed workouts.
+Integration Goals:
+Replace or supplement localStorage-based persistence with a Supabase Postgres database.
+Implement user authentication (email/password and possibly OAuth).
+Store user-specific workout data and preferences in Supabase tables.
+When a user logs in, load their workout data from the database and keep it updated in real-time.
+Use Row Level Security (RLS) in Supabase to ensure users can only access their own data.
+Handle logout by clearing user-specific data from stores.
+Changes Needed:
+Add the @supabase/supabase-js dependency and initialize the Supabase client.
+Create a simple auth flow: a login form and logic to handle sign-up and sign-in.
+Create database tables in Supabase (e.g., users, workouts, preferences) and integrate them into the Svelte app.
+Add logic to load the user’s data on login and store it in Svelte stores.
+Update functions that currently read/write localStorage to instead interact with Supabase (or use localStorage as a secondary cache).
+Show code examples or step-by-step instructions for:
+Initializing Supabase.
+Calling Supabase auth methods.
+Querying and mutating data from the database.
+Managing auth state in Svelte stores.
+Applying RLS policies in Supabase for security.
+Project Structure:
+Retain existing components and structure as much as possible.
+Implement new Svelte stores for Supabase session/user state.
+Modify data flow from components (e.g., the WorkoutLog or AnalyticsPanel) to use database queries rather than local data.
+Use derived stores for analytics that recompute when workout data changes.
+Additional Guidance:
+Provide best practices for handling auth state changes (e.g., using supabase.auth.onAuthStateChange).
+Show how to handle optimistic UI updates or loading states while data is fetched from Supabase.
+Suggest testing strategies for the new auth and data layers.
+Please provide:
+
+A step-by-step approach to refactor the code.
+Example code snippets for key integration points (e.g., initializing Supabase, logging in, querying workouts).
+Instructions for setting up the database schema and applying RLS policies.
+Guidance on how to gracefully handle user sessions, logging out, and cleaning up user data in the UI.
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/SVELTE.CONFIG.JS CODE IS BELOW
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+const config = {
+  preprocess: vitePreprocess()
+};
+
+export default config;
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/TAILWIND.CONFIG.JS CODE IS BELOW
+import { fontFamily } from "tailwindcss/defaultTheme";
+
+/** @type {import('tailwindcss').Config} */
+const config = {
+	darkMode: ["class"],
+	content: ["./src/**/*.{html,js,svelte,ts}"],
+	theme: {
+		container: {
+			center: true,
+			padding: "2rem",
+			screens: {
+				"2xl": "1400px"
+			}
+		},
+		extend: {
+			colors: {
+				border: "hsl(var(--border))",
+				input: "hsl(var(--input))",
+				ring: "hsl(var(--ring))",
+				background: "hsl(var(--background))",
+				foreground: "hsl(var(--foreground))",
+				primary: {
+					DEFAULT: "hsl(var(--primary))",
+					foreground: "hsl(var(--primary-foreground))"
+				},
+				secondary: {
+					DEFAULT: "hsl(var(--secondary))",
+					foreground: "hsl(var(--secondary-foreground))"
+				},
+				destructive: {
+					DEFAULT: "hsl(var(--destructive))",
+					foreground: "hsl(var(--destructive-foreground))"
+				},
+				muted: {
+					DEFAULT: "hsl(var(--muted))",
+					foreground: "hsl(var(--muted-foreground))"
+				},
+				accent: {
+					DEFAULT: "hsl(var(--accent))",
+					foreground: "hsl(var(--accent-foreground))"
+				},
+				popover: {
+					DEFAULT: "hsl(var(--popover))",
+					foreground: "hsl(var(--popover-foreground))"
+				},
+				card: {
+					DEFAULT: "hsl(var(--card))",
+					foreground: "hsl(var(--card-foreground))"
+				}
+			},
+			borderRadius: {
+				lg: "var(--radius)",
+				md: "calc(var(--radius) - 2px)",
+				sm: "calc(var(--radius) - 4px)"
+			},
+			fontFamily: {
+				sans: ["var(--font-sans)", ...fontFamily.sans]
+			}
+		}
+	},
+	plugins: [require("tailwindcss-animate")],
+};
+
+export default config;
+
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/VERCEL.JSON CODE IS BELOW
+{
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+} 
+
+/USERS/KURTPESSA/CODE/WORKOUT-CHALLENGE/VITE.CONFIG.JS CODE IS BELOW
+import { defineConfig } from 'vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import path from 'path'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [svelte()],
+  base: './',
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  },
+  resolve: {
+    alias: {
+      $lib: path.resolve('./src/lib')
+    }
+  }
+})
+

@@ -27,6 +27,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
+    "fs": "^0.0.1-security",
     "shadcn-svelte": "^0.14.0"
   }
 }
