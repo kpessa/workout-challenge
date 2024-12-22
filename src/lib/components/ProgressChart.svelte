@@ -15,10 +15,23 @@
   let currentPage = 0;
   let svg;
   let dailyWorkouts = [];
-  let isMonthView = true;
-  let viewMode = 'month';
   let containerWidth;
   let containerHeight;
+  
+  // Default to week view on mobile
+  let isMonthView = typeof window !== 'undefined' ? window.innerWidth >= 800 : true;
+  let viewMode = isMonthView ? 'month' : 'week';
+
+  // Chart dimensions
+  $: margin = {
+    top: 20,
+    right: containerWidth < 800 ? 40 : 40,  // Consistent right margin
+    bottom: containerWidth < 800 ? 60 : 70,  // Increased bottom margin for rotated labels on mobile
+    left: containerWidth < 800 ? 45 : 75     // Adjusted left margin for y-axis labels
+  };
+  
+  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
+  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
 
   $: {
     // Update viewMode whenever isMonthView changes
@@ -28,17 +41,6 @@
       calculateWorkoutDays();
     }
   }
-
-  // Chart dimensions
-  $: margin = {
-    top: 20,
-    right: containerWidth < 640 ? 20 : 50,
-    bottom: containerWidth < 640 ? 50 : 70,
-    left: containerWidth < 640 ? 35 : 75
-  };
-  
-  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
-  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
 
   // Use time scale for x-axis with proper padding
   function createScales() {
@@ -59,8 +61,9 @@
   // Format date based on view mode and screen size
   $: formatDate = (date) => {
     const d = new Date(date);
-    if (containerWidth < 640) {
-      return d3.timeFormat(viewMode === 'week' ? '%a' : '%d')(d);
+    if (containerWidth < 800) {  // Updated breakpoint
+      // Shorter format below 800px
+      return d3.timeFormat('%a')(d);
     }
     return d3.timeFormat('%a, %m/%d')(d);
   };
@@ -295,6 +298,7 @@
       .attr('height', containerHeight)
       .attr('class', 'chart-svg');
     
+    // The 'inner' group using margin convention - removed manual offset
     svg = svgElement
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -342,6 +346,56 @@
     svg.selectAll('.current-day-line').remove();
     svg.selectAll('.week-boundary-line').remove();
     svg.selectAll('.current-day-background').remove();
+    svg.selectAll('.chart-border').remove();
+    svg.selectAll('.click-overlay').remove();
+
+    // Add click overlay first (behind everything else)
+    const overlay = svg.append('g')
+      .attr('class', 'click-overlay');
+
+    // Add clickable rectangles for each day
+    overlay.selectAll('rect')
+      .data(dailyWorkouts)
+      .join('rect')
+      .attr('x', d => x(new Date(d.date).toDateString()))
+      .attr('y', 0)
+      .attr('width', x.bandwidth())
+      .attr('height', height)
+      .attr('fill', 'transparent')
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        // Don't trigger if we clicked on a bar
+        if (event.target === event.currentTarget) {
+          const clickedDate = new Date(d.date);
+          // Set to noon to avoid timezone issues
+          clickedDate.setHours(12, 0, 0, 0);
+          dispatch('dateClick', {
+            date: clickedDate.toISOString()
+          });
+        }
+      });
+
+    // Add top and right borders
+    const border = svg.append('g')
+      .attr('class', 'chart-border');
+
+    // Top border
+    border.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', 0)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
+
+    // Right border
+    border.append('line')
+      .attr('x1', width)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
 
     // Add current day background and line
     const today = new Date();
@@ -454,109 +508,98 @@
         .tickFormat(formatDate)
         .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
           .filter((_, i) => {
-            if (containerWidth < 640) {
-              if (viewMode === 'month') {
-                // Show every 4th day in month view on mobile
-                return i % 4 === 0;
-              } else {
-                // Show every other day in week view on mobile
-                return i % 2 === 0;
-              }
+            if (containerWidth < 800) {  // Updated breakpoint
+              // Show fewer ticks below 800px
+              return i % 2 === 0;
             } else if (viewMode === 'month') {
-              // Show every 3rd day in month view on desktop
               return i % 3 === 0;
             } else {
-              // Show every other day in week view on desktop
               return i % 2 === 0;
             }
           })))
       .selectAll('text')
       .style('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '.15em')
-      .attr('transform', containerWidth < 640 ? 'rotate(-45)' : 'rotate(-35)')
-      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.8rem');
+      .attr('dx', containerWidth < 800 ? '-.5em' : '-.8em')  // Updated breakpoint
+      .attr('dy', containerWidth < 800 ? '.1em' : '.15em')   // Updated breakpoint
+      .attr('transform', containerWidth < 800 ? 'rotate(-45)' : 'rotate(-35)');  // Updated breakpoint
 
     // Update Y-axis with explicit styling
     svg.select('.y-axis')
       .call(d3.axisLeft(y)
-        .ticks(5)
+        .ticks(containerWidth < 800 ? 4 : 5)  // Updated breakpoint
         .tickFormat(d => d))
       .selectAll('text')
-      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.9rem');
+      .attr('dx', containerWidth < 800 ? '0' : '0.25em');  // Updated breakpoint
 
     // Update grid lines with explicit styling
     svg.select('.grid-lines')
       .selectAll('line')
-      .data(y.ticks(5))
+      .data(y.ticks(containerWidth < 800 ? 4 : 5))  // Updated breakpoint
       .join('line')
       .attr('x1', 0)
       .attr('x2', width)
       .attr('y1', d => y(d))
       .attr('y2', d => y(d))
       .attr('stroke', 'var(--border-color)')
-      .attr('stroke-opacity', containerWidth < 640 ? 0.2 : 0.15)
+      .attr('stroke-opacity', 0.15)
       .attr('stroke-dasharray', '2,2');
 
     // Update Y-axis label with explicit styling
     svg.select('.y-axis-label')
       .attr('x', -height / 2)
-      .attr('y', -margin.left + (containerWidth < 640 ? 12 : 35))
+      .attr('y', -margin.left + (containerWidth < 800 ? 8 : 35))  // Updated breakpoint
       .attr('fill', 'var(--muted-foreground)')
-      .style('font-size', containerWidth < 640 ? '0.8rem' : '1rem')
+      .style('font-size', containerWidth < 800 ? '0.7rem' : '1rem')  // Updated breakpoint
       .text('Min');
   }
 </script>
 
+<!-- Chart container -->
 <div class="chart-container">
-  <div class="relative mb-2 sm:mb-4 pt-1">
-    <!-- Absolute positioned tabs in top right -->
-    <div class="absolute right-0 top-0 h-7">
-      <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
-        <Tabs.List>
-          <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
-          <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
-        </Tabs.List>
-      </Tabs.Root>
-    </div>
-
-    <!-- Centered content -->
-    <div class="flex flex-col items-center gap-2">
-      <h2 class="text-sm sm:text-base font-semibold">
-        {viewMode === 'month' ? `Month ${currentPage + 1}` : `Week ${currentPage + 1}`}
-      </h2>
-      <div class="flex items-center gap-1 sm:gap-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          class="h-7 px-2"
-          on:click={previousPeriod} 
-          disabled={currentPage === 0}
-        >
-          ←
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          class="h-7 px-2"
-          on:click={goToToday}
-        >
-          Today
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          class="h-7 px-2"
-          on:click={nextPeriod} 
-          disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
-        >
-          →
-        </Button>
-      </div>
-    </div>
+  <!-- Navigation controls above chart -->
+  <div class="flex justify-center items-center gap-2 mb-4">
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={previousPeriod} 
+      disabled={currentPage === 0}
+    >
+      ←
+    </Button>
+    <Button 
+      variant="outline"
+      size="sm"
+      class="h-7 px-2"
+      on:click={goToToday}
+    >
+      Today
+    </Button>
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={nextPeriod} 
+      disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
+    >
+      →
+    </Button>
   </div>
-  
-  <div bind:this={chartContainer} class="chart"></div>
+
+  <!-- Chart area -->
+  <div class="chart" bind:this={chartContainer}>
+    <!-- SVG will be added here by D3 -->
+  </div>
+
+  <!-- View mode toggle below chart -->
+  <div class="flex justify-center mt-4">
+    <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
+      <Tabs.List>
+        <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
+        <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
+      </Tabs.List>
+    </Tabs.Root>
+  </div>
 </div>
 
 <style>
@@ -568,19 +611,23 @@
   }
 
   .chart-container {
-    height: 100%;
     width: 100%;
-    background: var(--background);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .chart {
+    flex: 1;
+    min-height: 0; /* Important for flex container */
+    position: relative;
     width: 100%;
-    height: calc(100% - 5rem);
   }
 
   :global(.chart-svg) {
     width: 100%;
     height: 100%;
+    overflow: visible;  /* Allow axis labels to overflow */
   }
 
   :global(.x-axis), :global(.y-axis) {
@@ -591,6 +638,7 @@
   :global(.x-axis line), :global(.y-axis line) {
     stroke: var(--border-color);
     stroke-width: 1px;
+    stroke-opacity: 0.5;
   }
 
   :global(.x-axis text), :global(.y-axis text) {
@@ -602,6 +650,7 @@
     fill: var(--success-color);
     stroke: var(--border-color);
     stroke-width: 1px;
+    stroke-opacity: 0.5;
     transition: filter 0.2s ease-in-out;
   }
 
@@ -613,6 +662,7 @@
     fill: transparent;
     stroke: var(--border-color);
     stroke-width: 1.5px;
+    stroke-opacity: 0.5;
     stroke-dasharray: 4,4;
     transition: fill 0.2s ease-in-out;
   }
@@ -623,7 +673,7 @@
 
   :global(.grid-lines line) {
     stroke: var(--border-color);
-    stroke-opacity: 0.2;
+    stroke-opacity: 0.15;
     stroke-dasharray: 2,2;
   }
 
@@ -647,7 +697,7 @@
     opacity: 0.7;
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 800px) {  /* Updated breakpoint */
     :global(.chart-svg) {
       position: absolute;
       top: 0;
@@ -656,6 +706,7 @@
 
     .chart-container {
       position: relative;
+      padding-right: 1rem;
     }
 
     .chart {
@@ -727,5 +778,29 @@
   :global(.chart-container [role="tab"][data-state="active"]) {
     background-color: hsl(var(--primary)) !important;
     color: hsl(var(--primary-foreground)) !important;
+  }
+
+  @media (max-width: 800px) {
+    .chart {
+      width: 100%;
+      height: calc(100% - 4rem);
+      margin-right: 0; /* Removed negative margin */
+    }
+
+    :global(.x-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.y-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.duration-label) {
+      font-size: 0.6rem;
+    }
+  }
+
+  :global(.tabs-list) {
+    margin-bottom: 0;
   }
 </style>
