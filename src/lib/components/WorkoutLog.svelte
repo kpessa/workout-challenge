@@ -1,8 +1,11 @@
 <script>
   import { schedule } from '../stores/scheduleStore';
   import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Pencil, Trash2 } from 'lucide-svelte';
   
-  export let selectedDate = null;
+  // Default to today's date if no date is selected
+  export let selectedDate = new Date().toISOString();
   export let proposedDuration = 30;
   export let onComplete = () => {};
   export let editMode = false;
@@ -31,12 +34,20 @@
   async function handleSubmit() {
     try {
       if (duration > 0) {
+        // Parse the date from the input value (YYYY-MM-DD format)
+        const [year, month, day] = formattedDate.split('-').map(Number);
+        const workoutDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+        
+        if (isNaN(workoutDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+
         if (editMode && workoutId) {
-          console.log('Updating workout:', { id: workoutId, duration });
-          await schedule.updateWorkout(new Date(selectedDate), duration, workoutId);
+          console.log('Updating workout:', { id: workoutId, duration, date: workoutDate.toISOString() });
+          await schedule.updateWorkout(workoutDate, duration, workoutId);
         } else {
-          console.log('Logging new workout:', { date: selectedDate, duration });
-          await schedule.logWorkout(new Date(selectedDate), duration);
+          console.log('Logging new workout:', { date: workoutDate.toISOString(), duration });
+          await schedule.logWorkout(workoutDate, duration);
         }
         onComplete(); // Close modal
       }
@@ -66,7 +77,9 @@
   }
 
   function formatDate(date) {
-    return new Date(date).toLocaleDateString();
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString();
   }
 
   function formatTime(timestamp) {
@@ -76,8 +89,44 @@
     });
   }
 
-  // Format date for input value
+  function formatDateForDisplay(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    return `${month}/${day}/${year}`;
+  }
+
+  // Format date for input value, ensuring it's in YYYY-MM-DD format
   $: formattedDate = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : '';
+
+  // Validate date whenever it changes
+  $: {
+    if (selectedDate) {
+      const date = new Date(selectedDate);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', selectedDate);
+        selectedDate = new Date().toISOString(); // Reset to today if invalid
+      }
+    }
+  }
+
+  // When editing a workout, convert the date to YYYY-MM-DD format
+  function setEditWorkout(workout, date) {
+    const d = new Date(date);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      formattedDate = `${year}-${month}-${day}`;
+    }
+    workoutId = workout.id;
+    duration = workout.duration;
+    editMode = true;
+  }
 </script>
 
 <div class="workout-log">
@@ -87,18 +136,18 @@
     <form on:submit|preventDefault={handleSubmit} class="log-form">
       <div class="form-group">
         <label for="workout-date">Date:</label>
-        <input
+        <Input
           id="workout-date"
           type="date"
           bind:value={formattedDate}
           max={new Date().toISOString().split('T')[0]}
-          disabled={editMode}
+          class="date-input"
         />
       </div>
 
       <div class="form-group">
         <label for="workout-duration">Duration (minutes):</label>
-        <input
+        <Input
           id="workout-duration"
           type="number"
           min="1"
@@ -138,8 +187,30 @@
             <div class="workout-entries">
               {#each day.workouts as workout}
                 <div class="workout-entry">
-                  <span class="duration">{workout.duration} minutes</span>
-                  <span class="time">{formatTime(workout.timestamp)}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="duration">{workout.duration} minutes</span>
+                    <span class="time">{formatTime(workout.timestamp)}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button 
+                      class="icon-button"
+                      on:click={() => setEditWorkout(workout, day.date)}
+                      title="Edit workout"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button 
+                      class="icon-button delete"
+                      on:click={async () => {
+                        if (confirm('Are you sure you want to delete this workout?')) {
+                          await schedule.deleteWorkout(null, workout.id);
+                        }
+                      }}
+                      title="Delete workout"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               {/each}
             </div>
@@ -257,12 +328,18 @@
   .workout-entry {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s;
   }
 
   .workout-entry:last-child {
     border-bottom: none;
+  }
+
+  .workout-entry:hover {
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .duration {
@@ -286,5 +363,51 @@
     .workout-log {
       padding: 1rem;
     }
+  }
+
+  .date-input-wrapper,
+  .date-input-wrapper input[type="date"],
+  .date-display {
+    display: none;
+  }
+
+  :global(.date-input) {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    display: block;
+  }
+
+  :global(.date-input::-webkit-calendar-picker-indicator) {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+
+  :global(.date-input::-webkit-datetime-edit) {
+    padding: 0;
+  }
+
+  .icon-button {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--muted-foreground);
+    opacity: 0.7;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+
+  .icon-button:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .icon-button.delete:hover {
+    color: #dc3545;
   }
 </style>

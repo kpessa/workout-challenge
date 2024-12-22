@@ -89,22 +89,29 @@ function createScheduleStore() {
       }
     },
 
-    updateWorkout: async (date, duration) => {
+    updateWorkout: async (date, duration, workoutId) => {
       try {
         validateWorkout(date, duration);
         
-        // Update in Supabase
+        if (!workoutId) {
+          throw new Error('No workout ID provided for update');
+        }
+
+        // Update in Supabase using workout ID
         const { data, error } = await supabase
           .from('workouts')
-          .update({ duration })
-          .eq('date', date.toISOString());
+          .update({ 
+            date: date.toISOString(),
+            duration 
+          })
+          .eq('id', workoutId);
 
         if (error) throw error;
 
-        // Update local state
+        // Update local state using workout ID
         store.update(workouts => workouts.map(workout => 
-          workout.date === date.toISOString()
-            ? { ...workout, duration }
+          workout.id === workoutId
+            ? { ...workout, date: date.toISOString(), duration }
             : workout
         ));
 

@@ -15,10 +15,23 @@
   let currentPage = 0;
   let svg;
   let dailyWorkouts = [];
-  let isMonthView = true;
-  let viewMode = 'month';
   let containerWidth;
   let containerHeight;
+  
+  // Default to week view on mobile
+  let isMonthView = typeof window !== 'undefined' ? window.innerWidth >= 800 : true;
+  let viewMode = isMonthView ? 'month' : 'week';
+
+  // Chart dimensions
+  $: margin = {
+    top: 20,
+    right: containerWidth < 800 ? 40 : 40,  // Consistent right margin
+    bottom: containerWidth < 800 ? 60 : 70,  // Increased bottom margin for rotated labels on mobile
+    left: containerWidth < 800 ? 45 : 75     // Adjusted left margin for y-axis labels
+  };
+  
+  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
+  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
 
   $: {
     // Update viewMode whenever isMonthView changes
@@ -28,17 +41,6 @@
       calculateWorkoutDays();
     }
   }
-
-  // Chart dimensions
-  $: margin = {
-    top: 20,
-    right: containerWidth < 640 ? 20 : 50,
-    bottom: containerWidth < 640 ? 50 : 70,
-    left: containerWidth < 640 ? 35 : 75
-  };
-  
-  $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
-  $: height = containerHeight ? containerHeight - margin.top - margin.bottom : 0;
 
   // Use time scale for x-axis with proper padding
   function createScales() {
@@ -59,8 +61,9 @@
   // Format date based on view mode and screen size
   $: formatDate = (date) => {
     const d = new Date(date);
-    if (containerWidth < 640) {
-      return d3.timeFormat(viewMode === 'week' ? '%a' : '%d')(d);
+    if (containerWidth < 800) {  // Updated breakpoint
+      // Shorter format below 800px
+      return d3.timeFormat('%a')(d);
     }
     return d3.timeFormat('%a, %m/%d')(d);
   };
@@ -295,6 +298,7 @@
       .attr('height', containerHeight)
       .attr('class', 'chart-svg');
     
+    // The 'inner' group using margin convention - removed manual offset
     svg = svgElement
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -342,6 +346,29 @@
     svg.selectAll('.current-day-line').remove();
     svg.selectAll('.week-boundary-line').remove();
     svg.selectAll('.current-day-background').remove();
+    svg.selectAll('.chart-border').remove();
+
+    // Add top and right borders
+    const border = svg.append('g')
+      .attr('class', 'chart-border');
+
+    // Top border
+    border.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', 0)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
+
+    // Right border
+    border.append('line')
+      .attr('x1', width)
+      .attr('x2', width)
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', 'var(--border-color)')
+      .attr('stroke-width', 1.5);
 
     // Add current day background and line
     const today = new Date();
@@ -454,56 +481,48 @@
         .tickFormat(formatDate)
         .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
           .filter((_, i) => {
-            if (containerWidth < 640) {
-              if (viewMode === 'month') {
-                // Show every 4th day in month view on mobile
-                return i % 4 === 0;
-              } else {
-                // Show every other day in week view on mobile
-                return i % 2 === 0;
-              }
+            if (containerWidth < 800) {  // Updated breakpoint
+              // Show fewer ticks below 800px
+              return i % 2 === 0;
             } else if (viewMode === 'month') {
-              // Show every 3rd day in month view on desktop
               return i % 3 === 0;
             } else {
-              // Show every other day in week view on desktop
               return i % 2 === 0;
             }
           })))
       .selectAll('text')
       .style('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '.15em')
-      .attr('transform', containerWidth < 640 ? 'rotate(-45)' : 'rotate(-35)')
-      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.8rem');
+      .attr('dx', containerWidth < 800 ? '-.5em' : '-.8em')  // Updated breakpoint
+      .attr('dy', containerWidth < 800 ? '.1em' : '.15em')   // Updated breakpoint
+      .attr('transform', containerWidth < 800 ? 'rotate(-45)' : 'rotate(-35)');  // Updated breakpoint
 
     // Update Y-axis with explicit styling
     svg.select('.y-axis')
       .call(d3.axisLeft(y)
-        .ticks(5)
+        .ticks(containerWidth < 800 ? 4 : 5)  // Updated breakpoint
         .tickFormat(d => d))
       .selectAll('text')
-      .style('font-size', containerWidth < 640 ? '0.7rem' : '0.9rem');
+      .attr('dx', containerWidth < 800 ? '0' : '0.25em');  // Updated breakpoint
 
     // Update grid lines with explicit styling
     svg.select('.grid-lines')
       .selectAll('line')
-      .data(y.ticks(5))
+      .data(y.ticks(containerWidth < 800 ? 4 : 5))  // Updated breakpoint
       .join('line')
       .attr('x1', 0)
       .attr('x2', width)
       .attr('y1', d => y(d))
       .attr('y2', d => y(d))
       .attr('stroke', 'var(--border-color)')
-      .attr('stroke-opacity', containerWidth < 640 ? 0.2 : 0.15)
+      .attr('stroke-opacity', 0.15)
       .attr('stroke-dasharray', '2,2');
 
     // Update Y-axis label with explicit styling
     svg.select('.y-axis-label')
       .attr('x', -height / 2)
-      .attr('y', -margin.left + (containerWidth < 640 ? 12 : 35))
+      .attr('y', -margin.left + (containerWidth < 800 ? 8 : 35))  // Updated breakpoint
       .attr('fill', 'var(--muted-foreground)')
-      .style('font-size', containerWidth < 640 ? '0.8rem' : '1rem')
+      .style('font-size', containerWidth < 800 ? '0.7rem' : '1rem')  // Updated breakpoint
       .text('Min');
   }
 </script>
@@ -571,16 +590,19 @@
     height: 100%;
     width: 100%;
     background: var(--background);
+    position: relative;
   }
 
   .chart {
     width: 100%;
     height: calc(100% - 5rem);
+    position: relative;
   }
 
   :global(.chart-svg) {
     width: 100%;
     height: 100%;
+    overflow: visible;  /* Allow axis labels to overflow */
   }
 
   :global(.x-axis), :global(.y-axis) {
@@ -591,6 +613,7 @@
   :global(.x-axis line), :global(.y-axis line) {
     stroke: var(--border-color);
     stroke-width: 1px;
+    stroke-opacity: 0.5;
   }
 
   :global(.x-axis text), :global(.y-axis text) {
@@ -602,6 +625,7 @@
     fill: var(--success-color);
     stroke: var(--border-color);
     stroke-width: 1px;
+    stroke-opacity: 0.5;
     transition: filter 0.2s ease-in-out;
   }
 
@@ -613,6 +637,7 @@
     fill: transparent;
     stroke: var(--border-color);
     stroke-width: 1.5px;
+    stroke-opacity: 0.5;
     stroke-dasharray: 4,4;
     transition: fill 0.2s ease-in-out;
   }
@@ -623,7 +648,7 @@
 
   :global(.grid-lines line) {
     stroke: var(--border-color);
-    stroke-opacity: 0.2;
+    stroke-opacity: 0.15;
     stroke-dasharray: 2,2;
   }
 
@@ -647,7 +672,7 @@
     opacity: 0.7;
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 800px) {  /* Updated breakpoint */
     :global(.chart-svg) {
       position: absolute;
       top: 0;
@@ -656,6 +681,7 @@
 
     .chart-container {
       position: relative;
+      padding-right: 1rem;
     }
 
     .chart {
@@ -727,5 +753,25 @@
   :global(.chart-container [role="tab"][data-state="active"]) {
     background-color: hsl(var(--primary)) !important;
     color: hsl(var(--primary-foreground)) !important;
+  }
+
+  @media (max-width: 800px) {
+    .chart {
+      width: 100%;
+      height: calc(100% - 4rem);
+      margin-right: 0; /* Removed negative margin */
+    }
+
+    :global(.x-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.y-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.duration-label) {
+      font-size: 0.6rem;
+    }
   }
 </style>
