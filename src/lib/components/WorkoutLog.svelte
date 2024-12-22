@@ -5,6 +5,9 @@
   import { schedule } from "$lib/stores/scheduleStore";
   import { format } from "date-fns";
   import { createEventDispatcher } from "svelte";
+  import { X } from 'lucide-svelte';
+
+  const dispatch = createEventDispatcher();
 
   export let selectedDate: string | null = null;
   export let proposedDuration = 30;
@@ -14,7 +17,7 @@
 
   let duration = proposedDuration;
   let date = selectedDate ? new Date(selectedDate) : new Date();
-  $: workouts = $schedule?.workouts || [];
+  $: workouts = $schedule || [];
   $: recentWorkouts = workouts.slice(0, 5);
 
   $: formattedDate = format(date, "MM/dd/yy");
@@ -40,37 +43,56 @@
     workoutId = workout.id;
     editMode = true;
   }
+
+  function handleClose() {
+    onComplete();
+  }
 </script>
 
-<form class="space-y-6" on:submit|preventDefault={handleSubmit}>
-  <div class="space-y-4">
-    <div class="grid gap-2">
-      <Label for="date">Date</Label>
-      <Input 
-        type="date" 
-        id="date"
-        bind:value={date}
-        class="w-full"
-      />
-    </div>
-
-    <div class="grid gap-2">
-      <Label for="duration">Duration (minutes)</Label>
-      <Input 
-        type="number" 
-        id="duration"
-        bind:value={duration}
-        min="1"
-        class="w-full"
-      />
-    </div>
-  </div>
-
-  <div class="flex justify-end">
-    <Button type="submit">
-      {editMode ? 'Update' : 'Add'} Workout
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b pb-4">
+    <h2 class="text-lg font-semibold">{editMode ? 'Edit' : 'Log'} Workout</h2>
+    <Button 
+      variant="ghost" 
+      size="icon"
+      on:click={handleClose}
+    >
+      <X class="h-4 w-4" />
+      <span class="sr-only">Close</span>
     </Button>
   </div>
+
+  <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
+    <div class="space-y-4">
+      <div class="grid gap-2">
+        <Label for="date">Date</Label>
+        <Input 
+          type="date" 
+          id="date"
+          bind:value={date}
+          class="w-full"
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="duration">Duration (minutes)</Label>
+        <Input 
+          type="number" 
+          id="duration"
+          bind:value={duration}
+          min="1"
+          class="w-full"
+        />
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <Button type="submit">
+        {editMode ? 'Update' : 'Add'} Workout
+      </Button>
+    </div>
+  </form>
 
   {#if recentWorkouts.length > 0}
     <div class="space-y-4">
@@ -104,4 +126,4 @@
       </div>
     </div>
   {/if}
-</form>
+</div>
