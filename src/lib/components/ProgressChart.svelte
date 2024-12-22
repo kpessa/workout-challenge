@@ -27,9 +27,9 @@
   // Chart dimensions
   $: margin = {
     top: 20,
-    right: containerWidth < 800 ? 40 : 40,  // Consistent right margin
-    bottom: containerWidth < 800 ? 60 : 70,  // Increased bottom margin for rotated labels on mobile
-    left: containerWidth < 800 ? 45 : 75     // Adjusted left margin for y-axis labels
+    right: containerWidth < 800 ? 40 : 40,
+    bottom: containerWidth < 800 ? 100 : 70,  // Increased bottom margin on mobile for legend
+    left: containerWidth < 800 ? 45 : 75
   };
   
   $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
@@ -115,21 +115,92 @@
   let scheduleData;
   let userPreferencesData;
   let workoutTypesData;
+  let isDataReady = false;
 
-  schedule.subscribe(value => {
-    scheduleData = value;
-    calculateWorkoutDays();
+  // Initialize stores
+  async function initializeStores() {
+    // Initialize workout types first
+    await workoutTypes.initialize();
+    
+    // Subscribe to all stores at once
+    schedule.subscribe(value => {
+      scheduleData = value;
+      checkDataReady('schedule');
+    });
+
+    userPreferences.subscribe(value => {
+      userPreferencesData = value;
+      checkDataReady('preferences');
+    });
+
+    workoutTypes.subscribe(value => {
+      workoutTypesData = value;
+      checkDataReady('workoutTypes');
+    });
+  }
+
+  function checkDataReady(source) {
+    const hasWorkoutTypes = !!(workoutTypesData && workoutTypesData.length > 0);
+    isDataReady = !!(scheduleData && userPreferencesData && hasWorkoutTypes);
+    
+    if (isDataReady && svg) {
+      calculateWorkoutDays();
+      requestAnimationFrame(updateChart);
+    }
+  }
+
+  onMount(() => {
+    // Initialize stores first
+    initializeStores();
+    
+    // Create the SVG
+    updateDimensions();
+    
+    const svgElement = d3.select(chartContainer)
+      .append('svg')
+      .attr('width', containerWidth)
+      .attr('height', containerHeight)
+      .attr('class', 'chart-svg');
+    
+    svg = svgElement
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Add grid lines container
+    svg.append('g')
+      .attr('class', 'grid-lines');
+
+    // Add axes
+    svg.append('g')
+      .attr('class', 'x-axis');
+
+    svg.append('g')
+      .attr('class', 'y-axis');
+
+    // Add axis labels
+    svg.append('text')
+      .attr('class', 'y-axis-label')
+      .attr('transform', 'rotate(-90)')
+      .attr('text-anchor', 'middle');
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (svgElement) {
+        svgElement.remove();
+      }
+      svg = null;
+    };
   });
 
-  userPreferences.subscribe(value => {
-    userPreferencesData = value;
-    calculateWorkoutDays();
-  });
-
-  workoutTypes.subscribe(value => {
-    workoutTypesData = value;
-    calculateWorkoutDays();
-  });
+  // View mode changes should also wait for data readiness
+  $: {
+    viewMode = isMonthView ? 'month' : 'week';
+    if (isDataReady && svg && workoutTypesData && workoutTypesData.length > 0) {
+      calculateWorkoutDays();
+    }
+  }
 
   function calculateCurrentPage() {
     if (!userPreferencesData) return 0;
@@ -160,7 +231,9 @@
   }
 
   function calculateWorkoutDays() {
-    if (!userPreferencesData || !scheduleData) return;
+    if (!userPreferencesData || !scheduleData || !workoutTypesData || workoutTypesData.length === 0) {
+      return;
+    }
     
     const startDate = getStartOfDay(userPreferencesData.startDate);
     const daysPerWeek = userPreferencesData.daysPerWeek;
@@ -307,59 +380,18 @@
     }
   }
 
-  onMount(() => {
-    // Create the SVG
-    updateDimensions();
-    
-    const svgElement = d3.select(chartContainer)
-      .append('svg')
-      .attr('width', containerWidth)
-      .attr('height', containerHeight)
-      .attr('class', 'chart-svg');
-    
-    svg = svgElement
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    // Add grid lines container
-    svg.append('g')
-      .attr('class', 'grid-lines');
-
-    // Add axes
-    svg.append('g')
-      .attr('class', 'x-axis');
-
-    svg.append('g')
-      .attr('class', 'y-axis');
-
-    // Add axis labels
-    svg.append('text')
-      .attr('class', 'y-axis-label')
-      .attr('transform', 'rotate(-90)')
-      .attr('text-anchor', 'middle');
-
-    // Initial update
-    calculateWorkoutDays();
-
-    // Add resize listener
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (svgElement) {
-        svgElement.remove();
-      }
-      svg = null;
-    };
-  });
-
   function getWorkoutColor(workout) {
-    if (!workout || !workoutTypesData) return 'hsl(var(--primary))';
+    if (!workout || !workoutTypesData || workoutTypesData.length === 0) {
+      return 'hsl(var(--primary))';
+    }
     const workoutType = workoutTypesData.find(t => t.id === workout.workout_type_id);
     return workoutType?.color || 'hsl(var(--primary))';
   }
 
   function updateChart() {
-    if (!svg || !dailyWorkouts.length || !width || !height) return;
+    if (!svg || !dailyWorkouts.length || !width || !height || !workoutTypesData || workoutTypesData.length === 0) {
+      return;
+    }
 
     const scales = createScales();
     if (!scales) return;
@@ -513,6 +545,11 @@
           .attr('width', barWidth)
           .attr('x', 0)
           .style('cursor', 'pointer')
+          .style('fill', 'transparent')
+          .style('stroke', 'hsl(var(--primary))')
+          .style('stroke-width', '1.5px')
+          .style('stroke-opacity', '0.7')
+          .style('stroke-dasharray', '4,4')
           .on('click', () => handleWorkoutClick(d));
 
         // Add proposed duration label
@@ -585,7 +622,7 @@
 <!-- Chart container -->
 <div class="chart-container">
   <!-- Navigation controls above chart -->
-  <div class="flex justify-center items-center gap-2 mb-4">
+  <div class="flex justify-center items-center gap-2 mb-2">
     <Button 
       variant="outline" 
       size="sm"
@@ -619,8 +656,27 @@
     <!-- SVG will be added here by D3 -->
   </div>
 
-  <!-- View mode toggle below chart -->
-  <div class="flex justify-center mt-4">
+  <!-- Legend -->
+  {#if workoutTypesData && workoutTypesData.length > 0}
+    <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 px-2 text-xs sm:text-sm sm:mt-6 sm:px-4 sm:gap-4">
+      {#each workoutTypesData as type}
+        <div class="flex items-center gap-1.5">
+          <div 
+            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-border" 
+            style="background-color: {type.color};"
+          />
+          <span class="text-muted-foreground whitespace-nowrap">{type.name}</span>
+        </div>
+      {/each}
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 border-2 border-dashed border-primary rounded-full" />
+        <span class="text-muted-foreground whitespace-nowrap">Proposed</span>
+      </div>
+    </div>
+  {/if}
+
+  <!-- View mode toggle below legend -->
+  <div class="flex justify-center mt-2 sm:mt-4">
     <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
       <Tabs.List>
         <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
@@ -640,9 +696,10 @@
 
   .chart {
     flex: 1;
-    min-height: 0; /* Important for flex container */
+    min-height: 0;
     position: relative;
     width: 100%;
+    margin-bottom: 1rem; /* Add space for legend on mobile */
   }
 
   :global(.chart-svg) {
@@ -668,7 +725,6 @@
   }
 
   :global(.completed-rect) {
-    fill: hsl(var(--primary));
     stroke: hsl(var(--border));
     stroke-width: 1px;
     stroke-opacity: 0.5;
@@ -796,8 +852,7 @@
 
   @media (max-width: 800px) {
     .chart {
-      width: 100%;
-      height: calc(100% - 4rem);
+      height: calc(100% - 7rem); /* Adjust height to accommodate legend and controls */
       margin-right: 0;
     }
 

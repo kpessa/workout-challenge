@@ -84,7 +84,7 @@
     <div class="container flex h-14 items-center">
       <div class="flex flex-1 items-center justify-between">
         <div class="flex items-center gap-6 md:gap-8">
-          <h1 class="text-lg font-semibold tracking-tight">90-Day Challenge</h1>
+          <h1 class="text-lg font-semibold tracking-tight whitespace-nowrap">90-Day&nbsp;Challenge</h1>
         </div>
         <div class="flex items-center gap-2">
           <ThemeToggle />
