@@ -18,6 +18,16 @@
     duration = proposedDuration;
   }
 
+  // Handle the selected date
+  $: {
+    if (selectedDate) {
+      const date = new Date(selectedDate);
+      // Set to noon to avoid timezone issues
+      date.setHours(12, 0, 0, 0);
+      selectedDate = date.toISOString();
+    }
+  }
+
   // Get recent workouts (last 7 days)
   $: recentWorkouts = $schedule
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

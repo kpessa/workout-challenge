@@ -347,6 +347,33 @@
     svg.selectAll('.week-boundary-line').remove();
     svg.selectAll('.current-day-background').remove();
     svg.selectAll('.chart-border').remove();
+    svg.selectAll('.click-overlay').remove();
+
+    // Add click overlay first (behind everything else)
+    const overlay = svg.append('g')
+      .attr('class', 'click-overlay');
+
+    // Add clickable rectangles for each day
+    overlay.selectAll('rect')
+      .data(dailyWorkouts)
+      .join('rect')
+      .attr('x', d => x(new Date(d.date).toDateString()))
+      .attr('y', 0)
+      .attr('width', x.bandwidth())
+      .attr('height', height)
+      .attr('fill', 'transparent')
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        // Don't trigger if we clicked on a bar
+        if (event.target === event.currentTarget) {
+          const clickedDate = new Date(d.date);
+          // Set to noon to avoid timezone issues
+          clickedDate.setHours(12, 0, 0, 0);
+          dispatch('dateClick', {
+            date: clickedDate.toISOString()
+          });
+        }
+      });
 
     // Add top and right borders
     const border = svg.append('g')

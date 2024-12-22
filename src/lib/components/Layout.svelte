@@ -124,6 +124,7 @@
             <ProgressChart 
               on:workoutClick={handleWorkoutClick}
               on:editWorkout={handleEditWorkout}
+              on:dateClick={(event) => openWorkoutLog(event.detail.date)}
             />
           </div>
         </div>
