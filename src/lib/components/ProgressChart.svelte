@@ -124,6 +124,34 @@
     calculateWorkoutDays();
   });
 
+  function calculateCurrentPage() {
+    if (!userPreferencesData) return 0;
+    
+    const today = new Date();
+    const startDate = new Date(userPreferencesData.startDate);
+    
+    // Set both dates to midnight for accurate day calculation
+    today.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Adjust startDate to the beginning of its week (Sunday)
+    const startDay = startDate.getDay();
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setDate(adjustedStartDate.getDate() - startDay);
+    
+    // Calculate the difference from the adjusted start date
+    const diffTime = today.getTime() - adjustedStartDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (viewMode === 'month') {
+      // For month view, calculate which 30-day period contains today
+      return Math.floor(diffDays / 30);
+    } else {
+      // For week view, calculate which 7-day period contains today
+      return Math.floor(diffDays / 7);
+    }
+  }
+
   function calculateWorkoutDays() {
     if (!userPreferencesData || !scheduleData) return;
     
@@ -134,12 +162,14 @@
     
     // Calculate start and end dates based on view mode
     const pageStartDate = new Date(startDate);
+    
+    // Adjust initial startDate to the beginning of its week (Sunday)
+    const startDay = pageStartDate.getDay();
+    pageStartDate.setDate(pageStartDate.getDate() - startDay);
+    
+    // Now add the page offset
     const daysToAdd = viewMode === 'month' ? currentPage * 30 : currentPage * 7;
     pageStartDate.setDate(pageStartDate.getDate() + daysToAdd);
-    
-    // Always adjust to the nearest Sunday for consistent week boundaries
-    const dayOfWeek = pageStartDate.getDay();
-    pageStartDate.setDate(pageStartDate.getDate() - dayOfWeek);
     
     const pageEndDate = new Date(pageStartDate);
     // Set period length based on view mode
@@ -270,22 +300,12 @@
     }
   }
 
-  function calculateCurrentPage() {
-    const today = new Date();
-    const startDate = new Date(userPreferencesData.startDate);
-    const diffTime = today.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (viewMode === 'month') {
-      return Math.floor(diffDays / 30);
-    } else {
-      return Math.floor(diffDays / 7);
-    }
-  }
-
   function goToToday() {
-    currentPage = calculateCurrentPage();
-    calculateWorkoutDays();
+    const newPage = calculateCurrentPage();
+    if (currentPage !== newPage) {
+      currentPage = newPage;
+      calculateWorkoutDays();
+    }
   }
 
   onMount(() => {
@@ -568,7 +588,7 @@
       ←
     </Button>
     <Button 
-      variant="outline"
+      variant="secondary"
       size="sm"
       class="h-7 px-2"
       on:click={goToToday}
