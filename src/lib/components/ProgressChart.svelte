@@ -603,13 +603,6 @@
 </div>
 
 <style>
-  :root {
-    --success-color: #28a745;
-    --border-color: #333333;
-    --muted-foreground: #666666;
-    --background: #ffffff;
-  }
-
   .chart-container {
     width: 100%;
     height: 100%;
@@ -631,24 +624,24 @@
   }
 
   :global(.x-axis), :global(.y-axis) {
-    color: var(--muted-foreground);
+    @apply text-muted-foreground;
   }
 
   :global(.x-axis path), :global(.y-axis path),
   :global(.x-axis line), :global(.y-axis line) {
-    stroke: var(--border-color);
+    stroke: hsl(var(--border));
     stroke-width: 1px;
     stroke-opacity: 0.5;
   }
 
   :global(.x-axis text), :global(.y-axis text) {
-    fill: var(--muted-foreground);
+    @apply fill-muted-foreground;
     font-size: 0.7rem;
   }
 
   :global(.completed-rect) {
-    fill: var(--success-color);
-    stroke: var(--border-color);
+    fill: hsl(var(--success));
+    stroke: hsl(var(--border));
     stroke-width: 1px;
     stroke-opacity: 0.5;
     transition: filter 0.2s ease-in-out;
@@ -660,7 +653,7 @@
 
   :global(.proposed-rect) {
     fill: transparent;
-    stroke: var(--border-color);
+    stroke: hsl(var(--border));
     stroke-width: 1.5px;
     stroke-opacity: 0.5;
     stroke-dasharray: 4,4;
@@ -668,24 +661,24 @@
   }
 
   :global(.proposed-rect:hover) {
-    fill: rgba(40, 167, 69, 0.1);
+    fill: hsl(var(--success) / 0.1);
   }
 
   :global(.grid-lines line) {
-    stroke: var(--border-color);
+    stroke: hsl(var(--border));
     stroke-opacity: 0.15;
     stroke-dasharray: 2,2;
   }
 
   :global(.current-day-background) {
     pointer-events: none;
-    fill: rgb(59, 130, 246);  /* tailwind blue-500 */
-    opacity: 0.15;  /* Increased from 0.08 */
+    @apply bg-blue-500;
+    opacity: 0.15;
   }
 
   :global(.week-boundary-line) {
     pointer-events: none;
-    color: var(--border);
+    color: hsl(var(--border));
   }
 
   :global(.duration-label) {
@@ -697,7 +690,7 @@
     opacity: 0.7;
   }
 
-  @media (min-width: 800px) {  /* Updated breakpoint */
+  @media (min-width: 800px) {
     :global(.chart-svg) {
       position: absolute;
       top: 0;
@@ -742,16 +735,6 @@
     }
   }
 
-  /* Dark mode support */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --success-color: #28a745;
-      --border-color: #666666;
-      --muted-foreground: #999999;
-      --background: transparent;
-    }
-  }
-
   /* Remove any styles that might interfere with shadcn tabs */
   :global(.chart-container [data-state="active"]) {
     background-color: unset !important;
@@ -761,7 +744,7 @@
   /* Add proper tab styling */
   :global(.chart-container [role="tablist"]) {
     height: 100%;
-    border: 1px solid var(--border-color);
+    border: 1px solid hsl(var(--border));
     border-radius: 0.375rem;
     padding: 0;
     background: none;
@@ -772,7 +755,7 @@
     border-radius: 0.375rem;
     border: none;
     background: none;
-    color: var(--muted-foreground);
+    @apply text-muted-foreground;
   }
 
   :global(.chart-container [role="tab"][data-state="active"]) {
@@ -784,7 +767,7 @@
     .chart {
       width: 100%;
       height: calc(100% - 4rem);
-      margin-right: 0; /* Removed negative margin */
+      margin-right: 0;
     }
 
     :global(.x-axis text) {

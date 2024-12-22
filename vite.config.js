@@ -14,5 +14,8 @@ export default defineConfig({
     alias: {
       $lib: path.resolve('./src/lib')
     }
+  },
+  css: {
+    postcss: './postcss.config.js'
   }
 })

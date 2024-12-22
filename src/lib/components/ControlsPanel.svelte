@@ -125,16 +125,13 @@
 
 <style>
   .controls-panel {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
+    @apply bg-card rounded-lg p-6;
   }
 
   .control-section {
     margin: 1.5rem 0;
     padding: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    @apply border border-border rounded;
   }
 
   .control-group {
@@ -145,15 +142,12 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    color: var(--text-muted);
+    @apply text-muted-foreground;
   }
 
   input {
     padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    color: inherit;
+    @apply border border-border rounded bg-card text-foreground;
   }
 
   input[type="range"] {
@@ -162,14 +156,14 @@
 
   .value-display {
     font-size: 0.9em;
-    color: var(--text-muted);
+    @apply text-muted-foreground;
   }
 
   .reset-button {
     width: 100%;
     padding: 0.75rem;
-    background: var(--primary-color);
-    color: white;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -177,7 +171,7 @@
   }
 
   .reset-button:hover {
-    background: #ff2d00;
+    background: hsl(var(--primary) / 0.9);
   }
 
   h2, h3 {
@@ -185,7 +179,7 @@
   }
 
   h3 {
-    color: var(--text-muted);
+    @apply text-muted-foreground;
     font-size: 1.1em;
   }
 

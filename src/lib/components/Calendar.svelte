@@ -136,7 +136,7 @@
 
 <style>
   .calendar {
-    background: var(--card-bg);
+    @apply bg-card;
     border-radius: 8px;
     padding: 1.5rem;
     position: relative;
@@ -150,8 +150,8 @@
   }
 
   .nav-button {
-    background: var(--primary-color);
-    color: white;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     border: none;
     border-radius: 4px;
     padding: 0.5rem 1rem;
@@ -165,15 +165,15 @@
   }
 
   .workout-day {
-    border: 1px solid var(--border-color);
+    border: 1px solid hsl(var(--border));
     border-radius: 4px;
     padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
+    @apply bg-card;
   }
 
   .workout-day.completed {
-    border-color: var(--success-color);
-    background: rgba(76, 175, 80, 0.1);
+    border-color: hsl(var(--success));
+    background: hsl(var(--success) / 0.1);
   }
 
   .checkbox-label {
@@ -190,15 +190,15 @@
   .checkmark {
     width: 24px;
     height: 24px;
-    border: 2px solid var(--border-color);
+    border: 2px solid hsl(var(--border));
     border-radius: 4px;
     position: relative;
     flex-shrink: 0;
   }
 
   .workout-day.completed .checkmark {
-    background: var(--success-color);
-    border-color: var(--success-color);
+    background: hsl(var(--success));
+    border-color: hsl(var(--success));
   }
 
   .workout-day.completed .checkmark::after {
@@ -207,7 +207,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
+    color: hsl(var(--success-foreground));
   }
 
   .day-info {
@@ -223,11 +223,11 @@
 
   .target {
     font-size: 0.9em;
-    color: var(--text-muted);
+    @apply text-muted-foreground;
   }
 
   .completed-duration {
-    color: var(--success-color);
+    color: hsl(var(--success));
     font-size: 0.9em;
   }
 
@@ -245,7 +245,7 @@
   }
 
   .workout-form {
-    background: var(--bg-color);
+    @apply bg-background;
     padding: 2rem;
     border-radius: 8px;
     min-width: 300px;
@@ -262,13 +262,13 @@
   }
 
   .submit-button {
-    background: var(--success-color);
-    color: white;
+    background: hsl(var(--success));
+    color: hsl(var(--success-foreground));
   }
 
   .cancel-button {
-    background: var(--text-muted);
-    color: white;
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
   }
 
   @media (max-width: 768px) {
