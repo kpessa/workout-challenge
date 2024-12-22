@@ -1,159 +1,129 @@
-<script>
-  import { schedule } from '../stores/scheduleStore';
-  import { userPreferences } from '../stores/userPreferencesStore';
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
+  import type { Workout } from '$lib/types';
 
-  // Derived calculations
-  $: completedWorkouts = $schedule.filter(day => day.completed);
-  
-  $: totalWorkoutMinutes = completedWorkouts.reduce((total, day) => {
-    return total + day.workouts.reduce((dayTotal, workout) => dayTotal + workout.duration, 0);
-  }, 0);
+  // Calculate total workout minutes
+  $: totalMinutes = $schedule.reduce((acc, workout) => acc + workout.duration, 0);
 
-  $: averageMinutesPerWorkout = completedWorkouts.length > 0
-    ? Math.round(totalWorkoutMinutes / completedWorkouts.length)
+  // Calculate average workout duration
+  $: averageMinutes = $schedule.length > 0 
+    ? Math.round(totalMinutes / $schedule.length) 
     : 0;
 
-  $: weeksPassed = Math.ceil(
-    (new Date() - new Date($userPreferences.startDate)) / (7 * 24 * 60 * 60 * 1000)
-  );
+  // Calculate total workouts
+  $: totalWorkouts = $schedule.length;
 
-  $: averageWorkoutsPerWeek = weeksPassed > 0
-    ? Math.round((completedWorkouts.length / weeksPassed) * 10) / 10
-    : completedWorkouts.length;
+  // Calculate streak
+  $: currentStreak = calculateStreak($schedule);
 
-  $: progressPercentage = Math.round((completedWorkouts.length / 90) * 100);
+  function calculateStreak(workouts: Workout[]): number {
+    if (workouts.length === 0) return 0;
+
+    const sortedWorkouts = [...workouts].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    let streak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    // Check if there's a workout today
+    const hasWorkoutToday = sortedWorkouts.some(workout => {
+      const workoutDate = new Date(workout.date);
+      workoutDate.setHours(0, 0, 0, 0);
+      return workoutDate.getTime() === currentDate.getTime();
+    });
+
+    if (!hasWorkoutToday) {
+      // If no workout today, check if there was one yesterday
+      const yesterday = new Date(currentDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const hasWorkoutYesterday = sortedWorkouts.some(workout => {
+        const workoutDate = new Date(workout.date);
+        workoutDate.setHours(0, 0, 0, 0);
+        return workoutDate.getTime() === yesterday.getTime();
+      });
+
+      if (!hasWorkoutYesterday) {
+        return 0;
+      }
+      currentDate = yesterday;
+    }
+
+    // Calculate streak
+    for (let i = 0; i < sortedWorkouts.length; i++) {
+      const workoutDate = new Date(sortedWorkouts[i].date);
+      workoutDate.setHours(0, 0, 0, 0);
+
+      if (workoutDate.getTime() === currentDate.getTime()) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else if (workoutDate.getTime() < currentDate.getTime()) {
+        break;
+      }
+    }
+
+    return streak;
+  }
 </script>
 
 <div class="analytics-panel">
-  <h2>Progress Analytics</h2>
-
-  <div class="stats-grid">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
     <div class="stat-card">
-      <div class="stat-value">{completedWorkouts.length}</div>
-      <div class="stat-label">Workouts Completed</div>
-      <div class="stat-subtext">{progressPercentage}% of 90-day goal</div>
+      <div class="stat-value">{totalWorkouts}</div>
+      <div class="stat-label">Total Workouts</div>
     </div>
-
+    
     <div class="stat-card">
-      <div class="stat-value">{averageWorkoutsPerWeek}</div>
-      <div class="stat-label">Avg Workouts/Week</div>
-      <div class="stat-subtext">Target: {$userPreferences.daysPerWeek}</div>
+      <div class="stat-value">{totalMinutes}</div>
+      <div class="stat-label">Total Minutes</div>
     </div>
-
+    
     <div class="stat-card">
-      <div class="stat-value">{averageMinutesPerWorkout}</div>
-      <div class="stat-label">Avg Minutes/Workout</div>
-      <div class="stat-subtext">Total: {totalWorkoutMinutes} minutes</div>
+      <div class="stat-value">{averageMinutes}</div>
+      <div class="stat-label">Avg Minutes</div>
     </div>
-
+    
     <div class="stat-card">
-      <div class="stat-value">{weeksPassed}</div>
-      <div class="stat-label">Weeks Completed</div>
-      <div class="stat-subtext">{Math.round(weeksPassed / 13 * 100)}% of timeline</div>
+      <div class="stat-value">{currentStreak}</div>
+      <div class="stat-label">Day Streak</div>
     </div>
-  </div>
-
-  <div class="progress-bar">
-    <div 
-      class="progress-fill" 
-      style="width: {progressPercentage}%"
-    ></div>
   </div>
 </div>
 
 <style>
   .analytics-panel {
     width: 100%;
-    margin: 0 auto;
-  }
-
-  h2 {
-    margin: 0 0 1rem 0;
-    text-align: center;
-    font-size: 1.25rem;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
   }
 
   .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.75rem;
-    border-radius: 6px;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: var(--background);
+    border: 1px solid var(--border);
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .stat-value {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    color: #ff3e00;
-    line-height: 1;
-    margin-bottom: 0.25rem;
+    color: var(--primary);
+    line-height: 1.2;
   }
 
   .stat-label {
-    font-size: 0.9rem;
-    color: #ccc;
-    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
   }
 
-  .stat-subtext {
-    font-size: 0.75rem;
-    color: #888;
-  }
-
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: #ff3e00;
-    transition: width 0.3s ease;
-  }
-
-  @media (min-width: 640px) {
-    .stats-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-card {
-      padding: 1rem;
-    }
-
+  @media (max-width: 640px) {
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.25rem;
     }
-
+    
     .stat-label {
-      font-size: 1rem;
-    }
-
-    .stat-subtext {
-      font-size: 0.875rem;
-    }
-
-    .progress-bar {
-      height: 8px;
-      border-radius: 4px;
-      margin-top: 1rem;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
+      font-size: 0.75rem;
     }
   }
 </style>

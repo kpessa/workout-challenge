@@ -1,15 +1,16 @@
-<script>
-  import { schedule } from '../stores/scheduleStore';
+<script lang="ts">
+  import { schedule } from '$lib/stores/scheduleStore';
   import { Button } from "$lib/components/UI/button";
   import { Input } from "$lib/components/UI/input";
   import { Pencil, Trash2 } from 'lucide-svelte';
+  import type { Workout } from '$lib/types';
   
   // Default to today's date if no date is selected
-  export let selectedDate = new Date().toISOString();
+  export let selectedDate: string = new Date().toISOString();
   export let proposedDuration = 30;
-  export let onComplete = () => {};
+  export let onComplete: () => void = () => {};
   export let editMode = false;
-  export let workoutId = null;
+  export let workoutId: string | null = null;
   
   let duration = editMode ? proposedDuration : 30;
   
@@ -54,10 +55,10 @@
 
         if (editMode && workoutId) {
           console.log('Updating workout:', { id: workoutId, duration, date: workoutDate.toISOString() });
-          await schedule.updateWorkout(workoutDate, duration, workoutId);
+          await schedule.updateWorkout(workoutDate.toISOString(), duration, workoutId);
         } else {
           console.log('Logging new workout:', { date: workoutDate.toISOString(), duration });
-          await schedule.logWorkout(workoutDate, duration);
+          await schedule.addWorkout(workoutDate.toISOString(), duration);
         }
         onComplete(); // Close modal
       }
@@ -76,7 +77,7 @@
 
       if (confirm('Are you sure you want to delete this workout?')) {
         console.log('Deleting workout with ID:', workoutId);
-        await schedule.deleteWorkout(null, workoutId);
+        await schedule.deleteWorkout(workoutId);
         console.log('Workout deleted successfully');
         onComplete(); // Close modal
       }
@@ -86,20 +87,20 @@
     }
   }
 
-  function formatDate(date) {
+  function formatDate(date: string): string {
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
     return d.toLocaleDateString();
   }
 
-  function formatTime(timestamp) {
+  function formatTime(timestamp: string): string {
     return new Date(timestamp).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
   }
 
-  function formatDateForDisplay(dateStr) {
+  function formatDateForDisplay(dateStr: string): string {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';
@@ -125,7 +126,7 @@
   }
 
   // When editing a workout, convert the date to YYYY-MM-DD format
-  function setEditWorkout(workout, date) {
+  function setEditWorkout(workout: { id: string; duration: number }, date: string) {
     const d = new Date(date);
     if (!isNaN(d.getTime())) {
       const year = d.getFullYear();
@@ -213,7 +214,7 @@
                       class="icon-button delete"
                       on:click={async () => {
                         if (confirm('Are you sure you want to delete this workout?')) {
-                          await schedule.deleteWorkout(null, workout.id);
+                          await schedule.deleteWorkout(workout.id);
                         }
                       }}
                       title="Delete workout"

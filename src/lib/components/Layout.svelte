@@ -1,23 +1,24 @@
-<script>
+<script lang="ts">
   import Calendar from './Calendar.svelte';
   import ControlsPanel from './ControlsPanel.svelte';
   import ProgressChart from './ProgressChart.svelte';
   import WorkoutLog from './WorkoutLog.svelte';
   import AnalyticsPanel from './AnalyticsPanel.svelte';
   import Auth from './Auth.svelte';
-  import { authStore } from '../stores/authStore';
+  import { authStore } from '$lib/stores/authStore';
   import { onMount } from 'svelte';
-  import { schedule } from '../stores/scheduleStore';
+  import { schedule } from '$lib/stores/scheduleStore';
   import { Button } from "$lib/components/UI/button";
+  import type { WorkoutClickEvent, EditWorkoutEvent } from '$lib/types';
 
   let showWorkoutModal = false;
   let showSettingsModal = false;
-  let selectedDate = null;
+  let selectedDate: string | null = null;
   let proposedDuration = 30;
   let editMode = false;
-  let workoutId = null;
+  let workoutId: string | null = null;
 
-  function handleWorkoutClick(event) {
+  function handleWorkoutClick(event: CustomEvent<WorkoutClickEvent>) {
     selectedDate = event.detail.date;
     proposedDuration = event.detail.proposedDuration;
     editMode = false;
@@ -25,7 +26,7 @@
     showWorkoutModal = true;
   }
 
-  function handleEditWorkout(event) {
+  function handleEditWorkout(event: CustomEvent<EditWorkoutEvent>) {
     console.log('Editing workout with data:', event.detail);
     selectedDate = event.detail.date;
     proposedDuration = event.detail.duration;
@@ -34,7 +35,7 @@
     showWorkoutModal = true;
   }
 
-  function openWorkoutLog(date = null) {
+  function openWorkoutLog(date: string | null = null) {
     selectedDate = date;
     proposedDuration = 30; // Reset to default when manually opening
     editMode = false;
@@ -53,7 +54,7 @@
     showSettingsModal = !showSettingsModal;
   }
 
-  function handleKeydown(event) {
+  function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       if (showWorkoutModal) {
         closeModal();
@@ -167,10 +168,10 @@
         </div>
         <div class="overflow-y-auto pt-2">
           <WorkoutLog 
-            selectedDate={selectedDate}
-            proposedDuration={proposedDuration}
-            editMode={editMode}
-            workoutId={workoutId}
+            {selectedDate}
+            {proposedDuration}
+            {editMode}
+            {workoutId}
             onComplete={closeModal}
           />
         </div>
