@@ -14,6 +14,9 @@ const config = {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ["Inter var", "Inter", ...fontFamily.sans]
+			},
 			colors: {
 				border: "hsl(var(--border) / <alpha-value>)",
 				input: "hsl(var(--input) / <alpha-value>)",
@@ -47,23 +50,16 @@ const config = {
 				card: {
 					DEFAULT: "hsl(var(--card) / <alpha-value>)",
 					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
-				},
-				success: {
-					DEFAULT: "hsl(var(--success) / <alpha-value>)",
-					foreground: "hsl(var(--success-foreground) / <alpha-value>)"
 				}
 			},
 			borderRadius: {
 				lg: "var(--radius)",
 				md: "calc(var(--radius) - 2px)",
 				sm: "calc(var(--radius) - 4px)"
-			},
-			fontFamily: {
-				sans: ["var(--font-sans)", ...fontFamily.sans]
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [require("tailwindcss-animate")]
 };
 
 export default config;

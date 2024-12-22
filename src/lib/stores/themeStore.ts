@@ -3,7 +3,16 @@ import { writable } from 'svelte/store';
 type Theme = 'light' | 'dark';
 
 function createThemeStore() {
-  const { subscribe, set, update } = writable<Theme>('dark');
+  // Get initial theme from localStorage or default to 'dark'
+  const initialTheme = (typeof window !== 'undefined' && localStorage.getItem('theme') as Theme) || 'dark';
+  
+  const { subscribe, set, update } = writable<Theme>(initialTheme);
+
+  // Initialize the DOM with the initial theme
+  if (typeof window !== 'undefined') {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(initialTheme);
+  }
 
   return {
     subscribe,

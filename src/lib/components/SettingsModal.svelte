@@ -1,7 +1,7 @@
 <!-- Modal container -->
-<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click|self={() => dispatch('close')}>
-  <div class="fixed inset-x-4 top-[50%] translate-y-[-50%] sm:inset-x-auto sm:left-[50%] sm:translate-x-[-50%] sm:max-w-lg w-full">
-    <div class="relative bg-card text-card-foreground rounded-lg shadow-lg border">
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" on:click|self={() => dispatch('close')}>
+  <div class="min-h-[calc(100vh-2rem)] flex items-center justify-center">
+    <div class="w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border">
       <!-- Header with close button -->
       <div class="flex items-center justify-between p-4 border-b">
         <h2 class="text-lg font-semibold">Challenge Settings</h2>
@@ -73,8 +73,9 @@
                 max="0.2"
                 step="0.01"
                 bind:value={localParams.steepness}
+                class="flex-1"
               />
-              <span class="text-sm text-muted-foreground w-12">{localParams.steepness.toFixed(2)}</span>
+              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">{localParams.steepness.toFixed(2)}</span>
             </div>
           </div>
 
@@ -87,19 +88,20 @@
                 min="1"
                 max="90"
                 bind:value={localParams.midpoint}
+                class="flex-1"
               />
-              <span class="text-sm text-muted-foreground w-12">Day {localParams.midpoint}</span>
+              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">Day {localParams.midpoint}</span>
             </div>
           </div>
         </form>
       </div>
 
       <!-- Footer with buttons -->
-      <div class="flex justify-between p-4 border-t">
+      <div class="flex flex-col sm:flex-row justify-between gap-4 p-4 border-t">
         <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
         <div class="flex gap-2">
-          <Button variant="outline" on:click={() => dispatch('close')}>Cancel</Button>
-          <Button variant="default" on:click={handleUpdate}>Update</Button>
+          <Button variant="outline" class="flex-1 sm:flex-none" on:click={() => dispatch('close')}>Cancel</Button>
+          <Button variant="default" class="flex-1 sm:flex-none" on:click={handleUpdate}>Update</Button>
         </div>
       </div>
     </div>

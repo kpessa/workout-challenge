@@ -472,7 +472,7 @@
           .attr('y', y(stackHeight) - 5)
           .attr('text-anchor', 'middle')
           .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
-          .style('fill', 'var(--muted-foreground)')
+          .style('fill', 'currentColor')
           .text(stackHeight);
       }
 
@@ -495,7 +495,7 @@
           .attr('y', labelY)
           .attr('text-anchor', 'middle')
           .style('font-size', containerWidth < 640 ? '0.65rem' : '0.75rem')
-          .style('fill', 'var(--muted-foreground)')
+          .style('fill', 'currentColor')
           .style('opacity', 0.7)
           .text(`${d.proposed}`);
       }
@@ -548,7 +548,7 @@
     svg.select('.y-axis-label')
       .attr('x', -height / 2)
       .attr('y', -margin.left + (containerWidth < 800 ? 8 : 35))  // Updated breakpoint
-      .attr('fill', 'var(--muted-foreground)')
+      .attr('fill', 'currentColor')
       .style('font-size', containerWidth < 800 ? '0.7rem' : '1rem')  // Updated breakpoint
       .text('Min');
   }
@@ -635,12 +635,12 @@
   }
 
   :global(.x-axis text), :global(.y-axis text) {
-    @apply fill-muted-foreground;
+    @apply text-foreground;
     font-size: 0.7rem;
   }
 
   :global(.completed-rect) {
-    fill: hsl(var(--success));
+    fill: hsl(var(--primary));
     stroke: hsl(var(--border));
     stroke-width: 1px;
     stroke-opacity: 0.5;
@@ -653,41 +653,43 @@
 
   :global(.proposed-rect) {
     fill: transparent;
-    stroke: hsl(var(--border));
+    stroke: hsl(var(--primary));
     stroke-width: 1.5px;
-    stroke-opacity: 0.5;
+    stroke-opacity: 0.7;
     stroke-dasharray: 4,4;
     transition: fill 0.2s ease-in-out;
   }
 
   :global(.proposed-rect:hover) {
-    fill: hsl(var(--success) / 0.1);
+    fill: hsl(var(--primary) / 0.2);
   }
 
   :global(.grid-lines line) {
     stroke: hsl(var(--border));
-    stroke-opacity: 0.15;
+    stroke-opacity: 0.2;
     stroke-dasharray: 2,2;
   }
 
   :global(.current-day-background) {
     pointer-events: none;
-    @apply bg-blue-500;
-    opacity: 0.15;
+    background-color: hsl(var(--primary) / 0.15);
   }
 
   :global(.week-boundary-line) {
     pointer-events: none;
-    color: hsl(var(--border));
+    stroke: hsl(var(--border));
+    stroke-opacity: 0.3;
   }
 
   :global(.duration-label) {
     pointer-events: none;
     font-family: system-ui, -apple-system, sans-serif;
+    @apply text-foreground;
   }
 
   :global(.duration-label.proposed) {
-    opacity: 0.7;
+    opacity: 0.9;
+    @apply text-foreground;
   }
 
   @media (min-width: 800px) {
@@ -721,6 +723,7 @@
 
     :global(.proposed-rect) {
       stroke-width: 2px;
+      stroke-opacity: 0.8;
     }
 
     :global(.grid-lines line) {
@@ -729,8 +732,8 @@
     }
 
     :global(.week-boundary-line) {
-      stroke-width: 2.5px;
-      stroke-opacity: 0.8;
+      stroke-width: 2px;
+      stroke-opacity: 0.4;
       opacity: 0.25 !important;
     }
   }
