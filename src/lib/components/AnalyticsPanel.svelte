@@ -1,95 +1,77 @@
 <script lang="ts">
-  import { schedule } from '$lib/stores/scheduleStore';
-  import type { Workout } from '$lib/types';
   import { onMount } from 'svelte';
+  import { schedule } from '$lib/stores/scheduleStore';
+  import { format, isToday, isYesterday, parseISO } from 'date-fns';
 
-  $: workouts = Array.isArray($schedule) ? $schedule : [];
-  
-  $: {
-    console.log('Schedule store value:', $schedule);
-    console.log('Workouts array:', workouts);
-  }
+  let workouts = [];
+  let streak = 0;
 
-  $: totalWorkouts = workouts.length;
-  $: totalMinutes = workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0);
-  $: avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
-  
-  // Calculate day streak
-  $: dayStreak = calculateDayStreak(workouts);
+  schedule.subscribe(value => {
+    workouts = value;
+    calculateStreak();
+  });
 
-  function calculateDayStreak(workouts: Workout[]): number {
-    if (!workouts?.length) return 0;
+  function calculateStreak() {
+    if (!workouts || workouts.length === 0) {
+      streak = 0;
+      return;
+    }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Get unique dates (in case of multiple workouts per day)
-    const uniqueDates = [...new Set(workouts.map(w => {
-      const date = new Date(w?.date ?? new Date());
-      date.setHours(0, 0, 0, 0);
-      return date.getTime();
-    }))].sort((a, b) => b - a); // Sort in descending order
+    // Get unique dates and sort them in descending order
+    const uniqueDates = [...new Set(workouts.map(w => w.date))]
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-    console.log('Unique workout dates:', uniqueDates.map(ts => new Date(ts).toISOString()));
+    // Start counting streak from most recent workout
+    let currentStreak = 1;
+    let lastDate = new Date(uniqueDates[0]);
 
-    let streak = 0;
-    let currentDate = today.getTime();
+    // Check if the most recent workout is from today or yesterday
+    if (!isToday(lastDate) && !isYesterday(lastDate)) {
+      streak = 0;
+      return;
+    }
 
-    // Check if we have a workout today
-    if (uniqueDates[0] === currentDate) {
-      streak = 1;
-      for (let i = 1; i < uniqueDates.length; i++) {
-        const expectedDate = currentDate - (86400000 * i);
-        if (uniqueDates[i] === expectedDate) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-    } else {
-      // Check if we have a streak ending yesterday
-      const yesterday = today.getTime() - 86400000;
-      if (uniqueDates[0] === yesterday) {
-        streak = 1;
-        for (let i = 1; i < uniqueDates.length; i++) {
-          const expectedDate = yesterday - (86400000 * (i - 1));
-          if (uniqueDates[i] === expectedDate) {
-            streak++;
-          } else {
-            break;
-          }
-        }
+    // Count consecutive days
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const currentDate = new Date(uniqueDates[i]);
+      const dayDiff = Math.floor(
+        (lastDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (dayDiff === 1) {
+        currentStreak++;
+        lastDate = currentDate;
+      } else {
+        break;
       }
     }
 
-    console.log('Calculated streak:', streak);
-    return streak;
+    streak = currentStreak;
   }
 
-  onMount(() => {
-    console.log('AnalyticsPanel mounted, initializing schedule');
-    schedule.initialize();
+  onMount(async () => {
+    await schedule.initialize();
   });
 </script>
 
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
   <div class="p-4 rounded-lg border bg-card text-card-foreground">
-    <div class="text-2xl font-bold">{totalWorkouts}</div>
+    <div class="text-2xl font-bold">{workouts.length}</div>
     <div class="text-sm text-muted-foreground">Total Workouts</div>
   </div>
   
   <div class="p-4 rounded-lg border bg-card text-card-foreground">
-    <div class="text-2xl font-bold">{totalMinutes}</div>
+    <div class="text-2xl font-bold">{workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0)}</div>
     <div class="text-sm text-muted-foreground">Total Minutes</div>
   </div>
   
   <div class="p-4 rounded-lg border bg-card text-card-foreground">
-    <div class="text-2xl font-bold">{avgMinutes}</div>
+    <div class="text-2xl font-bold">{Math.round(workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0) / workouts.length)}</div>
     <div class="text-sm text-muted-foreground">Avg Minutes</div>
   </div>
   
   <div class="p-4 rounded-lg border bg-card text-card-foreground">
-    <div class="text-2xl font-bold">{dayStreak}</div>
+    <div class="text-2xl font-bold">{streak}</div>
     <div class="text-sm text-muted-foreground">Day Streak</div>
   </div>
 </div>

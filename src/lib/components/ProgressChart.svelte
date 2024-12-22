@@ -3,6 +3,7 @@
   import * as d3 from 'd3';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
+  import { workoutTypes } from '../stores/workoutTypeStore';
   import { calculateSigmoidal } from '$lib/utils/sigmoidal';
   import { Button } from "$lib/components/UI/button";
   import * as Tabs from "$lib/components/UI/tabs";
@@ -106,15 +107,14 @@
   }
 
   function handleViewModeChange(value: string) {
-    console.log('View mode change:', { value, currentMode: viewMode });
     isMonthView = value === 'month';
-    console.log('Updated isMonthView:', isMonthView);
     currentPage = calculateCurrentPage();
     calculateWorkoutDays();
   }
 
   let scheduleData;
   let userPreferencesData;
+  let workoutTypesData;
 
   schedule.subscribe(value => {
     scheduleData = value;
@@ -123,6 +123,11 @@
 
   userPreferences.subscribe(value => {
     userPreferencesData = value;
+    calculateWorkoutDays();
+  });
+
+  workoutTypes.subscribe(value => {
+    workoutTypesData = value;
     calculateWorkoutDays();
   });
 
@@ -157,8 +162,6 @@
   function calculateWorkoutDays() {
     if (!userPreferencesData || !scheduleData) return;
     
-    console.log('Calculating workout days:', { viewMode, currentPage, isMonthView });
-    
     const startDate = getStartOfDay(userPreferencesData.startDate);
     const daysPerWeek = userPreferencesData.daysPerWeek;
     
@@ -178,13 +181,6 @@
     const periodLength = viewMode === 'month' ? 29 : 6; // 30 days for month, 7 days for week
     pageEndDate.setDate(pageEndDate.getDate() + periodLength);
 
-    console.log('Date range:', {
-      start: pageStartDate.toDateString(),
-      end: pageEndDate.toDateString(),
-      periodLength,
-      viewMode
-    });
-
     // Group recorded workouts by date
     const workoutsByDate = scheduleData
       .filter(workout => {
@@ -200,7 +196,8 @@
           id: workout.id,
           date: getStartOfDay(workout.date),
           duration: workout.duration,
-          created_at: workout.created_at
+          created_at: workout.created_at,
+          workout_type_id: workout.workout_type_id
         });
         return acc;
       }, {});
@@ -320,7 +317,6 @@
       .attr('height', containerHeight)
       .attr('class', 'chart-svg');
     
-    // The 'inner' group using margin convention - removed manual offset
     svg = svgElement
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -355,6 +351,12 @@
       svg = null;
     };
   });
+
+  function getWorkoutColor(workout) {
+    if (!workout || !workoutTypesData) return 'hsl(var(--primary))';
+    const workoutType = workoutTypesData.find(t => t.id === workout.workout_type_id);
+    return workoutType?.color || 'hsl(var(--primary))';
+  }
 
   function updateChart() {
     if (!svg || !dailyWorkouts.length || !width || !height) return;
@@ -482,6 +484,10 @@
             .attr('width', barWidth)
             .attr('x', 0)
             .style('cursor', 'pointer')
+            .style('fill', getWorkoutColor(workout))
+            .style('stroke', 'hsl(var(--border))')
+            .style('stroke-width', '1px')
+            .style('stroke-opacity', '0.5')
             .on('click', () => handleEditWorkout(workout));
 
           stackHeight += workout.duration;
