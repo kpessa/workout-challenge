@@ -1,15 +1,17 @@
 <script lang="ts">
   import Calendar from './Calendar.svelte';
-  import ControlsPanel from './ControlsPanel.svelte';
   import ProgressChart from './ProgressChart.svelte';
   import WorkoutLog from './WorkoutLog.svelte';
   import AnalyticsPanel from './AnalyticsPanel.svelte';
   import Auth from './Auth.svelte';
+  import SettingsModal from './SettingsModal.svelte';
   import { authStore } from '$lib/stores/authStore';
   import { onMount } from 'svelte';
   import { schedule } from '$lib/stores/scheduleStore';
   import { Button } from "$lib/components/UI/button";
   import type { WorkoutClickEvent, EditWorkoutEvent } from '$lib/types';
+  import ThemeToggle from '$lib/components/UI/theme-toggle.svelte';
+  import { Plus, Settings2, LogOut } from 'lucide-svelte';
 
   let showWorkoutModal = false;
   let showSettingsModal = false;
@@ -50,8 +52,12 @@
     workoutId = null;
   }
 
-  function toggleSettings() {
-    showSettingsModal = !showSettingsModal;
+  function openSettings() {
+    showSettingsModal = true;
+  }
+
+  function signOut() {
+    authStore.signOut();
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -72,45 +78,35 @@
 
 <svelte:window on:keydown={handleKeydown}/>
 
-<div class="min-h-screen bg-background flex flex-col">
+<div class="flex min-h-screen flex-col bg-background">
   <!-- Navbar -->
-  <header class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div class="container flex h-14 items-center">
-      <div class="flex-1 flex items-center">
-        <h1 class="text-lg font-semibold">90-Day Challenge</h1>
-      </div>
-      {#if $authStore.user}
-        <div class="flex items-center space-x-2">
-          <nav class="flex items-center space-x-2">
-            <Button variant="outline" size="sm" on:click={() => openWorkoutLog()}>
-              <span class="hidden sm:inline-block">Add Workout</span>
-              <span class="sm:hidden">+</span>
-            </Button>
-            <Button variant="ghost" size="sm" class="w-9 px-0" on:click={toggleSettings}>
-              <span class="sr-only">Settings</span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </Button>
-            <Button variant="ghost" size="sm" on:click={() => authStore.signOut()}>
-              <span class="hidden sm:inline-block">Sign Out</span>
-              <span class="sm:hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-              </span>
-            </Button>
-          </nav>
+      <div class="flex flex-1 items-center justify-between">
+        <div class="flex items-center gap-6 md:gap-8">
+          <h1 class="text-lg font-semibold tracking-tight">90-Day Challenge</h1>
         </div>
-      {/if}
+        <div class="flex items-center gap-2">
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" on:click={() => openWorkoutLog()}>
+            <Plus class="h-4 w-4" />
+            <span class="sr-only">Add workout</span>
+          </Button>
+          <Button variant="ghost" size="icon" on:click={openSettings}>
+            <Settings2 class="h-4 w-4" />
+            <span class="sr-only">Settings</span>
+          </Button>
+          <Button variant="ghost" size="icon" on:click={signOut}>
+            <LogOut class="h-4 w-4" />
+            <span class="sr-only">Sign out</span>
+          </Button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 p-3 sm:p-4 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+  <main class="flex-1 container py-6 md:py-8 gap-6 md:gap-8">
     {#if $authStore.loading}
       <div class="flex items-center justify-center h-[calc(100vh-10rem)]">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -118,10 +114,10 @@
     {:else if !$authStore.user}
       <Auth />
     {:else}
-      <div class="flex flex-col gap-4 sm:gap-6">
+      <div class="flex flex-col gap-6 md:gap-8">
         <!-- Progress Chart -->
-        <div class="w-full">
-          <div class="rounded-lg border bg-card p-2 sm:p-4 h-[350px] sm:h-[500px] relative">
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6 h-[350px] sm:h-[500px] relative">
             <ProgressChart 
               on:workoutClick={handleWorkoutClick}
               on:editWorkout={handleEditWorkout}
@@ -131,8 +127,8 @@
         </div>
 
         <!-- Analytics Panel -->
-        <div class="w-full">
-          <div class="rounded-lg border bg-card p-3 sm:p-4">
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6">
             <AnalyticsPanel />
           </div>
         </div>
@@ -141,9 +137,9 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t py-3 sm:py-4">
-    <div class="container flex flex-col items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4 max-w-7xl mx-auto">
-      <p class="text-xs sm:text-sm text-muted-foreground text-center">
+  <footer class="border-t py-6 md:py-0">
+    <div class="container flex h-14 items-center justify-center">
+      <p class="text-sm text-muted-foreground">
         Track your progress and stay motivated! 💪
       </p>
     </div>
@@ -151,22 +147,17 @@
 
   <!-- Modals -->
   {#if showWorkoutModal}
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" on:click={closeModal}>
+    <div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click={closeModal}>
       <div 
-        class="fixed left-[50%] top-[50%] z-50 w-[95%] sm:w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-3 sm:p-6 shadow-lg duration-200 rounded-lg max-h-[90vh] overflow-y-auto"
+        class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-xl"
         on:click|stopPropagation
       >
-        <div class="flex justify-between items-center sticky top-0 bg-background pb-3 sm:pb-4 border-b">
-          <h2 class="text-base sm:text-lg font-semibold">{editMode ? 'Edit Workout' : 'Log Workout'}</h2>
-          <Button 
-            variant="ghost" 
-            class="h-8 w-8 p-0" 
-            on:click={closeModal}
-          >
-            ✕
-          </Button>
+        <div class="flex flex-col space-y-1.5 text-center sm:text-left">
+          <h2 class="font-semibold leading-none tracking-tight">
+            {editMode ? 'Edit Workout' : 'Log Workout'}
+          </h2>
         </div>
-        <div class="overflow-y-auto pt-2">
+        <div class="overflow-y-auto">
           <WorkoutLog 
             {selectedDate}
             {proposedDuration}
@@ -181,52 +172,14 @@
 
   <!-- Settings Modal -->
   {#if showSettingsModal}
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" on:click={() => showSettingsModal = false}>
-      <div 
-        class="fixed left-[50%] top-[50%] z-50 w-[95%] sm:w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-3 sm:p-6 shadow-lg duration-200 rounded-lg"
-        on:click|stopPropagation
-      >
-        <div class="flex justify-between items-center sticky top-0 bg-background pb-3 sm:pb-4 border-b">
-          <h2 class="text-base sm:text-lg font-semibold">Challenge Settings</h2>
-          <Button 
-            variant="ghost" 
-            class="h-8 w-8 p-0" 
-            on:click={() => showSettingsModal = false}
-          >
-            ✕
-          </Button>
-        </div>
-        <div class="overflow-y-auto pt-2">
-          <ControlsPanel />
-        </div>
-      </div>
-    </div>
+    <SettingsModal on:close={() => showSettingsModal = false} />
   {/if}
 </div>
 
 <style>
+  /* Remove any custom styles that might interfere with theming */
   :global(body) {
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-      Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     -webkit-text-size-adjust: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  :global(.modal-content) {
-    max-height: 90vh;
-    overflow-y: auto;
-    width: 95vw;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  :global(.modal-header) {
-    position: sticky;
-    top: 0;
-    background: var(--background);
-    z-index: 1;
   }
 </style>

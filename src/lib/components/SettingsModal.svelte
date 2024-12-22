@@ -1,0 +1,188 @@
+<!-- Modal container -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" on:click|self={() => dispatch('close')}>
+  <div class="fixed inset-x-4 top-[50%] translate-y-[-50%] sm:inset-x-auto sm:left-[50%] sm:translate-x-[-50%] sm:max-w-lg w-full">
+    <div class="relative bg-card text-card-foreground rounded-lg shadow-lg border">
+      <!-- Header with close button -->
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-lg font-semibold">Challenge Settings</h2>
+        <Button variant="ghost" size="icon" on:click={() => dispatch('close')}>
+          <X class="h-4 w-4" />
+          <span class="sr-only">Close</span>
+        </Button>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="p-4 max-h-[calc(80vh-8rem)] overflow-y-auto">
+        {#if showAlert}
+          <div class="mb-4">
+            <Alert variant={alertVariant}>
+              <AlertTitle>{alertTitle}</AlertTitle>
+              <AlertDescription>{alertDescription}</AlertDescription>
+            </Alert>
+          </div>
+        {/if}
+
+        <form on:submit|preventDefault={handleUpdate} class="space-y-4">
+          <div class="space-y-2">
+            <Label for="startDate">Start Date</Label>
+            <Input 
+              type="date" 
+              id="startDate"
+              bind:value={localStartDate}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="daysPerWeek">Days Per Week</Label>
+            <Input 
+              type="number" 
+              id="daysPerWeek"
+              min="1"
+              max="7"
+              bind:value={localDaysPerWeek}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="startingMinutes">Starting Minutes</Label>
+            <Input 
+              type="number" 
+              id="startingMinutes"
+              min="1"
+              bind:value={localParams.startMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="endingMinutes">Target Minutes</Label>
+            <Input 
+              type="number" 
+              id="endingMinutes"
+              min="1"
+              bind:value={localParams.endMinutes}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="steepness">Progression Steepness</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="steepness"
+                min="0.01"
+                max="0.2"
+                step="0.01"
+                bind:value={localParams.steepness}
+              />
+              <span class="text-sm text-muted-foreground w-12">{localParams.steepness.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <Label for="midpoint">Midpoint (Days)</Label>
+            <div class="flex gap-4 items-center">
+              <Input 
+                type="range" 
+                id="midpoint"
+                min="1"
+                max="90"
+                bind:value={localParams.midpoint}
+              />
+              <span class="text-sm text-muted-foreground w-12">Day {localParams.midpoint}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer with buttons -->
+      <div class="flex justify-between p-4 border-t">
+        <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
+        <div class="flex gap-2">
+          <Button variant="outline" on:click={() => dispatch('close')}>Cancel</Button>
+          <Button variant="default" on:click={handleUpdate}>Update</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
+  import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
+  import { X } from 'lucide-svelte';
+  import { userPreferences } from '../stores/userPreferencesStore';
+
+  const dispatch = createEventDispatcher();
+
+  let localParams = $userPreferences.sigmoidParams;
+  let localDaysPerWeek = $userPreferences.daysPerWeek;
+  let localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+
+  let showAlert = false;
+  let alertVariant: "default" | "destructive" = "default";
+  let alertTitle = "";
+  let alertDescription = "";
+
+  function showFeedback(success: boolean, title: string, description: string) {
+    alertVariant = success ? "default" : "destructive";
+    alertTitle = title;
+    alertDescription = description;
+    showAlert = true;
+    
+    // Hide the alert after 3 seconds
+    setTimeout(() => {
+      showAlert = false;
+    }, 3000);
+  }
+
+  async function handleUpdate() {
+    try {
+      await userPreferences.updateSigmoidParams(localParams);
+      await userPreferences.setDaysPerWeek(localDaysPerWeek);
+      const date = new Date(localStartDate);
+      if (!isNaN(date.getTime())) {
+        await userPreferences.setStartDate(date.toISOString());
+      }
+      
+      showFeedback(
+        true,
+        "Settings Updated",
+        "Your challenge settings have been saved successfully."
+      );
+      
+      setTimeout(() => {
+        dispatch('close');
+      }, 1000);
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to update settings. Please try again."
+      );
+    }
+  }
+
+  async function resetToDefaults() {
+    try {
+      await userPreferences.reset();
+      localParams = $userPreferences.sigmoidParams;
+      localDaysPerWeek = $userPreferences.daysPerWeek;
+      localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+      
+      showFeedback(
+        true,
+        "Settings Reset",
+        "Your challenge settings have been reset to defaults."
+      );
+    } catch (error) {
+      showFeedback(
+        false,
+        "Error",
+        "Failed to reset settings. Please try again."
+      );
+    }
+  }
+</script> 

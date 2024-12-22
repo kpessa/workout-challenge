@@ -18,6 +18,7 @@ function createScheduleStore() {
         return;
       }
 
+      console.log('Fetched workouts from database:', data);
       set(data || []);
     },
     addWorkout: async (date: string, duration: number) => {
@@ -34,7 +35,7 @@ function createScheduleStore() {
 
       update(workouts => [...workouts, data]);
     },
-    updateWorkout: async (date: string, duration: number, id: string) => {
+    updateWorkout: async (id: string, date: string, duration: number) => {
       const { data, error } = await supabase
         .from('workouts')
         .update({ date, duration })
@@ -61,13 +62,7 @@ function createScheduleStore() {
       }
 
       update(workouts => workouts.filter(w => w.id !== id));
-    },
-    getStartDate: () => {
-      const today = new Date();
-      today.setHours(12, 0, 0, 0);
-      return today.toISOString().split('T')[0];
-    },
-    getDuration: () => 90
+    }
   };
 }
 

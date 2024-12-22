@@ -554,55 +554,52 @@
   }
 </script>
 
+<!-- Chart container -->
 <div class="chart-container">
-  <div class="relative mb-2 sm:mb-4 pt-1">
-    <!-- Absolute positioned tabs in top right -->
-    <div class="absolute right-0 top-0 h-7">
-      <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
-        <Tabs.List>
-          <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
-          <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
-        </Tabs.List>
-      </Tabs.Root>
-    </div>
-
-    <!-- Centered content -->
-    <div class="flex flex-col items-center gap-2">
-      <h2 class="text-sm sm:text-base font-semibold">
-        {viewMode === 'month' ? `Month ${currentPage + 1}` : `Week ${currentPage + 1}`}
-      </h2>
-      <div class="flex items-center gap-1 sm:gap-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          class="h-7 px-2"
-          on:click={previousPeriod} 
-          disabled={currentPage === 0}
-        >
-          ←
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          class="h-7 px-2"
-          on:click={goToToday}
-        >
-          Today
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          class="h-7 px-2"
-          on:click={nextPeriod} 
-          disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
-        >
-          →
-        </Button>
-      </div>
-    </div>
+  <!-- Navigation controls above chart -->
+  <div class="flex justify-center items-center gap-2 mb-4">
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={previousPeriod} 
+      disabled={currentPage === 0}
+    >
+      ←
+    </Button>
+    <Button 
+      variant="outline"
+      size="sm"
+      class="h-7 px-2"
+      on:click={goToToday}
+    >
+      Today
+    </Button>
+    <Button 
+      variant="outline" 
+      size="sm"
+      class="h-7 px-2"
+      on:click={nextPeriod} 
+      disabled={currentPage === (viewMode === 'month' ? 2 : 11)}
+    >
+      →
+    </Button>
   </div>
-  
-  <div bind:this={chartContainer} class="chart"></div>
+
+  <!-- Chart area -->
+  <div class="chart" bind:this={chartContainer}>
+    <!-- SVG will be added here by D3 -->
+  </div>
+
+  <!-- View mode toggle below chart -->
+  <div class="flex justify-center mt-4">
+    <Tabs.Root value={viewMode} onValueChange={handleViewModeChange}>
+      <Tabs.List>
+        <Tabs.Trigger value="week" class="text-xs sm:text-sm px-3 h-7">Week</Tabs.Trigger>
+        <Tabs.Trigger value="month" class="text-xs sm:text-sm px-3 h-7">Month</Tabs.Trigger>
+      </Tabs.List>
+    </Tabs.Root>
+  </div>
 </div>
 
 <style>
@@ -614,16 +611,17 @@
   }
 
   .chart-container {
-    height: 100%;
     width: 100%;
-    background: var(--background);
-    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .chart {
-    width: 100%;
-    height: calc(100% - 5rem);
+    flex: 1;
+    min-height: 0; /* Important for flex container */
     position: relative;
+    width: 100%;
   }
 
   :global(.chart-svg) {
@@ -800,5 +798,9 @@
     :global(.duration-label) {
       font-size: 0.6rem;
     }
+  }
+
+  :global(.tabs-list) {
+    margin-bottom: 0;
   }
 </style>

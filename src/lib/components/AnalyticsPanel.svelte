@@ -1,129 +1,95 @@
 <script lang="ts">
   import { schedule } from '$lib/stores/scheduleStore';
   import type { Workout } from '$lib/types';
+  import { onMount } from 'svelte';
 
-  // Calculate total workout minutes
-  $: totalMinutes = $schedule.reduce((acc, workout) => acc + workout.duration, 0);
+  $: workouts = Array.isArray($schedule) ? $schedule : [];
+  
+  $: {
+    console.log('Schedule store value:', $schedule);
+    console.log('Workouts array:', workouts);
+  }
 
-  // Calculate average workout duration
-  $: averageMinutes = $schedule.length > 0 
-    ? Math.round(totalMinutes / $schedule.length) 
-    : 0;
+  $: totalWorkouts = workouts.length;
+  $: totalMinutes = workouts.reduce((sum, w) => sum + (w?.duration ?? 0), 0);
+  $: avgMinutes = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
+  
+  // Calculate day streak
+  $: dayStreak = calculateDayStreak(workouts);
 
-  // Calculate total workouts
-  $: totalWorkouts = $schedule.length;
+  function calculateDayStreak(workouts: Workout[]): number {
+    if (!workouts?.length) return 0;
 
-  // Calculate streak
-  $: currentStreak = calculateStreak($schedule);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get unique dates (in case of multiple workouts per day)
+    const uniqueDates = [...new Set(workouts.map(w => {
+      const date = new Date(w?.date ?? new Date());
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }))].sort((a, b) => b - a); // Sort in descending order
 
-  function calculateStreak(workouts: Workout[]): number {
-    if (workouts.length === 0) return 0;
-
-    const sortedWorkouts = [...workouts].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    console.log('Unique workout dates:', uniqueDates.map(ts => new Date(ts).toISOString()));
 
     let streak = 0;
-    let currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    let currentDate = today.getTime();
 
-    // Check if there's a workout today
-    const hasWorkoutToday = sortedWorkouts.some(workout => {
-      const workoutDate = new Date(workout.date);
-      workoutDate.setHours(0, 0, 0, 0);
-      return workoutDate.getTime() === currentDate.getTime();
-    });
-
-    if (!hasWorkoutToday) {
-      // If no workout today, check if there was one yesterday
-      const yesterday = new Date(currentDate);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const hasWorkoutYesterday = sortedWorkouts.some(workout => {
-        const workoutDate = new Date(workout.date);
-        workoutDate.setHours(0, 0, 0, 0);
-        return workoutDate.getTime() === yesterday.getTime();
-      });
-
-      if (!hasWorkoutYesterday) {
-        return 0;
+    // Check if we have a workout today
+    if (uniqueDates[0] === currentDate) {
+      streak = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const expectedDate = currentDate - (86400000 * i);
+        if (uniqueDates[i] === expectedDate) {
+          streak++;
+        } else {
+          break;
+        }
       }
-      currentDate = yesterday;
-    }
-
-    // Calculate streak
-    for (let i = 0; i < sortedWorkouts.length; i++) {
-      const workoutDate = new Date(sortedWorkouts[i].date);
-      workoutDate.setHours(0, 0, 0, 0);
-
-      if (workoutDate.getTime() === currentDate.getTime()) {
-        streak++;
-        currentDate.setDate(currentDate.getDate() - 1);
-      } else if (workoutDate.getTime() < currentDate.getTime()) {
-        break;
+    } else {
+      // Check if we have a streak ending yesterday
+      const yesterday = today.getTime() - 86400000;
+      if (uniqueDates[0] === yesterday) {
+        streak = 1;
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const expectedDate = yesterday - (86400000 * (i - 1));
+          if (uniqueDates[i] === expectedDate) {
+            streak++;
+          } else {
+            break;
+          }
+        }
       }
     }
 
+    console.log('Calculated streak:', streak);
     return streak;
   }
+
+  onMount(() => {
+    console.log('AnalyticsPanel mounted, initializing schedule');
+    schedule.initialize();
+  });
 </script>
 
-<div class="analytics-panel">
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    <div class="stat-card">
-      <div class="stat-value">{totalWorkouts}</div>
-      <div class="stat-label">Total Workouts</div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-value">{totalMinutes}</div>
-      <div class="stat-label">Total Minutes</div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-value">{averageMinutes}</div>
-      <div class="stat-label">Avg Minutes</div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-value">{currentStreak}</div>
-      <div class="stat-label">Day Streak</div>
-    </div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalWorkouts}</div>
+    <div class="text-sm text-muted-foreground">Total Workouts</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{totalMinutes}</div>
+    <div class="text-sm text-muted-foreground">Total Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{avgMinutes}</div>
+    <div class="text-sm text-muted-foreground">Avg Minutes</div>
+  </div>
+  
+  <div class="p-4 rounded-lg border bg-card text-card-foreground">
+    <div class="text-2xl font-bold">{dayStreak}</div>
+    <div class="text-sm text-muted-foreground">Day Streak</div>
   </div>
 </div>
-
-<style>
-  .analytics-panel {
-    width: 100%;
-  }
-
-  .stat-card {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: var(--background);
-    border: 1px solid var(--border);
-    text-align: center;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--primary);
-    line-height: 1.2;
-  }
-
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-    margin-top: 0.25rem;
-  }
-
-  @media (max-width: 640px) {
-    .stat-value {
-      font-size: 1.25rem;
-    }
-    
-    .stat-label {
-      font-size: 0.75rem;
-    }
-  }
-</style>
