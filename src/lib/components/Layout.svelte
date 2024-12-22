@@ -149,15 +149,19 @@
   {#if showWorkoutModal}
     <div 
       class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" 
-      on:click={closeModal}
-      on:keydown={handleKeydown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="workout-modal-title"
     >
+      <button
+        class="absolute inset-0 w-full h-full cursor-default"
+        on:click={closeModal}
+        on:keydown={(e) => e.key === 'Escape' && closeModal()}
+      >
+        <span class="sr-only">Close modal</span>
+      </button>
       <div 
         class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-xl"
-        on:click|stopPropagation
         role="document"
       >
         <div class="flex flex-col space-y-1.5 text-center sm:text-left">

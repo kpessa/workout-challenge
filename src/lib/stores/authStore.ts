@@ -1,5 +1,5 @@
 import { writable, type Writable } from 'svelte/store';
-import { supabase } from '$lib/supabaseClient';
+import { supabase } from '$lib/services/supabase';
 import type { AuthState, User } from '$lib/types';
 
 function createAuthStore() {

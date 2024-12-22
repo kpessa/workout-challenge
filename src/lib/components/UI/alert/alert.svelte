@@ -1,8 +1,9 @@
-<script>
-	import { alertVariants } from "./index.js";
-	import { cn } from "$lib/utils.js";
-	let className = undefined;
-	export let variant = "default";
+<script lang="ts">
+	import { alertVariants, type AlertVariants } from "./index";
+	import { cn } from "$lib/utils";
+	
+	let className: string | undefined = undefined;
+	export let variant: AlertVariants["variant"] = "default";
 	export { className as class };
 </script>
 

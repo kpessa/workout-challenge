@@ -1,16 +1,8 @@
-<script>
-  import Layout from './lib/components/Layout.svelte';
+<script lang="ts">
+  import Layout from '$lib/components/Layout.svelte';
+  import AppInit from '$lib/components/AppInit.svelte';
+  import './app.css';
 </script>
 
+<AppInit />
 <Layout />
-
-<style>
-  :global(*) {
-    box-sizing: border-box;
-  }
-
-  :global(body) {
-    margin: 0;
-    padding: 0;
-  }
-</style>

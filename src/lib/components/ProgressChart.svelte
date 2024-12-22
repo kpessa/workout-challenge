@@ -3,11 +3,12 @@
   import * as d3 from 'd3';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
-  import { calculateSigmoidal } from '../utils/sigmoidal';
+  import { calculateSigmoidal } from '$lib/utils/sigmoidal';
   import { Button } from "$lib/components/UI/button";
   import * as Tabs from "$lib/components/UI/tabs";
   import { timeFormat } from 'd3-time-format';
   import { createEventDispatcher } from 'svelte';
+  import { getStartOfDay } from '$lib/utils/dateHelpers';
 
   const dispatch = createEventDispatcher();
 
@@ -108,7 +109,8 @@
     console.log('View mode change:', { value, currentMode: viewMode });
     isMonthView = value === 'month';
     console.log('Updated isMonthView:', isMonthView);
-    currentPage = 0; // Reset to first page when switching views
+    currentPage = calculateCurrentPage();
+    calculateWorkoutDays();
   }
 
   let scheduleData;
@@ -157,7 +159,7 @@
     
     console.log('Calculating workout days:', { viewMode, currentPage, isMonthView });
     
-    const startDate = new Date(userPreferencesData.startDate);
+    const startDate = getStartOfDay(userPreferencesData.startDate);
     const daysPerWeek = userPreferencesData.daysPerWeek;
     
     // Calculate start and end dates based on view mode
@@ -183,7 +185,27 @@
       viewMode
     });
 
-    // Ensure we include all dates in the range, not just those with workouts
+    // Group recorded workouts by date
+    const workoutsByDate = scheduleData
+      .filter(workout => {
+        const workoutDate = getStartOfDay(workout.date);
+        return workoutDate >= pageStartDate && workoutDate <= pageEndDate;
+      })
+      .reduce((acc, workout) => {
+        const dateStr = getStartOfDay(workout.date).toDateString();
+        if (!acc[dateStr]) {
+          acc[dateStr] = [];
+        }
+        acc[dateStr].push({
+          id: workout.id,
+          date: getStartOfDay(workout.date),
+          duration: workout.duration,
+          created_at: workout.created_at
+        });
+        return acc;
+      }, {});
+
+    // Create base workout days for all dates in range
     const allDates = [];
     const currentDate = new Date(pageStartDate);
     
@@ -191,26 +213,6 @@
       allDates.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    // Group recorded workouts by date
-    const workoutsByDate = scheduleData
-      .filter(workout => {
-        const workoutDate = new Date(workout.date);
-        return workoutDate >= pageStartDate && workoutDate <= pageEndDate;
-      })
-      .reduce((acc, workout) => {
-        const dateStr = new Date(workout.date).toDateString();
-        if (!acc[dateStr]) {
-          acc[dateStr] = [];
-        }
-        acc[dateStr].push({
-          id: workout.id,
-          date: new Date(workout.date),
-          duration: workout.duration,
-          created_at: workout.created_at
-        });
-        return acc;
-      }, {});
 
     // Create base workout days for all dates in range
     const workoutDays = allDates.map(date => {

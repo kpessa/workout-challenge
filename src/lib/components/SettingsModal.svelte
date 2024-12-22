@@ -1,15 +1,21 @@
 <!-- Modal container -->
 <div 
   class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" 
-  on:click|self={() => dispatch('close')}
-  on:keydown={(e) => e.key === 'Escape' && dispatch('close')}
   role="dialog"
   aria-modal="true"
   aria-labelledby="settings-modal-title"
 >
+  <button
+    class="absolute inset-0 w-full h-full cursor-default"
+    on:click={() => dispatch('close')}
+    on:keydown={(e) => e.key === 'Escape' && dispatch('close')}
+  >
+    <span class="sr-only">Close modal</span>
+  </button>
+  
   <div class="min-h-[calc(100vh-2rem)] flex items-center justify-center">
     <div 
-      class="w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border"
+      class="relative w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border"
       role="document"
     >
       <!-- Header with close button -->

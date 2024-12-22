@@ -2,32 +2,38 @@ import type { SigmoidParams } from '$lib/types';
 
 /**
  * Calculates the target duration for a given day using a sigmoid function
- * @param currentDate The date to calculate the duration for
- * @param startDate The start date of the challenge
+ * @param day The day number in the challenge
  * @param params The sigmoid function parameters
  * @returns The target duration in minutes
  */
 export function calculateSigmoidal(
-  currentDate: Date,
-  startDate: Date,
+  day: number,
   params: SigmoidParams
 ): number {
-  const daysDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const { startMinutes, endMinutes, steepness, midpoint } = params;
+  return startMinutes + (endMinutes - startMinutes) / 
+    (1 + Math.exp(-steepness * (day - midpoint)));
+}
 
-  // If before start date, return start minutes
-  if (daysDiff < 0) return startMinutes;
+export function generateWorkoutSchedule(startDate: Date, daysPerWeek: number, totalDays: number = 90) {
+  const schedule = [];
+  let currentDate = new Date(startDate);
+  let workoutCount = 0;
 
-  // If after 90 days, return end minutes
-  if (daysDiff > 90) return endMinutes;
+  while (workoutCount < totalDays) {
+    const dayOfWeek = currentDate.getDay();
+    // Assuming we want to spread workouts evenly through the week
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
+      schedule.push({
+        date: new Date(currentDate),
+        day: workoutCount + 1,
+        completed: false,
+        workouts: []
+      });
+      workoutCount++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
 
-  // Calculate sigmoid value
-  const x = daysDiff - midpoint;
-  const sigmoid = 1 / (1 + Math.exp(-steepness * x));
-
-  // Scale sigmoid to our range
-  const range = endMinutes - startMinutes;
-  const scaledValue = startMinutes + (range * sigmoid);
-
-  return Math.round(scaledValue);
+  return schedule;
 } 

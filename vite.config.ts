@@ -10,6 +10,12 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['@supabase/supabase-js']
+    exclude: ['@supabase/supabase-js'],
+    include: ['@supabase/postgrest-js']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/]
+    }
   }
 }); 

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
-  import { calculateSigmoidal } from '../utils/sigmoidal';
-  import type { CalendarWorkout } from '$lib/types';
+  import { calculateSigmoidal } from '$lib/utils/sigmoidal';
+  import type { CalendarWorkout, Workout } from '$lib/types';
+  import { getStartOfDay } from '$lib/utils/dateHelpers';
   
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
@@ -17,10 +18,21 @@
   });
 
   // Calculate target duration for each day
-  $: workoutDays = monthlyWorkouts.map(day => ({
-    ...day,
-    targetDuration: calculateSigmoidal(day.day, $userPreferences.sigmoidParams)
-  })) as CalendarWorkout[];
+  $: workoutDays = monthlyWorkouts.map(workout => {
+    const workoutDate = new Date(workout.date);
+    const startDate = new Date($userPreferences.startDate);
+    const dayNum = Math.floor((workoutDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    return {
+      ...workout,
+      day: dayNum,
+      targetDuration: calculateSigmoidal(dayNum, $userPreferences.sigmoidParams),
+      completed: true,
+      workouts: [workout],
+      proposed: 0,
+      total: workout.duration
+    } as CalendarWorkout;
+  });
 
   function previousMonth() {
     if (currentMonth === 0) {
@@ -40,14 +52,14 @@
     }
   }
 
-  function formatDate(date) {
+  function formatDate(date: string | Date) {
     return new Date(date).toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric' 
     });
   }
 
-  function handleCheckboxClick(day) {
+  function handleCheckboxClick(day: CalendarWorkout) {
     if (!day.completed) {
       selectedDay = day;
       showWorkoutForm = true;
@@ -56,7 +68,7 @@
 
   function submitWorkout() {
     if (selectedDay && workoutDuration > 0) {
-      schedule.logWorkout(new Date(selectedDay.date), workoutDuration);
+      schedule.addWorkout(selectedDay.date, workoutDuration);
       showWorkoutForm = false;
       selectedDay = null;
       workoutDuration = 30;
@@ -68,7 +80,7 @@
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  export let onWorkoutClick = (date) => {};
+  export let onWorkoutClick = (date: string) => {};
 </script>
 
 <div class="calendar">

@@ -1,7 +1,7 @@
 import { writable, type Writable } from 'svelte/store';
-import { supabase } from '../services/supabase';
-import type { Workout } from '../types';
-import { authStore } from './authStore';
+import { supabase } from '$lib/services/supabase';
+import type { Workout } from '$lib/types';
+import { authStore } from '$lib/stores/authStore';
 
 class ValidationError extends Error {
   constructor(message: string) {

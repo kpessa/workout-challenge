@@ -105,13 +105,4 @@
       </Button>
     </div>
   </div>
-</div>
-
-<style>
-  .auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 100px);
-  }
-</style> 
+</div> 

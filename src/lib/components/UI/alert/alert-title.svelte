@@ -1,14 +1,9 @@
-<script>
-	import { cn } from "$lib/utils.js";
-	let className = undefined;
-	export let level = "h5";
+<script lang="ts">
+	import { cn } from "$lib/utils";
+	let className: string | undefined = undefined;
 	export { className as class };
 </script>
 
-<svelte:element
-	this={level}
-	class={cn("mb-1 font-medium leading-none tracking-tight", className)}
-	{...$$restProps}
->
+<h5 class={cn("mb-1 font-medium leading-none tracking-tight", className)} {...$$restProps}>
 	<slot />
-</svelte:element>
+</h5>

@@ -39,4 +39,18 @@ export interface CalendarWorkout extends Workout {
   day: number;
   proposed: number;
   total: number;
+}
+
+export interface SigmoidParams {
+  startMinutes: number;
+  endMinutes: number;
+  steepness: number;
+  midpoint: number;
+}
+
+export interface WorkoutType {
+  id: string;
+  name: string;
+  created_at: string;
+  user_id: string;
 } 
