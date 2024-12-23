@@ -60,22 +60,22 @@
           </div>
 
           <div class="space-y-2">
-            <Label for="startingMinutes">Starting Minutes</Label>
+            <Label for="minDuration">Minimum Duration (minutes)</Label>
             <Input 
               type="number" 
-              id="startingMinutes"
+              id="minDuration"
               min="1"
-              bind:value={localParams.startMinutes}
+              bind:value={localParams.minDuration}
             />
           </div>
 
           <div class="space-y-2">
-            <Label for="endingMinutes">Target Minutes</Label>
+            <Label for="maxDuration">Maximum Duration (minutes)</Label>
             <Input 
               type="number" 
-              id="endingMinutes"
+              id="maxDuration"
               min="1"
-              bind:value={localParams.endMinutes}
+              bind:value={localParams.maxDuration}
             />
           </div>
 
@@ -132,10 +132,11 @@
   import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
   import { X } from 'lucide-svelte';
   import { userPreferences } from '../stores/userPreferencesStore';
+  import type { SigmoidParams } from '$lib/types';
 
   const dispatch = createEventDispatcher();
 
-  let localParams = $userPreferences.sigmoidParams;
+  let localParams: SigmoidParams = $userPreferences.sigmoidParams;
   let localDaysPerWeek = $userPreferences.daysPerWeek;
   let localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
 
@@ -158,12 +159,11 @@
 
   async function handleUpdate() {
     try {
-      await userPreferences.updateSigmoidParams(localParams);
-      await userPreferences.setDaysPerWeek(localDaysPerWeek);
-      const date = new Date(localStartDate);
-      if (!isNaN(date.getTime())) {
-        await userPreferences.setStartDate(date.toISOString());
-      }
+      await userPreferences.set({
+        startDate: new Date(localStartDate).toISOString(),
+        daysPerWeek: localDaysPerWeek,
+        sigmoidParams: localParams
+      });
       
       showFeedback(
         true,
@@ -178,7 +178,7 @@
       showFeedback(
         false,
         "Error",
-        "Failed to update settings. Please try again."
+        error instanceof Error ? error.message : "Failed to update settings. Please try again."
       );
     }
   }
@@ -199,7 +199,7 @@
       showFeedback(
         false,
         "Error",
-        "Failed to reset settings. Please try again."
+        error instanceof Error ? error.message : "Failed to reset settings. Please try again."
       );
     }
   }

@@ -1,14 +1,5 @@
 import { writable } from 'svelte/store';
-import { supabase as productionSupabase } from '$lib/services/supabase';
-import { browser } from '$app/environment';
-
-let supabase = productionSupabase;
-
-// In test environment, use the test-specific Supabase client
-if (process.env.NODE_ENV === 'test') {
-  const { supabase: testSupabase } = require('../tests/supabase.test');
-  supabase = testSupabase;
-}
+import { supabase } from './supabase.test';
 
 export interface SigmoidParams {
   a: number;
@@ -37,16 +28,6 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
 function createUserPreferencesStore() {
   const { subscribe, set, update } = writable<UserPreferences>(DEFAULT_PREFERENCES);
 
-  const getStoredPreferences = () => {
-    if (browser) {
-      const storedPrefs = localStorage.getItem('userPreferences');
-      if (storedPrefs) {
-        return JSON.parse(storedPrefs);
-      }
-    }
-    return null;
-  };
-
   return {
     subscribe,
     initialize: async () => {
@@ -63,20 +44,12 @@ function createUserPreferencesStore() {
 
         if (error) {
           console.error('Error fetching preferences:', error);
-          // If there's an error and we're in the browser, try localStorage
-          const storedPrefs = getStoredPreferences();
-          if (storedPrefs) {
-            set(storedPrefs);
-          }
           return;
         }
 
         if (data) {
           const preferences = data.data as UserPreferences;
           set(preferences);
-          if (browser) {
-            localStorage.setItem('userPreferences', JSON.stringify(preferences));
-          }
         } else {
           // If no preferences found, set defaults
           const { error: insertError } = await supabase
@@ -92,9 +65,6 @@ function createUserPreferencesStore() {
             console.error('Error inserting default preferences:', insertError);
           } else {
             set(DEFAULT_PREFERENCES);
-            if (browser) {
-              localStorage.setItem('userPreferences', JSON.stringify(DEFAULT_PREFERENCES));
-            }
           }
         }
       } catch (err) {
@@ -119,9 +89,6 @@ function createUserPreferencesStore() {
         }
 
         set(preferences);
-        if (browser) {
-          localStorage.setItem('userPreferences', JSON.stringify(preferences));
-        }
       } catch (err) {
         console.error('Error in set:', err);
       }
@@ -158,9 +125,6 @@ function createUserPreferencesStore() {
         }
 
         set(newPreferences);
-        if (browser) {
-          localStorage.setItem('userPreferences', JSON.stringify(newPreferences));
-        }
       } catch (err) {
         console.error('Error in update:', err);
       }
@@ -181,9 +145,6 @@ function createUserPreferencesStore() {
         }
 
         set(DEFAULT_PREFERENCES);
-        if (browser) {
-          localStorage.removeItem('userPreferences');
-        }
       } catch (err) {
         console.error('Error in reset:', err);
       }

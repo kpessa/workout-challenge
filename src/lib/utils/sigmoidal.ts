@@ -10,8 +10,8 @@ export function calculateSigmoidal(
   day: number,
   params: SigmoidParams
 ): number {
-  const { startMinutes, endMinutes, steepness, midpoint } = params;
-  return startMinutes + (endMinutes - startMinutes) / 
+  const { minDuration, maxDuration, steepness, midpoint } = params;
+  return minDuration + (maxDuration - minDuration) / 
     (1 + Math.exp(-steepness * (day - midpoint)));
 }
 

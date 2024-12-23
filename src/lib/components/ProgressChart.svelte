@@ -327,10 +327,11 @@
       }
 
       // Only propose a workout if conditions are met
-      if (!recordedDates.has(day.date.toDateString()) && 
-          dayOfWeek !== 0 && 
-          currentWeekWorkouts < daysPerWeek) {
-        
+      const shouldPropose = !recordedDates.has(day.date.toDateString()) && 
+                          dayOfWeek !== 0 && 
+                          currentWeekWorkouts < daysPerWeek;
+      
+      if (shouldPropose) {
         const targetTime = Math.round(calculateSigmoidal(day.day, userPreferencesData.sigmoidParams));
         day.proposed = targetTime;
         day.total = targetTime;
