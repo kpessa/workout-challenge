@@ -1,19 +1,31 @@
+export interface SigmoidParams {
+  steepness: number;
+  midpoint: number;
+  minDuration: number;
+  maxDuration: number;
+}
+
+export interface UserPreferences {
+  startDate: string;
+  daysPerWeek: number;
+  sigmoidParams: SigmoidParams;
+}
+
 export interface WorkoutType {
   id: string;
   name: string;
   color: string;
-  user_id: string;
-  created_at: string;
+  created_at?: string;
+  user_id?: string;
 }
 
 export interface Workout {
   id: string;
   date: string;
   duration: number;
-  workout_type_id: string;
-  workout_type?: WorkoutType;
-  user_id: string;
-  created_at: string;
+  workout_type_id?: string;
+  created_at?: string;
+  user_id?: string;
 }
 
 export interface WorkoutClickEvent {
@@ -27,14 +39,17 @@ export interface EditWorkoutEvent {
   duration: number;
 }
 
+export interface AuthState {
+  user: {
+    id: string;
+    email: string;
+  } | null;
+  loading: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  loading: boolean;
 }
 
 export interface ScheduleState {
@@ -51,10 +66,4 @@ export interface CalendarWorkout extends Workout {
   proposed: number;
   total: number;
 }
-
-export interface SigmoidParams {
-  startMinutes: number;
-  endMinutes: number;
-  steepness: number;
-  midpoint: number;
-} 
+ 

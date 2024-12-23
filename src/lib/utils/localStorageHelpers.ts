@@ -1,9 +1,13 @@
+import { browser } from '$app/environment';
+
 /**
  * Loads data from localStorage
  * @param key The key to load from localStorage
  * @returns The parsed data or null if not found
  */
 export function loadFromLocalStorage<T>(key: string): T | null {
+  if (!browser) return null;
+  
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : null;
@@ -20,6 +24,8 @@ export function loadFromLocalStorage<T>(key: string): T | null {
  * @returns true if successful, false otherwise
  */
 export function saveToLocalStorage<T>(key: string, data: T): boolean {
+  if (!browser) return false;
+  
   try {
     localStorage.setItem(key, JSON.stringify(data));
     return true;
@@ -35,6 +41,8 @@ export function saveToLocalStorage<T>(key: string, data: T): boolean {
  * @returns true if successful, false otherwise
  */
 export function removeFromLocalStorage(key: string): boolean {
+  if (!browser) return false;
+  
   try {
     localStorage.removeItem(key);
     return true;
