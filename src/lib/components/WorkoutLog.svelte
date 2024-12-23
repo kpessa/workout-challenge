@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  import { Button } from "$lib/components/UI/button";
+  import { Input } from "$lib/components/UI/input";
+  import { Label } from "$lib/components/UI/label";
   import { schedule } from "$lib/stores/scheduleStore";
   import { format, parseISO } from "date-fns";
   import { createEventDispatcher, onMount } from "svelte";
   import { X, Settings } from 'lucide-svelte';
   import { workoutTypes } from "$lib/stores/workoutTypeStore";
   import type { WorkoutType, Workout } from "$lib/types";
-  import * as Select from "$lib/components/ui/select";
+  import * as Select from "$lib/components/UI/select";
   import WorkoutTypeManager from "./WorkoutTypeManager.svelte";
-  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Dialog from "$lib/components/UI/dialog";
 
   const dispatch = createEventDispatcher();
 

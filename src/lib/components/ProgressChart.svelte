@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import * as d3 from 'd3';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
@@ -8,7 +8,6 @@
   import { Button } from "$lib/components/UI/button";
   import * as Tabs from "$lib/components/UI/tabs";
   import { timeFormat } from 'd3-time-format';
-  import { createEventDispatcher } from 'svelte';
   import { getStartOfDay } from '$lib/utils/dateHelpers';
 
   const dispatch = createEventDispatcher();

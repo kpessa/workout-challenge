@@ -1,17 +1,19 @@
 <script lang="ts">
   import '../app.postcss';
-  import { theme } from '$lib/stores/themeStore';
-  import { onMount } from 'svelte';
-
-  onMount(() => {
-    // Check system preference if no theme is saved
-    if (!localStorage.getItem('theme')) {
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      theme.set(systemPrefersDark ? 'dark' : 'light');
-    }
-  });
+  import AppInit from '$lib/components/AppInit.svelte';
+  import { authStore } from '$lib/stores/authStore';
 </script>
 
-<div class="min-h-screen bg-background text-foreground antialiased">
-  <slot />
-</div> 
+<AppInit />
+
+{#if $authStore.loading}
+  <div class="min-h-screen bg-background text-foreground antialiased">
+    <div class="flex items-center justify-center h-screen">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  </div>
+{:else}
+  <div class="min-h-screen bg-background text-foreground antialiased">
+    <slot />
+  </div>
+{/if} 

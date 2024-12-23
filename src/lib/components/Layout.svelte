@@ -88,18 +88,20 @@
         </div>
         <div class="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="icon" on:click={() => openWorkoutLog()}>
-            <Plus class="h-4 w-4" />
-            <span class="sr-only">Add workout</span>
-          </Button>
-          <Button variant="ghost" size="icon" on:click={openSettings}>
-            <Settings2 class="h-4 w-4" />
-            <span class="sr-only">Settings</span>
-          </Button>
-          <Button variant="ghost" size="icon" on:click={signOut}>
-            <LogOut class="h-4 w-4" />
-            <span class="sr-only">Sign out</span>
-          </Button>
+          {#if $authStore.user}
+            <Button variant="ghost" size="icon" on:click={() => openWorkoutLog()}>
+              <Plus class="h-4 w-4" />
+              <span class="sr-only">Add workout</span>
+            </Button>
+            <Button variant="ghost" size="icon" on:click={openSettings}>
+              <Settings2 class="h-4 w-4" />
+              <span class="sr-only">Settings</span>
+            </Button>
+            <Button variant="ghost" size="icon" on:click={signOut}>
+              <LogOut class="h-4 w-4" />
+              <span class="sr-only">Sign out</span>
+            </Button>
+          {/if}
         </div>
       </div>
     </div>
@@ -107,11 +109,7 @@
 
   <!-- Main Content -->
   <main class="flex-1 container py-6 md:py-8 gap-6 md:gap-8">
-    {#if $authStore.loading}
-      <div class="flex items-center justify-center h-[calc(100vh-10rem)]">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    {:else if !$authStore.user}
+    {#if !$authStore.user}
       <Auth />
     {:else}
       <div class="flex flex-col gap-6 md:gap-8">

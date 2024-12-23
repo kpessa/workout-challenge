@@ -1,19 +1,17 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/authStore';
-  import { supabase } from '$lib/services/supabase';
+  import { theme } from '$lib/stores/themeStore';
+  import { browser } from '$app/environment';
 
-  onMount(() => {
-    // Initialize auth state
-    authStore.initialize();
+  onMount(async () => {
+    // Initialize auth first
+    await authStore.initialize();
 
-    // Set up auth state change listener
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        authStore.initialize();
-      } else {
-        authStore.signOut();
-      }
-    });
+    // Initialize theme only in browser
+    if (browser && !localStorage.getItem('theme')) {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      theme.set(systemPrefersDark ? 'dark' : 'light');
+    }
   });
 </script>
