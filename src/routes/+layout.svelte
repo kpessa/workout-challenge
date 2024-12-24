@@ -17,3 +17,20 @@
     <slot />
   </div>
 {/if} 
+
+<style>
+  /* Prevent pull-to-refresh and bounce effects on iOS */
+  :global(html), :global(body) {
+    overscroll-behavior-y: none;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global(#svelte) {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+</style> 
