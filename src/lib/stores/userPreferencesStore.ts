@@ -11,28 +11,66 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 export interface SigmoidParams {
-  a: number;
-  b: number;
-  c: number;
-  d: number;
+  steepness: number;
+  midpoint: number;
+  minDuration: number;
+  maxDuration: number;
 }
 
 export interface UserPreferences {
-  startDate: string;
   daysPerWeek: number;
-  sigmoidParams: SigmoidParams;
+  startDate: string;
+  sigmoid: SigmoidParams;
+}
+
+// Database format
+interface DatabasePreferences {
+  startDate: string;
+  daysPerWeek: string | number;
+  sigmoidParams: {
+    steepness: number;
+    midpoint: number;
+    minDuration: string | number;
+    maxDuration: string | number;
+  };
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
-  startDate: new Date().toISOString(),
   daysPerWeek: 3,
-  sigmoidParams: {
-    a: 1,
-    b: 0.5,
-    c: 5,
-    d: 1
+  startDate: new Date().toISOString().split('T')[0],
+  sigmoid: {
+    steepness: 0.1,
+    midpoint: 30,
+    minDuration: 30,
+    maxDuration: 60
   }
 };
+
+function transformFromDatabase(dbPrefs: DatabasePreferences): UserPreferences {
+  return {
+    daysPerWeek: Number(dbPrefs.daysPerWeek),
+    startDate: dbPrefs.startDate || DEFAULT_PREFERENCES.startDate,
+    sigmoid: {
+      steepness: dbPrefs.sigmoidParams.steepness,
+      midpoint: dbPrefs.sigmoidParams.midpoint,
+      minDuration: Number(dbPrefs.sigmoidParams.minDuration),
+      maxDuration: Number(dbPrefs.sigmoidParams.maxDuration)
+    }
+  };
+}
+
+function transformToDatabase(prefs: UserPreferences): DatabasePreferences {
+  return {
+    startDate: prefs.startDate,
+    daysPerWeek: prefs.daysPerWeek,
+    sigmoidParams: {
+      steepness: prefs.sigmoid.steepness,
+      midpoint: prefs.sigmoid.midpoint,
+      minDuration: prefs.sigmoid.minDuration,
+      maxDuration: prefs.sigmoid.maxDuration
+    }
+  };
+}
 
 function createUserPreferencesStore() {
   const { subscribe, set, update } = writable<UserPreferences>(DEFAULT_PREFERENCES);
@@ -54,7 +92,6 @@ function createUserPreferencesStore() {
       if (!user) return;
 
       try {
-        // First try to get preferences from Supabase
         const { data, error } = await supabase
           .from('user_preferences')
           .select('data')
@@ -63,7 +100,6 @@ function createUserPreferencesStore() {
 
         if (error) {
           console.error('Error fetching preferences:', error);
-          // If there's an error and we're in the browser, try localStorage
           const storedPrefs = getStoredPreferences();
           if (storedPrefs) {
             set(storedPrefs);
@@ -72,19 +108,19 @@ function createUserPreferencesStore() {
         }
 
         if (data) {
-          const preferences = data.data as UserPreferences;
+          const preferences = transformFromDatabase(data.data as DatabasePreferences);
           set(preferences);
           if (browser) {
             localStorage.setItem('userPreferences', JSON.stringify(preferences));
           }
         } else {
-          // If no preferences found, set defaults
+          const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
           const { error: insertError } = await supabase
             .from('user_preferences')
             .insert([
               {
                 user_id: user.id,
-                data: DEFAULT_PREFERENCES
+                data: dbPrefs
               }
             ]);
 
@@ -99,31 +135,6 @@ function createUserPreferencesStore() {
         }
       } catch (err) {
         console.error('Error in initialize:', err);
-      }
-    },
-    set: async (preferences: UserPreferences) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      try {
-        const { error } = await supabase
-          .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            data: preferences
-          });
-
-        if (error) {
-          console.error('Error saving preferences:', error);
-          return;
-        }
-
-        set(preferences);
-        if (browser) {
-          localStorage.setItem('userPreferences', JSON.stringify(preferences));
-        }
-      } catch (err) {
-        console.error('Error in set:', err);
       }
     },
     update: async (updater: (preferences: UserPreferences) => UserPreferences) => {
@@ -142,14 +153,17 @@ function createUserPreferencesStore() {
           return;
         }
 
-        const currentPreferences = currentData?.data as UserPreferences || DEFAULT_PREFERENCES;
+        const currentPreferences = currentData?.data ? 
+          transformFromDatabase(currentData.data as DatabasePreferences) : 
+          DEFAULT_PREFERENCES;
+        
         const newPreferences = updater(currentPreferences);
-
+        const dbPrefs = transformToDatabase(newPreferences);
         const { error: updateError } = await supabase
           .from('user_preferences')
           .upsert({
             user_id: user.id,
-            data: newPreferences
+            data: dbPrefs
           });
 
         if (updateError) {
@@ -170,19 +184,22 @@ function createUserPreferencesStore() {
       if (!user) return;
 
       try {
+        const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
         const { error } = await supabase
           .from('user_preferences')
-          .delete()
-          .eq('user_id', user.id);
+          .upsert({
+            user_id: user.id,
+            data: dbPrefs
+          });
 
         if (error) {
-          console.error('Error deleting preferences:', error);
+          console.error('Error resetting preferences:', error);
           return;
         }
 
         set(DEFAULT_PREFERENCES);
         if (browser) {
-          localStorage.removeItem('userPreferences');
+          localStorage.setItem('userPreferences', JSON.stringify(DEFAULT_PREFERENCES));
         }
       } catch (err) {
         console.error('Error in reset:', err);

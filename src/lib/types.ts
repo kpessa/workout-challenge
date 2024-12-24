@@ -6,9 +6,9 @@ export interface SigmoidParams {
 }
 
 export interface UserPreferences {
-  startDate: string;
   daysPerWeek: number;
-  sigmoidParams: SigmoidParams;
+  startDate: string;
+  sigmoid: SigmoidParams;
 }
 
 export interface WorkoutType {

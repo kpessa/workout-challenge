@@ -12,6 +12,7 @@
   import type { WorkoutClickEvent, EditWorkoutEvent } from '$lib/types';
   import ThemeToggle from '$lib/components/UI/theme-toggle.svelte';
   import { Plus, Settings2, LogOut } from 'lucide-svelte';
+  import * as Dialog from "$lib/components/UI/dialog";
 
   let showWorkoutModal = false;
   let showSettingsModal = false;
@@ -144,46 +145,30 @@
   </footer>
 
   <!-- Modals -->
-  {#if showWorkoutModal}
-    <div 
-      class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" 
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="workout-modal-title"
-    >
-      <button
-        class="absolute inset-0 w-full h-full cursor-default"
-        on:click={closeModal}
-        on:keydown={(e) => e.key === 'Escape' && closeModal()}
-      >
-        <span class="sr-only">Close modal</span>
-      </button>
-      <div 
-        class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-xl"
-        role="document"
-      >
-        <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-          <h2 id="workout-modal-title" class="font-semibold leading-none tracking-tight">
-            {editMode ? 'Edit Workout' : 'Log Workout'}
-          </h2>
-        </div>
-        <div class="overflow-y-auto">
-          <WorkoutLog 
-            {selectedDate}
-            {proposedDuration}
-            {editMode}
-            {workoutId}
-            onComplete={closeModal}
-          />
-        </div>
+  <Dialog.Root bind:open={showWorkoutModal}>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>
+          {editMode ? 'Edit Workout' : 'Log Workout'}
+        </Dialog.Title>
+      </Dialog.Header>
+      <div class="overflow-y-auto">
+        <WorkoutLog 
+          {selectedDate}
+          {proposedDuration}
+          {editMode}
+          {workoutId}
+          onComplete={closeModal}
+        />
       </div>
-    </div>
-  {/if}
+    </Dialog.Content>
+  </Dialog.Root>
 
   <!-- Settings Modal -->
-  {#if showSettingsModal}
-    <SettingsModal on:close={() => showSettingsModal = false} />
-  {/if}
+  <SettingsModal 
+    bind:open={showSettingsModal} 
+    on:openChange={(e) => showSettingsModal = e.detail} 
+  />
 </div>
 
 <style>

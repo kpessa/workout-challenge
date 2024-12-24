@@ -11,6 +11,7 @@
   import * as Select from "$lib/components/UI/select";
   import WorkoutTypeManager from "./WorkoutTypeManager.svelte";
   import * as Dialog from "$lib/components/UI/dialog";
+  import RecentWorkouts from './RecentWorkouts.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -155,19 +156,6 @@
 </script>
 
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between border-b pb-4">
-    <h2 class="text-lg font-semibold">{editMode ? 'Edit' : 'Log'} Workout</h2>
-    <Button 
-      variant="ghost" 
-      size="icon"
-      on:click={handleClose}
-    >
-      <X class="h-4 w-4" />
-      <span class="sr-only">Close</span>
-    </Button>
-  </div>
-
   <form class="space-y-6" on:submit={handleSubmit}>
     <div class="space-y-4">
       <div class="grid gap-2">
@@ -242,49 +230,13 @@
     </div>
   </form>
 
-  {#if recentWorkouts.length > 0}
-    <div class="space-y-4">
-      <h3 class="font-medium text-sm text-foreground">Recent Workouts</h3>
-      <div class="border rounded-lg divide-y">
-        {#each recentWorkouts as workout}
-          <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                {#if workout.workout_type_id}
-                  {#if workoutTypeOptions.find(t => t.id === workout.workout_type_id)}
-                    <div 
-                      class="w-3 h-3 rounded-full" 
-                      style="background-color: {workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.color};"
-                    />
-                    <p class="text-sm font-medium">{workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.name}</p>
-                  {/if}
-                {/if}
-              </div>
-              <p class="text-sm font-medium">{format(new Date(workout.date), "MMM d, yyyy")}</p>
-              <p class="text-sm text-muted-foreground">{workout.duration} minutes</p>
-            </div>
-            <div class="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                on:click={() => handleEdit(workout)}
-              >
-                Edit
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                class="text-destructive hover:text-destructive"
-                on:click={() => handleDelete(workout.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
-  {/if}
+  <!-- Recent Workouts -->
+  <RecentWorkouts 
+    {recentWorkouts}
+    {workoutTypeOptions}
+    on:editWorkout
+    on:deleteWorkout
+  />
 </div>
 
 <Dialog.Root bind:open={showWorkoutTypeManager}>

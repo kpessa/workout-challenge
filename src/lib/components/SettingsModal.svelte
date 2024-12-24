@@ -1,206 +1,231 @@
-<!-- Modal container -->
-<div 
-  class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 overflow-y-auto" 
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="settings-modal-title"
->
-  <button
-    class="absolute inset-0 w-full h-full cursor-default"
-    on:click={() => dispatch('close')}
-    on:keydown={(e) => e.key === 'Escape' && dispatch('close')}
-  >
-    <span class="sr-only">Close modal</span>
-  </button>
-  
-  <div class="min-h-[calc(100vh-2rem)] flex items-center justify-center">
-    <div 
-      class="relative w-full max-w-lg mx-auto bg-card text-card-foreground rounded-lg shadow-lg border"
-      role="document"
-    >
-      <!-- Header with close button -->
-      <div class="flex items-center justify-between p-4 border-b">
-        <h2 id="settings-modal-title" class="text-lg font-semibold">Challenge Settings</h2>
-        <Button variant="ghost" size="icon" on:click={() => dispatch('close')}>
-          <X class="h-4 w-4" />
-          <span class="sr-only">Close</span>
-        </Button>
-      </div>
-
-      <!-- Scrollable content -->
-      <div class="p-4 max-h-[calc(80vh-8rem)] overflow-y-auto">
-        {#if showAlert}
-          <div class="mb-4">
-            <Alert variant={alertVariant}>
-              <AlertTitle>{alertTitle}</AlertTitle>
-              <AlertDescription>{alertDescription}</AlertDescription>
-            </Alert>
-          </div>
-        {/if}
-
-        <form on:submit|preventDefault={handleUpdate} class="space-y-4">
-          <div class="space-y-2">
-            <Label for="startDate">Start Date</Label>
-            <Input 
-              type="date" 
-              id="startDate"
-              bind:value={localStartDate}
-            />
-          </div>
-
-          <div class="space-y-2">
-            <Label for="daysPerWeek">Days Per Week</Label>
-            <Input 
-              type="number" 
-              id="daysPerWeek"
-              min="1"
-              max="7"
-              bind:value={localDaysPerWeek}
-            />
-          </div>
-
-          <div class="space-y-2">
-            <Label for="minDuration">Minimum Duration (minutes)</Label>
-            <Input 
-              type="number" 
-              id="minDuration"
-              min="1"
-              bind:value={localParams.minDuration}
-            />
-          </div>
-
-          <div class="space-y-2">
-            <Label for="maxDuration">Maximum Duration (minutes)</Label>
-            <Input 
-              type="number" 
-              id="maxDuration"
-              min="1"
-              bind:value={localParams.maxDuration}
-            />
-          </div>
-
-          <div class="space-y-2">
-            <Label for="steepness">Progression Steepness</Label>
-            <div class="flex gap-4 items-center">
-              <Input 
-                type="range" 
-                id="steepness"
-                min="0.01"
-                max="0.2"
-                step="0.01"
-                bind:value={localParams.steepness}
-                class="flex-1"
-              />
-              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">{localParams.steepness.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <Label for="midpoint">Midpoint (Days)</Label>
-            <div class="flex gap-4 items-center">
-              <Input 
-                type="range" 
-                id="midpoint"
-                min="1"
-                max="90"
-                bind:value={localParams.midpoint}
-                class="flex-1"
-              />
-              <span class="text-sm text-muted-foreground w-12 flex-shrink-0">Day {localParams.midpoint}</span>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Footer with buttons -->
-      <div class="flex flex-col sm:flex-row justify-between gap-4 p-4 border-t">
-        <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
-        <div class="flex gap-2">
-          <Button variant="outline" class="flex-1 sm:flex-none" on:click={() => dispatch('close')}>Cancel</Button>
-          <Button variant="default" class="flex-1 sm:flex-none" on:click={handleUpdate}>Update</Button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Button } from "$lib/components/UI/button";
-  import { Input } from "$lib/components/UI/input";
-  import { Label } from "$lib/components/UI/label";
+  import * as Dialog from "$lib/components/UI/dialog";
+  import * as Collapsible from "$lib/components/UI/collapsible";
   import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
-  import { X } from 'lucide-svelte';
-  import { userPreferences } from '../stores/userPreferencesStore';
-  import type { SigmoidParams } from '$lib/types';
+  import { Label } from "$lib/components/UI/label";
+  import { Input } from "$lib/components/UI/input";
+  import { createEventDispatcher } from "svelte";
+  import { userPreferences } from "$lib/stores/userPreferencesStore";
+  import type { UserPreferences } from "$lib/types";
+  import { ChevronsUpDown } from 'lucide-svelte';
+
+  export let open = false;
 
   const dispatch = createEventDispatcher();
 
-  let localParams: SigmoidParams = $userPreferences.sigmoidParams;
-  let localDaysPerWeek = $userPreferences.daysPerWeek;
-  let localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
+  const defaultPreferences: UserPreferences = {
+    daysPerWeek: 3,
+    startDate: new Date().toISOString().split('T')[0],
+    sigmoid: {
+      steepness: 0.1,
+      midpoint: 30,
+      minDuration: 30,
+      maxDuration: 60
+    }
+  };
+
+  let preferences: UserPreferences = { ...defaultPreferences };
+  let showAdvancedSettings = false;
 
   let showAlert = false;
   let alertVariant: "default" | "destructive" = "default";
   let alertTitle = "";
   let alertDescription = "";
 
-  function showFeedback(success: boolean, title: string, description: string) {
-    alertVariant = success ? "default" : "destructive";
-    alertTitle = title;
-    alertDescription = description;
+  function showSuccessAlert() {
     showAlert = true;
-    
-    // Hide the alert after 3 seconds
+    alertVariant = "default";
+    alertTitle = "Settings Updated";
+    alertDescription = "Your settings have been updated successfully.";
     setTimeout(() => {
       showAlert = false;
     }, 3000);
   }
 
+  function showErrorAlert() {
+    showAlert = true;
+    alertVariant = "destructive";
+    alertTitle = "Error";
+    alertDescription = "Failed to update settings. Please try again.";
+    setTimeout(() => {
+      showAlert = false;
+    }, 3000);
+  }
+
+  function handleClose() {
+    open = false;
+  }
+
   async function handleUpdate() {
     try {
-      await userPreferences.set({
-        startDate: new Date(localStartDate).toISOString(),
-        daysPerWeek: localDaysPerWeek,
-        sigmoidParams: localParams
-      });
-      
-      showFeedback(
-        true,
-        "Settings Updated",
-        "Your challenge settings have been saved successfully."
-      );
-      
+      console.log('Updating preferences with:', preferences);
+      await userPreferences.update(() => ({
+        ...preferences,
+        daysPerWeek: Number(preferences.daysPerWeek),
+        sigmoid: {
+          ...preferences.sigmoid,
+          steepness: Number(preferences.sigmoid.steepness),
+          midpoint: Number(preferences.sigmoid.midpoint),
+          minDuration: Number(preferences.sigmoid.minDuration),
+          maxDuration: Number(preferences.sigmoid.maxDuration)
+        }
+      }));
+      showSuccessAlert();
       setTimeout(() => {
-        dispatch('close');
+        open = false;
       }, 1000);
     } catch (error) {
-      showFeedback(
-        false,
-        "Error",
-        error instanceof Error ? error.message : "Failed to update settings. Please try again."
-      );
+      console.error('Error updating preferences:', error);
+      showErrorAlert();
     }
   }
 
-  async function resetToDefaults() {
-    try {
-      await userPreferences.reset();
-      localParams = $userPreferences.sigmoidParams;
-      localDaysPerWeek = $userPreferences.daysPerWeek;
-      localStartDate = new Date($userPreferences.startDate).toISOString().split('T')[0];
-      
-      showFeedback(
-        true,
-        "Settings Reset",
-        "Your challenge settings have been reset to defaults."
-      );
-    } catch (error) {
-      showFeedback(
-        false,
-        "Error",
-        error instanceof Error ? error.message : "Failed to reset settings. Please try again."
-      );
-    }
+  function resetToDefaults() {
+    preferences = { ...defaultPreferences };
   }
-</script> 
+
+  $: if ($userPreferences) {
+    console.log('Received updated preferences from store:', $userPreferences);
+    preferences = {
+      daysPerWeek: $userPreferences.daysPerWeek ?? defaultPreferences.daysPerWeek,
+      startDate: $userPreferences.startDate ?? defaultPreferences.startDate,
+      sigmoid: {
+        steepness: $userPreferences.sigmoid?.steepness ?? defaultPreferences.sigmoid.steepness,
+        midpoint: $userPreferences.sigmoid?.midpoint ?? defaultPreferences.sigmoid.midpoint,
+        minDuration: $userPreferences.sigmoid?.minDuration ?? defaultPreferences.sigmoid.minDuration,
+        maxDuration: $userPreferences.sigmoid?.maxDuration ?? defaultPreferences.sigmoid.maxDuration
+      }
+    };
+    console.log('Updated local preferences:', preferences);
+  }
+</script>
+
+<Dialog.Root bind:open on:openChange={(e) => !e.detail && dispatch('close')}>
+  <Dialog.Content class="max-w-lg">
+    <Dialog.Header>
+      <Dialog.Title>Challenge Settings</Dialog.Title>
+    </Dialog.Header>
+    <div class="max-h-[calc(80vh-12rem)] overflow-y-auto">
+      {#if showAlert}
+        <div class="mb-4">
+          <Alert variant={alertVariant}>
+            <AlertTitle>{alertTitle}</AlertTitle>
+            <AlertDescription>{alertDescription}</AlertDescription>
+          </Alert>
+        </div>
+      {/if}
+
+      <div class="space-y-6">
+        <!-- Primary Settings -->
+        <div class="space-y-4">
+          <div class="grid gap-4">
+            <div class="grid gap-2">
+              <Label for="startDate">Start Date</Label>
+              <Input 
+                type="date" 
+                id="startDate"
+                bind:value={preferences.startDate}
+              />
+              <p class="text-sm text-muted-foreground">
+                The date you started or want to start your workout challenge
+              </p>
+            </div>
+
+            <div class="grid gap-2">
+              <Label for="daysPerWeek">Days Per Week</Label>
+              <Input 
+                type="number" 
+                id="daysPerWeek"
+                bind:value={preferences.daysPerWeek}
+                min="1"
+                max="7"
+              />
+              <p class="text-sm text-muted-foreground">
+                Number of days per week you want to workout
+              </p>
+            </div>
+
+            <div class="grid gap-2">
+              <Label for="minDuration">Minimum Duration (minutes)</Label>
+              <Input 
+                type="number" 
+                id="minDuration"
+                bind:value={preferences.sigmoid.minDuration}
+                min="1"
+              />
+              <p class="text-sm text-muted-foreground">
+                Starting workout duration
+              </p>
+            </div>
+
+            <div class="grid gap-2">
+              <Label for="maxDuration">Maximum Duration (minutes)</Label>
+              <Input 
+                type="number" 
+                id="maxDuration"
+                bind:value={preferences.sigmoid.maxDuration}
+                min="1"
+              />
+              <p class="text-sm text-muted-foreground">
+                Maximum workout duration
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <Collapsible.Root>
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-sm">Advanced Settings</h3>
+            <Collapsible.Trigger asChild let:builder>
+              <Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+                <ChevronsUpDown class="h-4 w-4" />
+                <span class="sr-only">Toggle advanced settings</span>
+              </Button>
+            </Collapsible.Trigger>
+          </div>
+
+          <Collapsible.Content class="mt-4 space-y-4">
+            <div class="grid gap-4">
+              <div class="grid gap-2">
+                <Label for="steepness">Steepness</Label>
+                <Input 
+                  type="number" 
+                  id="steepness"
+                  bind:value={preferences.sigmoid.steepness}
+                  step="0.01"
+                  min="0.01"
+                  max="1"
+                />
+                <p class="text-sm text-muted-foreground">
+                  Controls how quickly the workout duration increases (0.01 to 1)
+                </p>
+              </div>
+
+              <div class="grid gap-2">
+                <Label for="midpoint">Midpoint (days)</Label>
+                <Input 
+                  type="number" 
+                  id="midpoint"
+                  bind:value={preferences.sigmoid.midpoint}
+                  min="1"
+                />
+                <p class="text-sm text-muted-foreground">
+                  Day at which the workout duration reaches the middle point between min and max
+                </p>
+              </div>
+            </div>
+          </Collapsible.Content>
+        </Collapsible.Root>
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button variant="destructive" on:click={resetToDefaults}>Reset to Defaults</Button>
+      <div class="flex gap-2">
+        <Button variant="outline" class="flex-1 sm:flex-none" on:click={handleClose}>Cancel</Button>
+        <Button variant="default" class="flex-1 sm:flex-none" on:click={handleUpdate}>Update</Button>
+      </div>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

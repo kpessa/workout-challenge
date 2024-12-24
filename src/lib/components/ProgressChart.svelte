@@ -332,7 +332,11 @@
                           currentWeekWorkouts < daysPerWeek;
       
       if (shouldPropose) {
-        const targetTime = Math.round(calculateSigmoidal(day.day, userPreferencesData.sigmoidParams));
+        const targetTime = Math.round(calculateSigmoidal(
+          day.date,
+          new Date(userPreferencesData.startDate),
+          userPreferencesData.sigmoid
+        ));
         day.proposed = targetTime;
         day.total = targetTime;
         currentWeekWorkouts++;

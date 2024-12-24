@@ -2,17 +2,24 @@ import type { SigmoidParams } from '$lib/types';
 
 /**
  * Calculates the target duration for a given day using a sigmoid function
- * @param day The day number in the challenge
+ * @param currentDate The current date
+ * @param startDate The start date of the challenge
  * @param params The sigmoid function parameters
  * @returns The target duration in minutes
  */
 export function calculateSigmoidal(
-  day: number,
+  currentDate: Date | string,
+  startDate: Date,
   params: SigmoidParams
 ): number {
+  // Ensure currentDate is a Date object
+  if (!(currentDate instanceof Date)) {
+    currentDate = new Date(currentDate);
+  }
+  const daysDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const { minDuration, maxDuration, steepness, midpoint } = params;
   return minDuration + (maxDuration - minDuration) / 
-    (1 + Math.exp(-steepness * (day - midpoint)));
+    (1 + Math.exp(-steepness * (daysDiff - midpoint)));
 }
 
 export function generateWorkoutSchedule(startDate: Date, daysPerWeek: number, totalDays: number = 90) {
