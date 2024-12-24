@@ -20,17 +20,18 @@
 
 <style>
   /* Prevent pull-to-refresh and bounce effects on iOS */
-  :global(html), :global(body) {
-    overscroll-behavior-y: none;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
+  :global(html) {
     height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :global(body) {
+    height: 100%;
+    overscroll-behavior-y: none;
   }
 
   :global(#svelte) {
     height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 </style> 
