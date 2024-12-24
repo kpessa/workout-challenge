@@ -59,7 +59,6 @@
 
   async function handleUpdate() {
     try {
-      console.log('Updating preferences with:', preferences);
       await userPreferences.update(() => ({
         ...preferences,
         daysPerWeek: Number(preferences.daysPerWeek),
@@ -76,7 +75,6 @@
         open = false;
       }, 1000);
     } catch (error) {
-      console.error('Error updating preferences:', error);
       showErrorAlert();
     }
   }
@@ -86,7 +84,6 @@
   }
 
   $: if ($userPreferences) {
-    console.log('Received updated preferences from store:', $userPreferences);
     preferences = {
       daysPerWeek: $userPreferences.daysPerWeek ?? defaultPreferences.daysPerWeek,
       startDate: $userPreferences.startDate ?? defaultPreferences.startDate,
@@ -97,7 +94,6 @@
         maxDuration: $userPreferences.sigmoid?.maxDuration ?? defaultPreferences.sigmoid.maxDuration
       }
     };
-    console.log('Updated local preferences:', preferences);
   }
 </script>
 

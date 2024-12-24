@@ -28,7 +28,7 @@
     top: 20,
     right: containerWidth < 800 ? 40 : 40,
     bottom: containerWidth < 800 ? 100 : 70,  // Increased bottom margin on mobile for legend
-    left: containerWidth < 800 ? 45 : 75
+    left: containerWidth < 800 ? 35 : 45  // Reduced left margin since we removed y-axis label
   };
   
   $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
@@ -40,6 +40,14 @@
     // Recalculate workout days when viewMode changes
     if (userPreferencesData && scheduleData) {
       calculateWorkoutDays();
+    }
+  }
+
+  // Initialize with today in view
+  $: {
+    if (userPreferencesData && scheduleData) {
+      // Set initial page to show today
+      currentPage = calculateCurrentPage();
     }
   }
 
@@ -107,6 +115,8 @@
 
   function handleViewModeChange(value: string) {
     isMonthView = value === 'month';
+    viewMode = value;
+    // Calculate the page that contains today
     currentPage = calculateCurrentPage();
     calculateWorkoutDays();
   }
@@ -143,6 +153,8 @@
     isDataReady = !!(scheduleData && userPreferencesData && hasWorkoutTypes);
     
     if (isDataReady && svg) {
+      // Ensure we start with today in view
+      currentPage = calculateCurrentPage();
       calculateWorkoutDays();
       requestAnimationFrame(updateChart);
     }
@@ -176,12 +188,6 @@
     svg.append('g')
       .attr('class', 'y-axis');
 
-    // Add axis labels
-    svg.append('text')
-      .attr('class', 'y-axis-label')
-      .attr('transform', 'rotate(-90)')
-      .attr('text-anchor', 'middle');
-
     // Add resize listener
     window.addEventListener('resize', handleResize);
     return () => {
@@ -211,22 +217,24 @@
     today.setHours(0, 0, 0, 0);
     startDate.setHours(0, 0, 0, 0);
 
-    // Adjust startDate to the beginning of its week (Sunday)
-    const startDay = startDate.getDay();
-    const adjustedStartDate = new Date(startDate);
-    adjustedStartDate.setDate(adjustedStartDate.getDate() - startDay);
-    
-    // Calculate the difference from the adjusted start date
-    const diffTime = today.getTime() - adjustedStartDate.getTime();
+    // Calculate the difference from today to start date
+    const diffTime = today.getTime() - startDate.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    let page;
     if (viewMode === 'month') {
       // For month view, calculate which 30-day period contains today
-      return Math.floor(diffDays / 30);
+      const monthPage = Math.floor(diffDays / 30);
+      page = Math.min(2, Math.max(0, monthPage)); // Clamp between 0 and 2
     } else {
-      // For week view, calculate which 7-day period contains today
-      return Math.floor(diffDays / 7);
+      // For week view, we need to find which week contains today
+      const startDay = startDate.getDay(); // 0-6, where 0 is Sunday
+      const adjustedDiffDays = diffDays + startDay;
+      const weekPage = Math.floor(adjustedDiffDays / 7);
+      page = Math.min(11, Math.max(0, weekPage)); // Clamp between 0 and 11
     }
+    
+    return page;
   }
 
   function calculateWorkoutDays() {
@@ -252,6 +260,10 @@
     // Set period length based on view mode
     const periodLength = viewMode === 'month' ? 29 : 6; // 30 days for month, 7 days for week
     pageEndDate.setDate(pageEndDate.getDate() + periodLength);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toDateString();
 
     // Group recorded workouts by date
     const workoutsByDate = scheduleData
@@ -577,13 +589,15 @@
         .tickFormat(formatDate)
         .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
           .filter((_, i) => {
-            if (containerWidth < 800) {  // Updated breakpoint
-              // Show fewer ticks below 800px
+            if (viewMode === 'week') {
+              // Show all days in week view
+              return true;
+            } else if (containerWidth < 800) {
+              // Show fewer ticks below 800px in month view
               return i % 2 === 0;
-            } else if (viewMode === 'month') {
-              return i % 3 === 0;
             } else {
-              return i % 2 === 0;
+              // Month view on larger screens
+              return i % 3 === 0;
             }
           })))
       .selectAll('text')
@@ -598,7 +612,8 @@
         .ticks(containerWidth < 800 ? 4 : 5)  // Updated breakpoint
         .tickFormat(d => d))
       .selectAll('text')
-      .attr('dx', containerWidth < 800 ? '0' : '0.25em');  // Updated breakpoint
+      .attr('dx', containerWidth < 800 ? '0' : '0.25em')  // Updated breakpoint
+      .style('font-size', containerWidth < 800 ? '0.65rem' : '0.75rem'); // Adjust tick text size
 
     // Update grid lines with explicit styling
     svg.select('.grid-lines')
@@ -612,14 +627,6 @@
       .attr('stroke', 'var(--border-color)')
       .attr('stroke-opacity', 0.15)
       .attr('stroke-dasharray', '2,2');
-
-    // Update Y-axis label with explicit styling
-    svg.select('.y-axis-label')
-      .attr('x', -height / 2)
-      .attr('y', -margin.left + (containerWidth < 800 ? 8 : 35))  // Updated breakpoint
-      .attr('fill', 'currentColor')
-      .style('font-size', containerWidth < 800 ? '0.7rem' : '1rem')  // Updated breakpoint
-      .text('Min');
   }
 </script>
 
