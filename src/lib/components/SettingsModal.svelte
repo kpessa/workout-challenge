@@ -61,6 +61,7 @@
     try {
       await userPreferences.update(() => ({
         ...preferences,
+        startDate: formatDateForInput(preferences.startDate),
         daysPerWeek: Number(preferences.daysPerWeek),
         sigmoid: {
           ...preferences.sigmoid,
@@ -86,7 +87,7 @@
   $: if ($userPreferences) {
     preferences = {
       daysPerWeek: $userPreferences.daysPerWeek ?? defaultPreferences.daysPerWeek,
-      startDate: $userPreferences.startDate ?? defaultPreferences.startDate,
+      startDate: formatDateForInput($userPreferences.startDate) ?? defaultPreferences.startDate,
       sigmoid: {
         steepness: $userPreferences.sigmoid?.steepness ?? defaultPreferences.sigmoid.steepness,
         midpoint: $userPreferences.sigmoid?.midpoint ?? defaultPreferences.sigmoid.midpoint,
@@ -94,6 +95,15 @@
         maxDuration: $userPreferences.sigmoid?.maxDuration ?? defaultPreferences.sigmoid.maxDuration
       }
     };
+  }
+
+  function formatDateForInput(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      return new Date().toISOString().split('T')[0];
+    }
   }
 </script>
 
