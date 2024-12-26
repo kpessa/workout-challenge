@@ -1,14 +1,5 @@
 import { writable } from 'svelte/store';
-import { supabase as productionSupabase } from '$lib/services/supabase';
-import { browser } from '$app/environment';
-
-let supabase = productionSupabase;
-
-// In test environment, use the test-specific Supabase client
-if (process.env.NODE_ENV === 'test') {
-  const { supabase: testSupabase } = require('../tests/supabase.test');
-  supabase = testSupabase;
-}
+import { supabase } from '$lib/services/supabase';
 
 export interface SigmoidParams {
   steepness: number;
@@ -75,16 +66,6 @@ function transformToDatabase(prefs: UserPreferences): DatabasePreferences {
 function createUserPreferencesStore() {
   const { subscribe, set, update } = writable<UserPreferences>(DEFAULT_PREFERENCES);
 
-  const getStoredPreferences = () => {
-    if (browser) {
-      const storedPrefs = localStorage.getItem('userPreferences');
-      if (storedPrefs) {
-        return JSON.parse(storedPrefs);
-      }
-    }
-    return null;
-  };
-
   return {
     subscribe,
     initialize: async () => {
@@ -94,43 +75,32 @@ function createUserPreferencesStore() {
       try {
         const { data, error } = await supabase
           .from('user_preferences')
-          .select('data')
+          .select('*')
           .eq('user_id', user.id)
           .single();
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
           console.error('Error fetching preferences:', error);
-          const storedPrefs = getStoredPreferences();
-          if (storedPrefs) {
-            set(storedPrefs);
-          }
           return;
         }
 
         if (data) {
           const preferences = transformFromDatabase(data.data as DatabasePreferences);
           set(preferences);
-          if (browser) {
-            localStorage.setItem('userPreferences', JSON.stringify(preferences));
-          }
         } else {
           const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
-          const { error: insertError } = await supabase
+          const { error: upsertError } = await supabase
             .from('user_preferences')
-            .insert([
-              {
-                user_id: user.id,
-                data: dbPrefs
-              }
-            ]);
+            .insert({
+              user_id: user.id,
+              data: dbPrefs
+            })
+            .select();
 
-          if (insertError) {
-            console.error('Error inserting default preferences:', insertError);
+          if (upsertError) {
+            console.error('Error inserting default preferences:', upsertError);
           } else {
             set(DEFAULT_PREFERENCES);
-            if (browser) {
-              localStorage.setItem('userPreferences', JSON.stringify(DEFAULT_PREFERENCES));
-            }
           }
         }
       } catch (err) {
@@ -144,13 +114,13 @@ function createUserPreferencesStore() {
       try {
         const { data: currentData, error: fetchError } = await supabase
           .from('user_preferences')
-          .select('data')
+          .select('*')
           .eq('user_id', user.id)
           .single();
 
-        if (fetchError) {
+        if (fetchError && fetchError.code !== 'PGRST116') {
           console.error('Error fetching current preferences:', fetchError);
-          return;
+          throw fetchError;
         }
 
         const currentPreferences = currentData?.data ? 
@@ -159,24 +129,35 @@ function createUserPreferencesStore() {
         
         const newPreferences = updater(currentPreferences);
         const dbPrefs = transformToDatabase(newPreferences);
-        const { error: updateError } = await supabase
-          .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            data: dbPrefs
-          });
 
-        if (updateError) {
-          console.error('Error updating preferences:', updateError);
-          return;
+        let result;
+        if (currentData) {
+          // Update existing record
+          result = await supabase
+            .from('user_preferences')
+            .update({ data: dbPrefs })
+            .eq('user_id', user.id)
+            .select();
+        } else {
+          // Insert new record
+          result = await supabase
+            .from('user_preferences')
+            .insert({
+              user_id: user.id,
+              data: dbPrefs
+            })
+            .select();
+        }
+
+        if (result.error) {
+          console.error('Error updating preferences:', result.error);
+          throw result.error;
         }
 
         set(newPreferences);
-        if (browser) {
-          localStorage.setItem('userPreferences', JSON.stringify(newPreferences));
-        }
       } catch (err) {
         console.error('Error in update:', err);
+        throw err;
       }
     },
     reset: async () => {
@@ -187,22 +168,19 @@ function createUserPreferencesStore() {
         const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
         const { error } = await supabase
           .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            data: dbPrefs
-          });
+          .update({ data: dbPrefs })
+          .eq('user_id', user.id)
+          .select();
 
         if (error) {
           console.error('Error resetting preferences:', error);
-          return;
+          throw error;
         }
 
         set(DEFAULT_PREFERENCES);
-        if (browser) {
-          localStorage.setItem('userPreferences', JSON.stringify(DEFAULT_PREFERENCES));
-        }
       } catch (err) {
         console.error('Error in reset:', err);
+        throw err;
       }
     }
   };

@@ -25,9 +25,19 @@
     }
   };
 
-  let preferences: UserPreferences = { ...defaultPreferences };
-  let showAdvancedSettings = false;
+  // Make preferences reactive to store changes
+  $: preferences = {
+    daysPerWeek: $userPreferences.daysPerWeek ?? defaultPreferences.daysPerWeek,
+    startDate: formatDateForInput($userPreferences.startDate) ?? defaultPreferences.startDate,
+    sigmoid: {
+      steepness: $userPreferences.sigmoid?.steepness ?? defaultPreferences.sigmoid.steepness,
+      midpoint: $userPreferences.sigmoid?.midpoint ?? defaultPreferences.sigmoid.midpoint,
+      minDuration: $userPreferences.sigmoid?.minDuration ?? defaultPreferences.sigmoid.minDuration,
+      maxDuration: $userPreferences.sigmoid?.maxDuration ?? defaultPreferences.sigmoid.maxDuration
+    }
+  };
 
+  let showAdvancedSettings = false;
   let showAlert = false;
   let alertVariant: "default" | "destructive" = "default";
   let alertTitle = "";
@@ -57,6 +67,31 @@
     open = false;
   }
 
+  function handleStartDateChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const date = new Date(target.value);
+    if (!isNaN(date.getTime())) {
+      preferences.startDate = date.toISOString().split('T')[0];
+    }
+  }
+
+  function handleDaysPerWeekChange(event: Event) {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (!isNaN(value) && value >= 1 && value <= 7) {
+      preferences.daysPerWeek = value;
+    }
+  }
+
+  function handleSigmoidChange(event: Event, field: keyof UserPreferences['sigmoid']) {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (!isNaN(value)) {
+      preferences.sigmoid = {
+        ...preferences.sigmoid,
+        [field]: value
+      };
+    }
+  }
+
   async function handleUpdate() {
     try {
       await userPreferences.update(() => ({
@@ -82,19 +117,6 @@
 
   function resetToDefaults() {
     preferences = { ...defaultPreferences };
-  }
-
-  $: if ($userPreferences) {
-    preferences = {
-      daysPerWeek: $userPreferences.daysPerWeek ?? defaultPreferences.daysPerWeek,
-      startDate: formatDateForInput($userPreferences.startDate) ?? defaultPreferences.startDate,
-      sigmoid: {
-        steepness: $userPreferences.sigmoid?.steepness ?? defaultPreferences.sigmoid.steepness,
-        midpoint: $userPreferences.sigmoid?.midpoint ?? defaultPreferences.sigmoid.midpoint,
-        minDuration: $userPreferences.sigmoid?.minDuration ?? defaultPreferences.sigmoid.minDuration,
-        maxDuration: $userPreferences.sigmoid?.maxDuration ?? defaultPreferences.sigmoid.maxDuration
-      }
-    };
   }
 
   function formatDateForInput(dateString: string): string {
@@ -131,7 +153,8 @@
               <Input 
                 type="date" 
                 id="startDate"
-                bind:value={preferences.startDate}
+                value={preferences.startDate}
+                on:change={handleStartDateChange}
               />
               <p class="text-sm text-muted-foreground">
                 The date you started or want to start your workout challenge
@@ -143,9 +166,10 @@
               <Input 
                 type="number" 
                 id="daysPerWeek"
-                bind:value={preferences.daysPerWeek}
+                value={preferences.daysPerWeek}
                 min="1"
                 max="7"
+                on:change={handleDaysPerWeekChange}
               />
               <p class="text-sm text-muted-foreground">
                 Number of days per week you want to workout
@@ -157,8 +181,9 @@
               <Input 
                 type="number" 
                 id="minDuration"
-                bind:value={preferences.sigmoid.minDuration}
+                value={preferences.sigmoid.minDuration}
                 min="1"
+                on:change={(e) => handleSigmoidChange(e, 'minDuration')}
               />
               <p class="text-sm text-muted-foreground">
                 Starting workout duration
@@ -170,8 +195,9 @@
               <Input 
                 type="number" 
                 id="maxDuration"
-                bind:value={preferences.sigmoid.maxDuration}
+                value={preferences.sigmoid.maxDuration}
                 min="1"
+                on:change={(e) => handleSigmoidChange(e, 'maxDuration')}
               />
               <p class="text-sm text-muted-foreground">
                 Maximum workout duration
@@ -199,10 +225,11 @@
                 <Input 
                   type="number" 
                   id="steepness"
-                  bind:value={preferences.sigmoid.steepness}
+                  value={preferences.sigmoid.steepness}
                   step="0.01"
                   min="0.01"
                   max="1"
+                  on:change={(e) => handleSigmoidChange(e, 'steepness')}
                 />
                 <p class="text-sm text-muted-foreground">
                   Controls how quickly the workout duration increases (0.01 to 1)
@@ -214,8 +241,9 @@
                 <Input 
                   type="number" 
                   id="midpoint"
-                  bind:value={preferences.sigmoid.midpoint}
+                  value={preferences.sigmoid.midpoint}
                   min="1"
+                  on:change={(e) => handleSigmoidChange(e, 'midpoint')}
                 />
                 <p class="text-sm text-muted-foreground">
                   Day at which the workout duration reaches the middle point between min and max
