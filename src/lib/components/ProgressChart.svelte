@@ -87,15 +87,32 @@
 
   // Update chart dimensions on resize
   function handleResize() {
-    updateDimensions();
-    if (svg) {
-      const svgElement = d3.select(chartContainer).select('svg');
-      svgElement
-        .attr('width', containerWidth)
-        .attr('height', containerHeight);
-      updateChart();
-    }
+    // Add debounce to avoid too many updates
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      updateDimensions();
+      if (svg) {
+        const svgElement = d3.select(chartContainer).select('svg');
+        svgElement
+          .attr('width', containerWidth)
+          .attr('height', containerHeight);
+        
+        // Check if we should switch view mode based on screen size
+        const shouldBeMonthView = window.innerWidth >= 800;
+        if (isMonthView !== shouldBeMonthView) {
+          isMonthView = shouldBeMonthView;
+          viewMode = isMonthView ? 'month' : 'week';
+          currentPage = calculateCurrentPage();
+        }
+        
+        // Force recalculation and redraw
+        calculateWorkoutDays();
+        requestAnimationFrame(updateChart);
+      }
+    }, 250); // 250ms debounce
   }
+
+  let resizeTimeout: ReturnType<typeof setTimeout>;
 
   // Navigation functions
   function previousPeriod() {
@@ -190,8 +207,10 @@
 
     // Add resize listener
     window.addEventListener('resize', handleResize);
+    
     return () => {
       window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
       if (svgElement) {
         svgElement.remove();
       }

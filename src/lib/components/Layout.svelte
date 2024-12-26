@@ -13,6 +13,9 @@
   import ThemeToggle from '$lib/components/UI/theme-toggle.svelte';
   import { Plus, Settings2, LogOut } from 'lucide-svelte';
   import * as Dialog from "$lib/components/UI/dialog";
+  import AnalyticsGraph from './AnalyticsGraph.svelte';
+  import { userPreferences } from '$lib/stores/userPreferencesStore';
+  import WeeklyAnalyticsPanel from './WeeklyAnalyticsPanel.svelte';
 
   let showWorkoutModal = false;
   let showSettingsModal = false;
@@ -74,6 +77,7 @@
 
   onMount(() => {
     schedule.initialize();
+    userPreferences.initialize();
   });
 </script>
 
@@ -125,10 +129,26 @@
           </div>
         </div>
 
-        <!-- Analytics Panel -->
+        <!-- Daily Analytics Panel -->
         <div class="rounded-lg border bg-card text-card-foreground shadow">
           <div class="p-6">
             <AnalyticsPanel />
+          </div>
+        </div>
+
+        <!-- Analytics Graph -->
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6 h-[350px] sm:h-[500px] relative">
+            {#if $userPreferences}
+              <AnalyticsGraph startDate={$userPreferences.startDate} />
+            {/if}
+          </div>
+        </div>
+
+        <!-- Weekly Analytics Panel -->
+        <div class="rounded-lg border bg-card text-card-foreground shadow">
+          <div class="p-6">
+            <WeeklyAnalyticsPanel />
           </div>
         </div>
       </div>

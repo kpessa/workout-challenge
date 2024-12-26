@@ -36,7 +36,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
-    "d3": "^7.8.5",
+    "@unovis/svelte": "^1.5.0",
+    "@unovis/ts": "^1.5.0",
+    "chart.js": "^4.4.7",
+    "chartjs": "^0.3.24",
+    "chartjs-plugin-annotation": "^3.1.0",
+    "d3": "^7.9.0",
     "date-fns": "^3.3.1",
     "shadcn-svelte": "^0.5.0"
   }
