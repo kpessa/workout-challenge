@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import Chart from 'chart.js/auto';
+  import ChartJS from 'chart.js/auto';
   import annotationPlugin from 'chartjs-plugin-annotation';
-  import type { Scale, CoreScaleOptions } from 'chart.js';
+  import type { Scale, CoreScaleOptions, Chart as ChartType, TooltipModel } from 'chart.js';
   import { parseISO, format, differenceInDays } from 'date-fns';
   import { schedule } from '$lib/stores/scheduleStore';
   import { userPreferences } from '$lib/stores/userPreferencesStore';
@@ -11,12 +11,12 @@
   import { calculateSigmoidal } from '$lib/utils/sigmoidal';
   import type { Workout, WorkoutType } from '$lib/types';
 
-  Chart.register(annotationPlugin);
+  ChartJS.register(annotationPlugin);
 
   export let startDate: string;
 
   let canvas: HTMLCanvasElement;
-  let chart: Chart;
+  let chart: ChartType;
   let windowWidth = window.innerWidth;
 
   interface DayData {
@@ -32,6 +32,7 @@
   }
 
   // Subscribe to theme changes
+  $: colors = getThemeColors();
   $: {
     if (startDate && canvas) {
       createChart(parseISO(startDate));
@@ -39,18 +40,16 @@
   }
 
   function getThemeColors() {
-    const colors = {
+    return {
       primary: 'hsl(var(--primary))',
       foreground: $theme === 'dark' ? '#ffffff' : '#000000',
       card: $theme === 'dark' ? '#1c1c1c' : '#ffffff',
       border: $theme === 'dark' ? '#333333' : '#e5e5e5',
-      moderate: $theme === 'dark' ? '#90EE90' : '#2E8B57',
-      vigorous: $theme === 'dark' ? '#87CEEB' : '#4169E1',
+      moderate: $theme === 'dark' ? 'rgba(144, 238, 144, 0.7)' : 'rgba(46, 139, 87, 0.7)',
+      vigorous: $theme === 'dark' ? 'rgba(135, 206, 235, 0.7)' : 'rgba(65, 105, 225, 0.7)',
       axis: $theme === 'dark' ? '#ffffff' : '#000000',
-      target: $theme === 'dark' ? '#ffffff' : '#000000'
+      target: $theme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
     };
-    
-    return colors;
   }
 
   function generateData(start: Date) {
@@ -96,7 +95,6 @@
 
     const { dates, actualMinutes, targetMinutes } = generateData(start);
     const ctx = canvas.getContext('2d');
-    const colors = getThemeColors();
 
     if (!ctx) return;
 
@@ -111,7 +109,7 @@
           {
             label: 'Target Minutes',
             data: targetMinutes,
-            borderColor: $theme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.6)',
+            borderColor: colors.target,
             borderDash: [5, 5],
             borderWidth: 2,
             pointStyle: 'line' as const,
@@ -122,19 +120,19 @@
             label: 'Workouts',
             data: workoutData,
             borderColor: 'transparent',
-            backgroundColor: $theme === 'dark' ? '#ffffff' : '#000000',
+            backgroundColor: colors.foreground,
             pointStyle: 'circle' as const,
             pointRadius: 5,
             pointHoverRadius: 7,
             pointBorderWidth: 1,
-            pointBorderColor: $theme === 'dark' ? '#1c1c1c' : '#ffffff',
+            pointBorderColor: colors.card,
             showLine: false,
             spanGaps: true
           },
           {
             label: 'Moderate (150min/week)',
             data: Array(90).fill(150/7),
-            borderColor: $theme === 'dark' ? 'rgba(144, 238, 144, 0.7)' : 'rgba(46, 139, 87, 0.7)',
+            borderColor: colors.moderate,
             borderDash: [5, 5],
             borderWidth: 2,
             pointStyle: 'line' as const,
@@ -143,7 +141,7 @@
           {
             label: 'Vigorous (300min/week)',
             data: Array(90).fill(300/7),
-            borderColor: $theme === 'dark' ? 'rgba(135, 206, 235, 0.7)' : 'rgba(65, 105, 225, 0.7)',
+            borderColor: colors.vigorous,
             borderDash: [5, 5],
             borderWidth: 2,
             pointStyle: 'line' as const,
@@ -169,7 +167,7 @@
               display: false
             },
             ticks: {
-              color: $theme === 'dark' ? '#ffffff' : '#000000',
+              color: colors.axis,
               font: {
                 size: 10
               }
@@ -189,7 +187,7 @@
               display: false
             },
             ticks: {
-              color: $theme === 'dark' ? '#ffffff' : '#000000',
+              color: colors.axis,
               callback: function(this: Scale<CoreScaleOptions>, tickValue: string | number) {
                 const value = typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue;
                 return `${Math.round(value)}m`;
@@ -207,7 +205,7 @@
                 type: 'line' as const,
                 xMin: format(new Date(), 'MMM dd'),
                 xMax: format(new Date(), 'MMM dd'),
-                borderColor: $theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                borderColor: colors.target,
                 borderWidth: 2,
                 borderDash: [6, 6],
                 drawTime: 'beforeDatasetsDraw' as const,
@@ -216,7 +214,7 @@
                   content: 'Today',
                   position: 'center' as const,
                   backgroundColor: 'transparent',
-                  color: $theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                  color: colors.target,
                   font: {
                     size: 11
                   },
@@ -226,63 +224,14 @@
             }
           },
           tooltip: {
-            backgroundColor: colors.card,
-            titleColor: $theme === 'dark' ? '#ffffff' : '#000000',
-            bodyColor: $theme === 'dark' ? '#ffffff' : '#000000',
-            borderColor: colors.border,
-            borderWidth: 1,
-            padding: 8,
-            displayColors: true,
-            callbacks: {
-              title: (items: any[]) => {
-                const date = new Date(items[0].label);
-                return format(date, 'EEE, MM/dd');
-              },
-              label: (item: any) => {
-                if (item.datasetIndex !== 1) {
-                  const value = item.raw as number;
-                  if (value === null) return '';
-                  return `${item.dataset.label}: ${value.toFixed(1)}m`;
-                }
-
-                const dayData = actualMinutes[item.dataIndex];
-                if (!dayData || !dayData.workouts.length) return '';
-
-                // Return empty string for the total line - we'll show workouts in afterBody
-                return '';
-              },
-              afterBody: (items: any[]) => {
-                const workoutItem = items.find(item => item.datasetIndex === 1);
-                if (!workoutItem) return [];
-
-                const dayData = actualMinutes[workoutItem.dataIndex];
-                if (!dayData || !dayData.workouts.length) return [];
-
-                const lines = [`Total: ${dayData.total.toFixed(1)}m`];
-                dayData.workouts.forEach(workout => {
-                  const type = $workoutTypes.find(t => t.id === workout.workout_type_id);
-                  if (type) {
-                    lines.push(`• ${type.name}: ${workout.duration.toFixed(1)}m`);
-                  } else {
-                    lines.push(`• Workout: ${workout.duration.toFixed(1)}m`);
-                  }
-                });
-                return lines;
-              },
-              labelTextColor: (item: any) => {
-                if (item.datasetIndex !== 1) return item.dataset.borderColor;
-                const dayData = actualMinutes[item.dataIndex];
-                if (!dayData || !dayData.workouts.length) return colors.foreground;
-                const workout = dayData.workouts[0];
-                const type = $workoutTypes.find(t => t.id === workout.workout_type_id);
-                return type?.color || colors.foreground;
-              }
-            }
+            enabled: false,
+            external: externalTooltipHandler,
+            position: 'nearest' as const,
           },
           legend: {
             position: 'top' as const,
             labels: {
-              color: $theme === 'dark' ? '#ffffff' : '#000000',
+              color: colors.axis,
               usePointStyle: true,
               pointStyle: 'circle',
               font: {
@@ -296,7 +245,136 @@
       }
     };
 
-    chart = new Chart(ctx, config);
+    chart = new ChartJS(ctx, config);
+  }
+
+  function getOrCreateTooltip(chart: ChartType) {
+    const parent = chart.canvas.parentNode;
+    if (!parent) return null;
+
+    let tooltipEl = parent.querySelector('div');
+    
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.style.background = $theme === 'dark' ? '#1c1c1c' : '#ffffff';
+      tooltipEl.style.borderRadius = '6px';
+      tooltipEl.style.color = $theme === 'dark' ? '#ffffff' : '#000000';
+      tooltipEl.style.border = `1px solid ${$theme === 'dark' ? '#333333' : '#e5e5e5'}`;
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.pointerEvents = 'none';
+      tooltipEl.style.position = 'absolute';
+      tooltipEl.style.transform = 'translate(-50%, 0)';
+      tooltipEl.style.transition = 'all .1s ease';
+      tooltipEl.style.zIndex = '100';
+      parent.appendChild(tooltipEl);
+    }
+    return tooltipEl;
+  }
+
+  function externalTooltipHandler(context: { chart: ChartType; tooltip: TooltipModel<'line'> }) {
+    const { chart, tooltip } = context;
+    const tooltipEl = getOrCreateTooltip(chart);
+    if (!tooltipEl) return;
+
+    // Hide if no tooltip
+    if (tooltip.opacity === 0) {
+      tooltipEl.style.opacity = '0';
+      return;
+    }
+
+    // Set Text
+    if (tooltip.body) {
+      const titleLines = tooltip.title || [];
+      const workoutItem = tooltip.dataPoints.find(item => item.datasetIndex === 1);
+      
+      let innerHTML = `<div style="padding: 8px;">`;
+      
+      if (workoutItem) {
+        const { actualMinutes, targetMinutes } = generateData(parseISO(startDate));
+        const dayData = actualMinutes[workoutItem.dataIndex];
+        const targetForDay = targetMinutes[workoutItem.dataIndex];
+        const currentDate = new Date(startDate);
+        currentDate.setDate(currentDate.getDate() + workoutItem.dataIndex);
+
+        // Format date as "Thu, 12/26"
+        const formattedDate = format(currentDate, 'EEE, MM/dd');
+
+        // Calculate challenge progress
+        const startDateObj = parseISO(startDate);
+        const dayOfChallenge = differenceInDays(currentDate, startDateObj) + 1;
+        const weekOfChallenge = Math.ceil(dayOfChallenge / 7);
+        const monthOfChallenge = Math.ceil(dayOfChallenge / 30);
+
+        // Add header with formatted date
+        innerHTML += `
+          <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 4px;">
+            ${formattedDate}
+          </div>
+          <div style="color: var(--muted-foreground); font-size: 0.9em; margin-bottom: 8px;">
+            Day ${dayOfChallenge} • Week ${weekOfChallenge} • Month ${monthOfChallenge}
+          </div>
+        `;
+
+        if (dayData && dayData.workouts.length > 0) {
+          const isTargetMet = dayData.total >= targetForDay;
+          const maxMinutes = Math.max(dayData.total, targetForDay);
+          
+          // Add target and total with divider
+          innerHTML += `
+            <div style="border-top: 1px solid var(--border); padding-top: 8px; margin-bottom: 8px;">
+              <div style="margin-bottom: 8px;">
+                <div style="margin-bottom: 4px;">Target: ${Math.round(targetForDay)}m</div>
+                <div style="width: 100%; height: 2px; background: ${$theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};">
+                  <div style="width: ${targetForDay === maxMinutes ? 100 : (targetForDay / maxMinutes) * 100}%; height: 100%; background: ${$theme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'};"></div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px;">
+                <div style="margin-bottom: 4px;">Total: ${Math.round(dayData.total)}m${isTargetMet ? ' ✓' : ''}</div>
+                <div style="width: 100%; height: 2px; background: ${$theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};">
+                  <div style="width: ${dayData.total === maxMinutes ? 100 : (dayData.total / maxMinutes) * 100}%; height: 100%; background: ${isTargetMet ? ($theme === 'dark' ? '#4ade80' : '#22c55e') : ($theme === 'dark' ? '#f87171' : '#ef4444')};"></div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Add workouts section with divider
+          if (dayData.workouts.length > 0) {
+            innerHTML += `<div style="border-top: 1px solid var(--border); padding-top: 8px;">`;
+            dayData.workouts.forEach(workout => {
+              const type = $workoutTypes.find(t => t.id === workout.workout_type_id);
+              if (type) {
+                const workoutPercentage = (workout.duration / maxMinutes) * 100;
+                innerHTML += `
+                  <div style="margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                      <div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${type.color};"></div>
+                      <span>${type.name}: ${Math.round(workout.duration)}m</span>
+                    </div>
+                    <div style="width: 100%; height: 2px; background: ${$theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};">
+                      <div style="width: ${workout.duration === maxMinutes ? 100 : workoutPercentage}%; height: 100%; background-color: ${type.color};"></div>
+                    </div>
+                  </div>
+                `;
+              }
+            });
+            innerHTML += `</div>`;
+          }
+        }
+      }
+
+      innerHTML += '</div>';
+      tooltipEl.innerHTML = innerHTML;
+    }
+
+    const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
+    const tooltipWidth = tooltipEl.offsetWidth;
+
+    // Display, position, and set styles for font
+    tooltipEl.style.opacity = '1';
+    tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+    tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+    tooltipEl.style.padding = '0';
+    tooltipEl.style.transform = `translate(${-tooltipWidth / 2}px, 10px)`;
   }
 
   onMount(() => {
