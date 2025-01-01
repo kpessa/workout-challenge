@@ -52,6 +52,19 @@ function createAuthStore() {
         });
       }
     },
+    signInWithGoogle: async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        console.error('Error signing in with Google:', error);
+        return error;
+      }
+    },
     signUp: async (email: string, password: string) => {
       const { data: { user }, error } = await supabase.auth.signUp({
         email,
