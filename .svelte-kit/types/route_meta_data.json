@@ -1,6 +1,7 @@
 {
 	"/": [],
 	"/auth/callback": [],
+	"/graph": [],
 	"/privacy": [],
 	"/terms": []
 }

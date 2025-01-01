@@ -27,6 +27,8 @@
   let viewMode: ViewMode;    // Remove default value
   let isInitialized = false; // Track if initial mode has been set
 
+  export let isFullScreen = false;  // New prop to control full-screen button visibility
+
   // Format date based on view mode and screen size
   $: formatDate = (date: Date | string) => {
     const d = new Date(date);
@@ -660,6 +662,23 @@
 
 <!-- Chart container -->
 <div class="chart-container" style="container-type: inline-size;">
+  <!-- Full screen button - only show if not in full screen -->
+  {#if !isFullScreen}
+    <Button 
+      variant="ghost" 
+      size="sm"
+      class="absolute top-2 right-2 z-10 h-7 w-7 p-0"
+      on:click={() => window.location.href = '/graph'}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <polyline points="9 21 3 21 3 15"></polyline>
+        <line x1="21" y1="3" x2="14" y2="10"></line>
+        <line x1="3" y1="21" x2="10" y2="14"></line>
+      </svg>
+    </Button>
+  {/if}
+
   <!-- Navigation controls above chart -->
   <div class="flex justify-center items-center gap-2 mb-2">
     <Button 
@@ -733,13 +752,94 @@
     flex-direction: column;
   }
 
+  /* Navigation controls */
+  .flex.justify-center.items-center {
+    flex: 0 0 auto;  /* Don't grow or shrink */
+  }
+
+  /* Chart area */
   .chart {
-    flex: 1;
-    min-height: 0;
+    flex: 1 1 0;     /* Can grow and shrink, but start at 0 */
+    min-height: 0;   /* Allow shrinking below content size */
     position: relative;
     width: 100%;
-    height: 100%;
-    margin-bottom: 0;
+  }
+
+  /* Legend and tabs area */
+  .flex.flex-wrap,
+  .flex.justify-center.mt-2 {
+    flex: 0 0 auto;  /* Don't grow or shrink */
+  }
+
+  /* Landscape mode optimizations */
+  @media (max-height: 500px) {
+    .flex.flex-wrap {
+      margin-top: 0.25rem !important;
+      gap-x: 1.5rem !important;
+      gap-y: 0.25rem !important;
+    }
+
+    .flex.justify-center.mt-2 {
+      margin-top: 0.25rem !important;
+    }
+
+    /* Make the legend text even smaller in landscape */
+    .flex.flex-wrap span {
+      font-size: 0.65rem !important;
+    }
+
+    /* Make dots smaller in landscape */
+    .flex.flex-wrap .w-3 {
+      width: 0.5rem !important;
+      height: 0.5rem !important;
+    }
+
+    /* Make tabs more compact in landscape */
+    :global([role="tab"]) {
+      height: 1.5rem !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+      font-size: 0.7rem !important;
+    }
+  }
+
+  @container (width < 800px) {
+    /* Make legend and tabs more compact on mobile */
+    .flex.flex-wrap {
+      gap-x: 2 !important;
+      gap-y: 1 !important;
+      margin-top: 0.25rem !important;
+      padding: 0 0.5rem !important;
+    }
+
+    .flex.justify-center.mt-2 {
+      margin-top: 0.25rem !important;
+    }
+
+    /* Make the legend text smaller */
+    .flex.flex-wrap span {
+      font-size: 0.7rem;
+    }
+
+    /* Adjust the dots size */
+    .flex.flex-wrap .w-3 {
+      width: 0.625rem !important;
+      height: 0.625rem !important;
+    }
+
+    /* Make tabs more compact */
+    :global([role="tab"]) {
+      height: 1.75rem !important;
+      padding-left: 0.75rem !important;
+      padding-right: 0.75rem !important;
+      font-size: 0.75rem !important;
+    }
+  }
+
+  /* Additional full-screen mobile optimizations */
+  :global(.fixed) .chart-container {
+    padding-bottom: max(env(safe-area-inset-bottom, 0.5rem), 0.5rem);
+    max-height: 100%;  /* Ensure container doesn't overflow */
   }
 
   :global(.chart-svg) {
@@ -832,6 +932,37 @@
     .chart {
       height: 100%;
       margin-right: 0;
+    }
+
+    /* Reduce spacing for legend and tabs */
+    .flex.flex-wrap {
+      gap-x: 2 !important;
+      gap-y: 1 !important;
+      margin-top: 0.5rem !important;
+    }
+
+    /* Make the legend text smaller */
+    .flex.flex-wrap span {
+      font-size: 0.7rem;
+    }
+
+    /* Adjust the dots size */
+    .flex.flex-wrap .w-3 {
+      width: 0.625rem !important;
+      height: 0.625rem !important;
+    }
+
+    /* Reduce bottom spacing */
+    .flex.justify-center.mt-2 {
+      margin-top: 0.5rem !important;
+    }
+
+    /* Make tabs more compact */
+    :global([role="tab"]) {
+      height: 1.75rem !important;
+      padding-left: 0.75rem !important;
+      padding-right: 0.75rem !important;
+      font-size: 0.75rem !important;
     }
   }
 
