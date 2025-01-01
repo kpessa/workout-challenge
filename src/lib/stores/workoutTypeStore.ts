@@ -1,4 +1,4 @@
-import { writable, type Writable } from 'svelte/store';
+import { writable, get, type Writable } from 'svelte/store';
 import { supabase } from '$lib/services/supabase';
 import type { WorkoutType } from '$lib/types';
 
@@ -26,7 +26,29 @@ function createWorkoutTypeStore() {
         return;
       }
 
-      set(data || []);
+      // If no workout types exist, create a default one
+      if (!data || data.length === 0) {
+        const defaultType = {
+          name: 'Exercise',
+          color: '#4CAF50',
+          user_id: user.id
+        };
+
+        const { data: newType, error: insertError } = await supabase
+          .from('workout_types')
+          .insert([defaultType])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating default workout type:', insertError);
+          return;
+        }
+
+        set([newType]);
+      } else {
+        set(data);
+      }
     },
     addWorkoutType: async (name: string, color: string) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,6 +86,13 @@ function createWorkoutTypeStore() {
       update(types => types.map(t => t.id === id ? data : t));
     },
     deleteWorkoutType: async (id: string) => {
+      // Don't allow deleting if it's the last workout type
+      const currentTypes = get(workoutTypes);
+      if (currentTypes.length <= 1) {
+        console.warn('Cannot delete the last workout type');
+        return;
+      }
+
       const { error } = await supabase
         .from('workout_types')
         .delete()
