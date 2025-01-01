@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import * as d3 from 'd3';
   import { timeFormat } from 'd3-time-format';
+  import { axisTop } from 'd3-axis';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
   import { workoutTypes } from '../stores/workoutTypeStore';
@@ -214,6 +215,9 @@
     // Add axes
     svg.append('g')
       .attr('class', 'x-axis');
+
+    svg.append('g')
+      .attr('class', 'x-axis-top');  // Add top x-axis
 
     svg.append('g')
       .attr('class', 'y-axis');
@@ -616,7 +620,35 @@
     svg.select('.x-axis')
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x)
-        .tickFormat(formatDate)
+        .tickFormat(d => {
+          const date = new Date(d);
+          // Show full day name (Mon, Tue, etc.) in week view, single letter (M, T, etc.) in month view
+          return viewMode === 'week' ? timeFormat('%a')(date) : timeFormat('%a')(date).charAt(0);
+        })
+        .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
+          .filter((_, i) => {
+            if (viewMode === 'week') {
+              // Show all days in week view
+              return true;
+            } else if (containerWidth < 800) {
+              // Show more ticks in month view on mobile since we're using single letters
+              return i % 2 === 0;
+            } else {
+              // Month view on larger screens
+              return true;  // Show all days since we're using single letters
+            }
+          })))
+      .selectAll('text')
+      .style('text-anchor', 'middle')
+      .attr('dx', '0')
+      .attr('dy', '1em')  // Move labels down a bit
+      .attr('transform', 'translate(0, 0)');  // Keep labels horizontal
+
+    // Add top X-axis with MM/DD format
+    svg.select('.x-axis-top')
+      .attr('transform', `translate(0,0)`)
+      .call(d3.axisTop(x)
+        .tickFormat(d => timeFormat('%-m/%-d')(new Date(d)))  // Always show MM/DD format
         .tickValues(dailyWorkouts.map(d => new Date(d.date).toDateString())
           .filter((_, i) => {
             if (viewMode === 'week') {
@@ -633,7 +665,7 @@
       .selectAll('text')
       .style('text-anchor', 'middle')
       .attr('dx', '0')
-      .attr('dy', '1em')  // Move labels down a bit
+      .attr('dy', '-0.5em')  // Move labels up a bit
       .attr('transform', 'translate(0, 0)');  // Keep labels horizontal
 
     // Update Y-axis with explicit styling
@@ -848,18 +880,18 @@
     overflow: visible;
   }
 
-  :global(.x-axis), :global(.y-axis) {
+  :global(.x-axis), :global(.y-axis), :global(.x-axis-top) {
     @apply text-muted-foreground;
   }
 
-  :global(.x-axis path), :global(.y-axis path),
-  :global(.x-axis line), :global(.y-axis line) {
+  :global(.x-axis path), :global(.y-axis path), :global(.x-axis-top path),
+  :global(.x-axis line), :global(.y-axis line), :global(.x-axis-top line) {
     stroke: hsl(var(--border));
     stroke-width: 1px;
     stroke-opacity: 0.5;
   }
 
-  :global(.x-axis text), :global(.y-axis text) {
+  :global(.x-axis text), :global(.y-axis text), :global(.x-axis-top text) {
     @apply text-foreground;
     font-size: 0.7rem;
   }
@@ -1062,5 +1094,10 @@
 
   :global(.tabs-list) {
     margin-bottom: 0;
+  }
+
+  /* Adjust top margin to accommodate top x-axis */
+  .chart {
+    margin-top: 1.5rem;
   }
 </style>
