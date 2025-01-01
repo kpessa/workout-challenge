@@ -1,34 +1,50 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
   import * as d3 from 'd3';
+  import { timeFormat } from 'd3-time-format';
   import { schedule } from '../stores/scheduleStore';
   import { userPreferences } from '../stores/userPreferencesStore';
   import { workoutTypes } from '../stores/workoutTypeStore';
   import { calculateSigmoidal } from '$lib/utils/sigmoidal';
   import { Button } from "$lib/components/UI/button";
   import * as Tabs from "$lib/components/UI/tabs";
-  import { timeFormat } from 'd3-time-format';
   import { getStartOfDay } from '$lib/utils/dateHelpers';
+
+  type ViewMode = 'week' | 'month';
 
   const dispatch = createEventDispatcher();
 
-  let chartContainer;
+  let chartContainer: HTMLElement;
   let currentPage = 0;
-  let svg;
-  let dailyWorkouts = [];
-  let containerWidth;
-  let containerHeight;
+  let svg: any;  // D3 selection type
+  let dailyWorkouts: any[] = [];
+  let containerWidth: number;
+  let containerHeight: number;
   
-  // Default to week view on mobile
-  let isMonthView = typeof window !== 'undefined' ? window.innerWidth >= 800 : true;
-  let viewMode = isMonthView ? 'month' : 'week';
+  // Create a container query observer
+  let containerObserver: ResizeObserver;
+  let isMonthView: boolean;  // Remove default value
+  let viewMode: ViewMode;    // Remove default value
+  let isInitialized = false; // Track if initial mode has been set
+
+  // Format date based on view mode and screen size
+  $: formatDate = (date: Date | string) => {
+    const d = new Date(date);
+    if (viewMode === 'week') {
+      // Week view: show day name
+      return timeFormat('%a')(d);
+    } else {
+      // Month view: show MM/DD
+      return timeFormat('%-m/%-d')(d);  // %-m and %-d remove leading zeros
+    }
+  };
 
   // Chart dimensions
   $: margin = {
-    top: 20,
-    right: containerWidth < 800 ? 40 : 40,
-    bottom: containerWidth < 800 ? 100 : 70,  // Increased bottom margin on mobile for legend
-    left: containerWidth < 800 ? 35 : 45  // Reduced left margin since we removed y-axis label
+    top: 5,
+    right: containerWidth < 800 ? 10 : 20,
+    bottom: containerWidth < 800 ? 25 : 40,
+    left: containerWidth < 800 ? 25 : 35
   };
   
   $: width = containerWidth ? containerWidth - margin.left - margin.right : 0;
@@ -67,49 +83,28 @@
     return { x, y };
   }
 
-  // Format date based on view mode and screen size
-  $: formatDate = (date) => {
-    const d = new Date(date);
-    if (containerWidth < 800) {  // Updated breakpoint
-      // Shorter format below 800px
-      return d3.timeFormat('%a')(d);
-    }
-    return d3.timeFormat('%a, %m/%d')(d);
-  };
-
   function updateDimensions() {
     if (chartContainer) {
       const rect = chartContainer.getBoundingClientRect();
       containerWidth = rect.width;
       containerHeight = rect.height;
-    }
-  }
-
-  // Update chart dimensions on resize
-  function handleResize() {
-    // Add debounce to avoid too many updates
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      updateDimensions();
-      if (svg) {
-        const svgElement = d3.select(chartContainer).select('svg');
-        svgElement
-          .attr('width', containerWidth)
-          .attr('height', containerHeight);
-        
-        // Check if we should switch view mode based on screen size
-        const shouldBeMonthView = window.innerWidth >= 800;
-        if (isMonthView !== shouldBeMonthView) {
-          isMonthView = shouldBeMonthView;
-          viewMode = isMonthView ? 'month' : 'week';
+      
+      console.log('Container dimensions:', {
+        width: containerWidth,
+        height: containerHeight
+      });
+      
+      // Only set the initial view mode once
+      if (!isInitialized && containerWidth) {
+        isMonthView = containerWidth >= 800;
+        viewMode = isMonthView ? 'month' : 'week';
+        isInitialized = true;
+        if (isDataReady) {
           currentPage = calculateCurrentPage();
+          calculateWorkoutDays();
         }
-        
-        // Force recalculation and redraw
-        calculateWorkoutDays();
-        requestAnimationFrame(updateChart);
       }
-    }, 250); // 250ms debounce
+    }
   }
 
   let resizeTimeout: ReturnType<typeof setTimeout>;
@@ -130,7 +125,7 @@
     }
   }
 
-  function handleViewModeChange(value: string) {
+  function handleViewModeChange(value: ViewMode) {
     isMonthView = value === 'month';
     viewMode = value;
     // Calculate the page that contains today
@@ -184,6 +179,22 @@
     // Create the SVG
     updateDimensions();
     
+    // Set up container query observer
+    containerObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === chartContainer) {
+          updateDimensions();
+          if (svg) {
+            requestAnimationFrame(updateChart);
+          }
+        }
+      }
+    });
+
+    if (chartContainer) {
+      containerObserver.observe(chartContainer);
+    }
+
     const svgElement = d3.select(chartContainer)
       .append('svg')
       .attr('width', containerWidth)
@@ -204,13 +215,11 @@
 
     svg.append('g')
       .attr('class', 'y-axis');
-
-    // Add resize listener
-    window.addEventListener('resize', handleResize);
     
     return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(resizeTimeout);
+      if (containerObserver) {
+        containerObserver.disconnect();
+      }
       if (svgElement) {
         svgElement.remove();
       }
@@ -612,18 +621,18 @@
               // Show all days in week view
               return true;
             } else if (containerWidth < 800) {
-              // Show fewer ticks below 800px in month view
-              return i % 2 === 0;
+              // Show fewer ticks in month view on mobile
+              return i % 3 === 0;
             } else {
               // Month view on larger screens
-              return i % 3 === 0;
+              return i % 2 === 0;
             }
           })))
       .selectAll('text')
-      .style('text-anchor', 'end')
-      .attr('dx', containerWidth < 800 ? '-.5em' : '-.8em')  // Updated breakpoint
-      .attr('dy', containerWidth < 800 ? '.1em' : '.15em')   // Updated breakpoint
-      .attr('transform', containerWidth < 800 ? 'rotate(-45)' : 'rotate(-35)');  // Updated breakpoint
+      .style('text-anchor', 'middle')
+      .attr('dx', '0')
+      .attr('dy', '1em')  // Move labels down a bit
+      .attr('transform', 'translate(0, 0)');  // Keep labels horizontal
 
     // Update Y-axis with explicit styling
     svg.select('.y-axis')
@@ -650,7 +659,7 @@
 </script>
 
 <!-- Chart container -->
-<div class="chart-container">
+<div class="chart-container" style="container-type: inline-size;">
   <!-- Navigation controls above chart -->
   <div class="flex justify-center items-center gap-2 mb-2">
     <Button 
@@ -729,13 +738,14 @@
     min-height: 0;
     position: relative;
     width: 100%;
-    margin-bottom: 1rem; /* Add space for legend on mobile */
+    height: 100%;
+    margin-bottom: 0;
   }
 
   :global(.chart-svg) {
     width: 100%;
     height: 100%;
-    overflow: visible;  /* Allow axis labels to overflow */
+    overflow: visible;
   }
 
   :global(.x-axis), :global(.y-axis) {
@@ -806,7 +816,26 @@
     @apply text-foreground;
   }
 
-  @media (min-width: 800px) {
+  @container (width < 800px) {
+    :global(.x-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.y-axis text) {
+      font-size: 0.65rem;
+    }
+
+    :global(.duration-label) {
+      font-size: 0.6rem;
+    }
+
+    .chart {
+      height: 100%;
+      margin-right: 0;
+    }
+  }
+
+  @container (width >= 800px) {
     :global(.chart-svg) {
       position: absolute;
       top: 0;
@@ -820,6 +849,7 @@
 
     .chart {
       position: relative;
+      height: 100%;
     }
 
     :global(.x-axis text), :global(.y-axis text) {
