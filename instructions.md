@@ -5,13 +5,13 @@
 - Use Svelte 5 + Vite as the build setup
 - Use JavaScript (no TypeScript)
 - Use shadcn-svelte for UI components and styling
-- Use Supabase for backend and authentication
+- Use Firebase for backend and authentication
 - Deploy as a static site build
 
 ## Core Features
 
 ### Authentication & User Management
-- Email/password authentication via Supabase
+- Email/password authentication via Firebase
 - User profile management
 - Secure data access with Row Level Security (RLS)
 - Handle login, logout, and session persistence
@@ -37,12 +37,12 @@
 - Real-time updates when data changes
 
 ## Data Persistence
-- Primary storage in Supabase database:
+- Primary storage in Firebase database:
   - User preferences
   - Completed workouts
   - Curve parameters
 - Optional localStorage for offline functionality
-- Real-time sync with Supabase
+- Real-time sync with Firebase
 
 ## Calendar Integration
 - Configurable start date

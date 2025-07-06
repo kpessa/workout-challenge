@@ -25,7 +25,7 @@ project-root/
   │   │   ├─ styles/
   │   │   │   └─ global.css              // Global stylesheet (if needed)
   │   │   ├─ shadcn/                     // shadcn-svelte components (if you choose to customize)
-  │   │   ├─ supabase.js                 // Supabase client initialization
+  │   │   ├─ firebase.js                 // Firebase client initialization
   │   │   └─ data/
   │   │       └─ defaultParams.json      // Default curve parameters and other default settings
   │   ├─ routes/

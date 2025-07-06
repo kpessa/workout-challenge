@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "migrate": "node migration-scripts/migrate.js",
+    "migrate:extract": "node migration-scripts/extract-supabase-data.js",
+    "migrate:firebase": "node migration-scripts/migrate-to-firebase.js"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
@@ -22,7 +25,9 @@
     "bits-ui": "^0.19.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "firebase-admin": "^13.4.0",
     "lucide-svelte": "^0.344.0",
+    "pg": "^8.16.3",
     "postcss": "^8.4.32",
     "svelte": "^4.2.12",
     "svelte-check": "^3.6.4",
@@ -41,6 +46,8 @@
     "chartjs": "^0.3.24",
     "chartjs-plugin-annotation": "^3.1.0",
     "d3": "^7.9.0",
+    "d3-axis": "^3.0.0",
+    "d3-time-format": "^4.1.0",
     "date-fns": "^3.3.1",
     "firebase": "^11.10.0",
     "shadcn-svelte": "^0.5.0"
