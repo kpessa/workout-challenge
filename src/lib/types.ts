@@ -23,7 +23,7 @@ export interface Workout {
   id: string;
   date: string;
   duration: number;
-  workout_type_id?: string;
+  type?: string; // Changed from workout_type_id to type
   created_at?: string;
   user_id?: string;
 }

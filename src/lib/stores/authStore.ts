@@ -1,5 +1,14 @@
 import { writable, type Writable } from 'svelte/store';
-import { supabase } from '$lib/services/supabase';
+import { auth } from '$lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  type User as FirebaseUser
+} from 'firebase/auth';
 import type { AuthState, User } from '$lib/types';
 
 function createAuthStore() {
@@ -11,92 +20,79 @@ function createAuthStore() {
   return {
     subscribe,
     initialize: async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-        set({ user: null, loading: false });
-        return;
-      }
-
-      if (session?.user) {
-        set({
-          user: {
-            id: session.user.id,
-            email: session.user.email || ''
-          },
-          loading: false
-        });
-      } else {
-        set({ user: null, loading: false });
-      }
+      onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          set({
+            user: {
+              id: firebaseUser.uid,
+              email: firebaseUser.email || ''
+            },
+            loading: false
+          });
+        } else {
+          set({ user: null, loading: false });
+        }
+      });
     },
     signIn: async (email: string, password: string) => {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        console.error('Error signing in:', error);
-        return error;
-      }
-
-      if (user) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
         set({
           user: {
-            id: user.id,
+            id: user.uid,
             email: user.email || ''
           },
           loading: false
         });
+      } catch (error) {
+        console.error('Error signing in:', error);
+        return error;
       }
     },
     signInWithGoogle: async () => {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: typeof window !== 'undefined' 
-            ? `${window.location.origin}/auth/callback`
-            : undefined
-        }
-      });
-
-      if (error) {
+      try {
+        const provider = new GoogleAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+        
+        set({
+          user: {
+            id: user.uid,
+            email: user.email || ''
+          },
+          loading: false
+        });
+      } catch (error) {
         console.error('Error signing in with Google:', error);
         return error;
       }
     },
     signUp: async (email: string, password: string) => {
-      const { data: { user }, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
-
-      if (error) {
-        console.error('Error signing up:', error);
-        return error;
-      }
-
-      if (user) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
         set({
           user: {
-            id: user.id,
+            id: user.uid,
             email: user.email || ''
           },
           loading: false
         });
+      } catch (error) {
+        console.error('Error signing up:', error);
+        return error;
       }
     },
     signOut: async () => {
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
+      try {
+        await signOut(auth);
+        set({ user: null, loading: false });
+      } catch (error) {
         console.error('Error signing out:', error);
-        return;
       }
-
-      set({ user: null, loading: false });
     }
   };
 }

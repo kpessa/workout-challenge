@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { supabase } from '$lib/services/supabase';
+import { getUserPreferences, saveUserPreferences } from '$lib/services/firebase';
 
 export interface SigmoidParams {
   steepness: number;
@@ -69,91 +69,32 @@ function createUserPreferencesStore() {
   return {
     subscribe,
     initialize: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       try {
-        const { data, error } = await supabase
-          .from('user_preferences')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching preferences:', error);
-          return;
-        }
-
+        const data = await getUserPreferences();
+        
         if (data) {
-          const preferences = transformFromDatabase(data.data as DatabasePreferences);
+          const preferences = transformFromDatabase(data as DatabasePreferences);
           set(preferences);
         } else {
           const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
-          const { error: upsertError } = await supabase
-            .from('user_preferences')
-            .insert({
-              user_id: user.id,
-              data: dbPrefs
-            })
-            .select();
-
-          if (upsertError) {
-            console.error('Error inserting default preferences:', upsertError);
-          } else {
-            set(DEFAULT_PREFERENCES);
-          }
+          await saveUserPreferences(dbPrefs);
+          set(DEFAULT_PREFERENCES);
         }
       } catch (err) {
         console.error('Error in initialize:', err);
       }
     },
     update: async (updater: (preferences: UserPreferences) => UserPreferences) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       try {
-        const { data: currentData, error: fetchError } = await supabase
-          .from('user_preferences')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error('Error fetching current preferences:', fetchError);
-          throw fetchError;
-        }
-
-        const currentPreferences = currentData?.data ? 
-          transformFromDatabase(currentData.data as DatabasePreferences) : 
+        const currentData = await getUserPreferences();
+        const currentPreferences = currentData ? 
+          transformFromDatabase(currentData as DatabasePreferences) : 
           DEFAULT_PREFERENCES;
         
         const newPreferences = updater(currentPreferences);
         const dbPrefs = transformToDatabase(newPreferences);
 
-        let result;
-        if (currentData) {
-          // Update existing record
-          result = await supabase
-            .from('user_preferences')
-            .update({ data: dbPrefs })
-            .eq('user_id', user.id)
-            .select();
-        } else {
-          // Insert new record
-          result = await supabase
-            .from('user_preferences')
-            .insert({
-              user_id: user.id,
-              data: dbPrefs
-            })
-            .select();
-        }
-
-        if (result.error) {
-          console.error('Error updating preferences:', result.error);
-          throw result.error;
-        }
-
+        await saveUserPreferences(dbPrefs);
         set(newPreferences);
       } catch (err) {
         console.error('Error in update:', err);
@@ -161,22 +102,9 @@ function createUserPreferencesStore() {
       }
     },
     reset: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       try {
         const dbPrefs = transformToDatabase(DEFAULT_PREFERENCES);
-        const { error } = await supabase
-          .from('user_preferences')
-          .update({ data: dbPrefs })
-          .eq('user_id', user.id)
-          .select();
-
-        if (error) {
-          console.error('Error resetting preferences:', error);
-          throw error;
-        }
-
+        await saveUserPreferences(dbPrefs);
         set(DEFAULT_PREFERENCES);
       } catch (err) {
         console.error('Error in reset:', err);

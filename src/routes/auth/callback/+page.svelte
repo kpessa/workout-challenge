@@ -1,14 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { supabase } from '$lib/services/supabase';
 
   onMount(async () => {
-    const { error } = await supabase.auth.getSession();
-    if (error) {
-      console.error('Error in auth callback:', error);
-    }
-    // Redirect to home page after successful authentication
+    // Firebase Auth handles OAuth redirects automatically
+    // This page is no longer needed but keeping for compatibility
     goto('/');
   });
 </script>

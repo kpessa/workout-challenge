@@ -48,7 +48,7 @@
 
     <section class="mb-8">
       <h2 class="text-2xl font-semibold mb-4">Third-Party Services</h2>
-      <p>We use Supabase for authentication and data storage. Their privacy policy can be found on their website.</p>
+      <p>We use Firebase for authentication and data storage. Their privacy policy can be found on their website.</p>
     </section>
 
     <section class="mb-8">

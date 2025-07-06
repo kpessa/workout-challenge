@@ -2,12 +2,12 @@
   import { authStore } from '$lib/stores/authStore';
   import { Button } from "$lib/components/UI/button";
   import { Input } from "$lib/components/UI/input";
-  import type { AuthError } from '@supabase/supabase-js';
+  import type { FirebaseError } from 'firebase/app';
 
   let email = '';
   let password = '';
   let isSignUp = false;
-  let error: AuthError | null = null;
+  let error: FirebaseError | null = null;
   let loading = false;
 
   async function handleSubmit() {
@@ -26,7 +26,7 @@
       }
     } catch (e) {
       console.error('Auth error:', e);
-      error = e as AuthError;
+      error = e as FirebaseError;
     } finally {
       loading = false;
     }
