@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import type { PageData } from './$types';
+  
+  export let data: PageData;
+  export let form: any = undefined;
 
   onMount(async () => {
     // Firebase Auth handles OAuth redirects automatically

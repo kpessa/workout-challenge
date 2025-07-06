@@ -2,9 +2,32 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
 		<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-		<meta name="viewport" content="width=device-width" />
+		
+		<!-- Enhanced viewport for mobile -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+		
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+		
+		<!-- iOS Safari Meta Tags for Native App Experience -->
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="90-Day Challenge" />
+		
+		<!-- Theme Colors -->
+		<meta name="theme-color" content="#22c55e" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16a34a" />
+		<meta name="msapplication-TileColor" content="#22c55e" />
+		
+		<!-- Apple Touch Icons -->
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		
+		<!-- Standard Icons -->
+		<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/favicon-16x16.png" />
+		
 		<meta name="google-site-verification" content="qhYR2muQVK5NoZ8a5QS7yHpS8qAIkZXNTlapsZTPqz0" />
 		%sveltekit.head%
 	</head>
