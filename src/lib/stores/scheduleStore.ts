@@ -1,46 +1,26 @@
 import { writable } from 'svelte/store';
-import { supabase } from '$lib/services/supabase';
+import { getWorkouts, saveWorkout, updateWorkout as updateWorkoutInDB, deleteWorkout as deleteWorkoutFromDB } from '$lib/services/firebase';
 import type { Workout } from '$lib/types';
 
 const workouts = writable<Workout[]>([]);
 
 async function initialize() {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false });
-
-    if (error) throw error;
+    const data = await getWorkouts();
     workouts.set(data || []);
   } catch (error) {
+    console.error('Error initializing workouts:', error);
     workouts.set([]);
   }
 }
 
-async function addWorkout(date: string, duration: number, workout_type_id: string) {
+async function addWorkout(date: string, duration: number, workout_type_id?: string) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No user logged in');
-
-    const { data, error } = await supabase
-      .from('workouts')
-      .insert([
-        { 
-          date, 
-          duration, 
-          user_id: user.id,
-          workout_type_id
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) throw error;
+    const data = await saveWorkout({ 
+      date, 
+      duration, 
+      type: workout_type_id || 'default'
+    });
 
     workouts.update(w => [data, ...w]);
     return data;
@@ -49,25 +29,17 @@ async function addWorkout(date: string, duration: number, workout_type_id: strin
   }
 }
 
-async function updateWorkout(id: string, date: string, duration: number, workout_type_id: string) {
+async function updateWorkout(id: string, date: string, duration: number, workout_type_id?: string) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No user logged in');
-
-    const { data, error } = await supabase
-      .from('workouts')
-      .update({ date, duration, workout_type_id })
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .select()
-      .single();
-
-    if (error) throw error;
+    await updateWorkoutInDB(id, { 
+      date, 
+      duration, 
+      type: workout_type_id 
+    });
 
     workouts.update(w => w.map(workout => 
-      workout.id === id ? data : workout
+      workout.id === id ? { ...workout, date, duration, type: workout_type_id } : workout
     ));
-    return data;
   } catch (error) {
     throw error;
   }
@@ -75,17 +47,7 @@ async function updateWorkout(id: string, date: string, duration: number, workout
 
 async function deleteWorkout(id: string) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No user logged in');
-
-    const { error } = await supabase
-      .from('workouts')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id);
-
-    if (error) throw error;
-
+    await deleteWorkoutFromDB(id);
     workouts.update(w => w.filter(workout => workout.id !== id));
   } catch (error) {
     throw error;

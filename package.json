@@ -35,7 +35,6 @@
     "vite": "^5.0.10"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.3",
     "@unovis/svelte": "^1.5.0",
     "@unovis/ts": "^1.5.0",
     "chart.js": "^4.4.7",
@@ -43,6 +42,7 @@
     "chartjs-plugin-annotation": "^3.1.0",
     "d3": "^7.9.0",
     "date-fns": "^3.3.1",
+    "firebase": "^11.10.0",
     "shadcn-svelte": "^0.5.0"
   }
 }

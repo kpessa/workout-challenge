@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own documents
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // User preferences subcollection
+      match /user_preferences/{prefId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Workouts subcollection  
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Workout types subcollection
+      match /workout_types/{typeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
