@@ -155,6 +155,7 @@
                 id="startDate"
                 value={preferences.startDate}
                 on:change={handleStartDateChange}
+                class="[color-scheme:dark]"
               />
               <p class="text-sm text-muted-foreground">
                 The date you started or want to start your workout challenge
@@ -169,6 +170,8 @@
                 value={preferences.daysPerWeek}
                 min="1"
                 max="7"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 on:change={handleDaysPerWeekChange}
               />
               <p class="text-sm text-muted-foreground">
@@ -183,6 +186,8 @@
                 id="minDuration"
                 value={preferences.sigmoid.minDuration}
                 min="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 on:change={(e) => handleSigmoidChange(e, 'minDuration')}
               />
               <p class="text-sm text-muted-foreground">
@@ -197,6 +202,8 @@
                 id="maxDuration"
                 value={preferences.sigmoid.maxDuration}
                 min="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 on:change={(e) => handleSigmoidChange(e, 'maxDuration')}
               />
               <p class="text-sm text-muted-foreground">
@@ -229,6 +236,7 @@
                   step="0.01"
                   min="0.01"
                   max="1"
+                  inputmode="decimal"
                   on:change={(e) => handleSigmoidChange(e, 'steepness')}
                 />
                 <p class="text-sm text-muted-foreground">
@@ -243,6 +251,8 @@
                   id="midpoint"
                   value={preferences.sigmoid.midpoint}
                   min="1"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
                   on:change={(e) => handleSigmoidChange(e, 'midpoint')}
                 />
                 <p class="text-sm text-muted-foreground">

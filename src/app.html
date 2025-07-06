@@ -21,6 +21,19 @@
 		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16a34a" />
 		<meta name="msapplication-TileColor" content="#22c55e" />
 		
+		<!-- iOS Dark Mode Support -->
+		<style>
+			/* Force dark mode for date and time inputs on iOS */
+			input[type="date"], input[type="time"], input[type="datetime-local"] {
+				color-scheme: dark light;
+			}
+			@media (prefers-color-scheme: dark) {
+				input[type="date"], input[type="time"], input[type="datetime-local"] {
+					color-scheme: dark;
+				}
+			}
+		</style>
+		
 		<!-- Apple Touch Icons -->
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
 		

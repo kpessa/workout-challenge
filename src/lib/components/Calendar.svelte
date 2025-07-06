@@ -133,6 +133,8 @@
             type="number"
             min="1"
             max="240"
+            inputmode="numeric"
+            pattern="[0-9]*"
             bind:value={workoutDuration}
           />
         </div>

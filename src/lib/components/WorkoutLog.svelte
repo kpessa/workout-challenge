@@ -202,7 +202,7 @@
           type="date" 
           id="date"
           bind:value={dateString}
-          class="w-full"
+          class="w-full [color-scheme:dark]"
         />
       </div>
 
@@ -213,6 +213,8 @@
           id="duration"
           bind:value={duration}
           min="1"
+          inputmode="numeric"
+          pattern="[0-9]*"
           class="w-full"
         />
       </div>
