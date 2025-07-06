@@ -4,6 +4,7 @@
   import { userPreferences } from '$lib/stores/userPreferencesStore';
   import { format, isToday, isYesterday, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, differenceInDays, addDays } from 'date-fns';
   import { calculateSigmoidal } from '$lib/utils/sigmoidal';
+  import * as Table from '$lib/components/ui/table';
 
   interface Workout {
     id: string;
@@ -301,24 +302,24 @@
 </script>
 
 <div class="analytics-panel">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="stat">
-      <div class="stat-title">Current Streak</div>
-      <div class="stat-value">{streak} days</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">Weekly Average</div>
-      <div class="stat-value">{Math.round(weeklyAverage)} min</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">This Week</div>
-      <div class="stat-value">{currentWeekMinutes} min</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">Weekly Target</div>
-      <div class="stat-value">{weeklyTarget} min</div>
-    </div>
-  </div>
+  <Table.Root>
+    <Table.Header>
+      <Table.Row>
+        <Table.Head>Current Streak</Table.Head>
+        <Table.Head>Weekly Average</Table.Head>
+        <Table.Head>This Week</Table.Head>
+        <Table.Head>Weekly Target</Table.Head>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      <Table.Row>
+        <Table.Cell>{streak} days</Table.Cell>
+        <Table.Cell>{Math.round(weeklyAverage)} min</Table.Cell>
+        <Table.Cell>{currentWeekMinutes} min</Table.Cell>
+        <Table.Cell>{weeklyTarget} min</Table.Cell>
+      </Table.Row>
+    </Table.Body>
+  </Table.Root>
 </div>
 
 <style>
@@ -326,22 +327,29 @@
     width: 100%;
   }
 
-  .stat {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: var(--background);
-    border: 1px solid var(--border);
+  /* Mobile font size and padding adjustments */
+  @media (max-width: 640px) {
+    :global(.analytics-panel th) {
+      font-size: 0.6875rem; /* 11px */
+      padding: 0.5rem 1rem; /* Reduced vertical padding */
+    }
+    
+    :global(.analytics-panel td) {
+      font-size: 0.625rem; /* 10px - slightly smaller for data */
+      padding: 0.5rem 1rem; /* Reduced vertical padding */
+    }
   }
 
-  .stat-title {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--foreground);
+  /* Very small mobile screens */
+  @media (max-width: 380px) {
+    :global(.analytics-panel th) {
+      font-size: 0.5625rem; /* 9px */
+      padding: 0.375rem 0.75rem; /* Even more reduced padding */
+    }
+    
+    :global(.analytics-panel td) {
+      font-size: 0.5rem; /* 8px - slightly smaller for data */
+      padding: 0.375rem 0.75rem; /* Even more reduced padding */
+    }
   }
 </style>

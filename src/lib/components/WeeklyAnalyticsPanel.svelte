@@ -4,6 +4,7 @@
   import { userPreferences } from '$lib/stores/userPreferencesStore';
   import { format, parseISO, startOfWeek, endOfWeek, eachWeekOfInterval } from 'date-fns';
   import type { Workout } from '$lib/types';
+  import * as Table from '$lib/components/ui/table';
 
   const HEALTH_BENEFITS_THRESHOLD = 150;
   const ENHANCED_BENEFITS_THRESHOLD = 300;
@@ -91,28 +92,30 @@
 </script>
 
 <div class="analytics-panel">
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="stat">
-      <div class="stat-title">Health Benefits Streak</div>
-      <div class="stat-value">{healthBenefitsStreak} weeks</div>
-      <div class="stat-desc">150+ min/week</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">Enhanced Benefits Streak</div>
-      <div class="stat-value">{enhancedBenefitsStreak} weeks</div>
-      <div class="stat-desc">300+ min/week</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">Total Health Benefit Weeks</div>
-      <div class="stat-value">{totalHealthBenefitsWeeks}</div>
-      <div class="stat-desc">Since start</div>
-    </div>
-    <div class="stat">
-      <div class="stat-title">Total Enhanced Weeks</div>
-      <div class="stat-value">{totalEnhancedBenefitsWeeks}</div>
-      <div class="stat-desc">Since start</div>
-    </div>
-  </div>
+  <Table.Root>
+    <Table.Header>
+      <Table.Row>
+        <Table.Head>Health Benefits Streak</Table.Head>
+        <Table.Head>Enhanced Benefits Streak</Table.Head>
+        <Table.Head>Total Health Benefit Weeks</Table.Head>
+        <Table.Head>Total Enhanced Weeks</Table.Head>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      <Table.Row>
+        <Table.Cell>{healthBenefitsStreak} weeks</Table.Cell>
+        <Table.Cell>{enhancedBenefitsStreak} weeks</Table.Cell>
+        <Table.Cell>{totalHealthBenefitsWeeks}</Table.Cell>
+        <Table.Cell>{totalEnhancedBenefitsWeeks}</Table.Cell>
+      </Table.Row>
+      <Table.Row>
+        <Table.Cell>150+ min/week</Table.Cell>
+        <Table.Cell>300+ min/week</Table.Cell>
+        <Table.Cell>Since start</Table.Cell>
+        <Table.Cell>Since start</Table.Cell>
+      </Table.Row>
+    </Table.Body>
+  </Table.Root>
 </div>
 
 <style>
@@ -120,28 +123,29 @@
     width: 100%;
   }
 
-  .stat {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: var(--background);
-    border: 1px solid var(--border);
+  /* Mobile font size and padding adjustments */
+  @media (max-width: 640px) {
+    :global(.analytics-panel th) {
+      font-size: 0.6875rem; /* 11px */
+      padding: 0.5rem 1rem; /* Reduced vertical padding */
+    }
+    
+    :global(.analytics-panel td) {
+      font-size: 0.625rem; /* 10px - slightly smaller for data */
+      padding: 0.5rem 1rem; /* Reduced vertical padding */
+    }
   }
 
-  .stat-title {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--foreground);
-  }
-
-  .stat-desc {
-    font-size: 0.75rem;
-    color: var(--muted-foreground);
-    margin-top: 0.25rem;
+  /* Very small mobile screens */
+  @media (max-width: 380px) {
+    :global(.analytics-panel th) {
+      font-size: 0.5625rem; /* 9px */
+      padding: 0.375rem 0.75rem; /* Even more reduced padding */
+    }
+    
+    :global(.analytics-panel td) {
+      font-size: 0.5rem; /* 8px - slightly smaller for data */
+      padding: 0.375rem 0.75rem; /* Even more reduced padding */
+    }
   }
 </style> 
