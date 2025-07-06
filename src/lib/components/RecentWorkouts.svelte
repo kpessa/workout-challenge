@@ -8,6 +8,8 @@
   export let recentWorkouts: Workout[] = [];
   export let workoutTypeOptions: WorkoutType[] = [];
 
+  let deleteConfirmStates: Record<string, boolean> = {};
+
   function handleEdit(workout: Workout) {
     dispatch('editWorkout', {
       id: workout.id,
@@ -17,7 +19,22 @@
   }
 
   function handleDelete(id: string) {
-    dispatch('deleteWorkout', { id });
+    if (!deleteConfirmStates[id]) {
+      // First click - enter confirmation state
+      deleteConfirmStates[id] = true;
+      deleteConfirmStates = { ...deleteConfirmStates }; // Trigger reactivity
+      
+      // Auto-reset after 3 seconds if no second click
+      setTimeout(() => {
+        deleteConfirmStates[id] = false;
+        deleteConfirmStates = { ...deleteConfirmStates };
+      }, 3000);
+    } else {
+      // Second click - actually delete
+      dispatch('deleteWorkout', { id });
+      deleteConfirmStates[id] = false;
+      deleteConfirmStates = { ...deleteConfirmStates };
+    }
   }
 
   import { createEventDispatcher } from 'svelte';
@@ -65,12 +82,12 @@
                   Edit
                 </Button>
                 <Button 
-                  variant="ghost" 
+                  variant={deleteConfirmStates[workout.id] ? "destructive" : "ghost"}
                   size="sm"
-                  class="text-destructive hover:text-destructive"
+                  class={deleteConfirmStates[workout.id] ? "bg-red-600 hover:bg-red-700" : "text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950"}
                   on:click={() => handleDelete(workout.id)}
                 >
-                  Delete
+                  {deleteConfirmStates[workout.id] ? 'Confirm Delete' : 'Delete'}
                 </Button>
               </div>
             </div>

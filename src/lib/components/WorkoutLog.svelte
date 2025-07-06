@@ -22,20 +22,56 @@
   export let onComplete: () => void;
 
   let duration = proposedDuration;
-  let dateString = selectedDate || format(new Date(), 'yyyy-MM-dd');
+  let dateString = format(new Date(), 'yyyy-MM-dd');
+  
+  // React to selectedDate changes from chart clicks
+  $: if (selectedDate) {
+    dateString = toLocalDate(selectedDate);
+  }
+  
+  // React to proposedDuration changes from chart clicks
+  $: if (proposedDuration && !editMode) {
+    duration = proposedDuration;
+  }
+  
+  // Auto-select first workout type when adding new workout
+  $: if (!editMode && workoutTypeOptions.length > 0 && !selectedWorkoutType) {
+    selectedWorkoutType = {
+      label: workoutTypeOptions[0].name,
+      value: workoutTypeOptions[0].id
+    };
+  }
+  
+  // Reset delete confirmation when not in edit mode
+  $: if (!editMode) {
+    deleteConfirmState = false;
+  }
   
   function toLocalDate(date: Date | string): string {
     const d = typeof date === 'string' ? parseISO(date) : date;
     return format(d, 'yyyy-MM-dd');
   }
 
-  $: date = parseISO(dateString);
+  // Safely parse date with validation
+  $: {
+    try {
+      if (dateString && dateString.length >= 10) {
+        date = parseISO(dateString);
+      } else {
+        date = new Date();
+      }
+    } catch (error) {
+      date = new Date();
+    }
+  }
   $: workouts = $schedule || [];
   $: recentWorkouts = workouts.slice(0, 5);
   $: formattedDate = format(date, "MMM d, yyyy");
 
   let selectedWorkoutType: { label: string; value: string } | null = null;
   let isInitialized = false;
+  let deleteConfirmState = false; // Track delete confirmation state
+  let date: Date = new Date();
   $: workoutTypeOptions = $workoutTypes || [];
   
 
@@ -69,6 +105,12 @@
         duration = workout.duration;
         // selectedWorkoutType initialization is handled by reactive statement above
       }
+    } else if (!editMode && workoutTypeOptions.length > 0 && !selectedWorkoutType) {
+      // Auto-select first workout type when adding new workout
+      selectedWorkoutType = {
+        label: workoutTypeOptions[0].name,
+        value: workoutTypeOptions[0].id
+      };
     }
   });
 
@@ -100,9 +142,25 @@
     }
   }
 
-  async function handleDelete(id: string) {
-    if (confirm("Are you sure you want to delete this workout?")) {
-      await schedule.deleteWorkout(id);
+  async function handleDelete() {
+    if (!workoutId) return;
+    
+    if (!deleteConfirmState) {
+      // First click - enter confirmation state
+      deleteConfirmState = true;
+      // Auto-reset after 3 seconds if no second click
+      setTimeout(() => {
+        deleteConfirmState = false;
+      }, 3000);
+    } else {
+      // Second click - actually delete
+      try {
+        await schedule.deleteWorkout(workoutId);
+        onComplete(); // Close the modal after successful deletion
+      } catch (error) {
+        console.error('Error deleting workout:', error);
+        alert('Failed to delete workout. Please try again.');
+      }
     }
   }
 
@@ -116,10 +174,22 @@
     };
     isInitialized = true;
     editMode = true;
+    deleteConfirmState = false; // Reset delete confirmation when editing
   }
 
   function handleClose() {
     onComplete();
+  }
+
+  async function handleRecentWorkoutDelete(event: CustomEvent) {
+    const { id } = event.detail;
+    try {
+      await schedule.deleteWorkout(id);
+      // No need to close modal since user might want to continue working
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      alert('Failed to delete workout. Please try again.');
+    }
   }
 </script>
 
@@ -191,7 +261,20 @@
       </div>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-between">
+      {#if editMode}
+        <Button 
+          type="button" 
+          variant={deleteConfirmState ? "destructive" : "outline"}
+          class={deleteConfirmState ? "bg-red-600 hover:bg-red-700" : "text-red-600 border-red-600 hover:bg-red-50"}
+          on:click={handleDelete}
+        >
+          {deleteConfirmState ? 'Confirm Delete' : 'Delete Workout'}
+        </Button>
+      {:else}
+        <div></div>
+      {/if}
+      
       <Button type="submit">
         {editMode ? 'Update' : 'Add'} Workout
       </Button>
@@ -203,7 +286,7 @@
     {recentWorkouts}
     {workoutTypeOptions}
     on:editWorkout
-    on:deleteWorkout
+    on:deleteWorkout={handleRecentWorkoutDelete}
   />
 </div>
 
