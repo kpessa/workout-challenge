@@ -20,15 +20,20 @@
   });
 
   async function handleSubmit() {
-    if (editMode && editingId) {
-      await workoutTypes.updateWorkoutType(editingId, name, color);
-      editMode = false;
-      editingId = null;
-    } else {
-      await workoutTypes.addWorkoutType(name, color);
+    try {
+      if (editMode && editingId) {
+        await workoutTypes.updateWorkoutType(editingId, name, color);
+        editMode = false;
+        editingId = null;
+      } else {
+        await workoutTypes.addWorkoutType(name, color);
+      }
+      name = "";
+      color = "#000000";
+    } catch (error) {
+      console.error('Failed to save workout type:', error);
+      alert('Failed to save workout type. Please try again.');
     }
-    name = "";
-    color = "#000000";
   }
 
   async function handleDelete(id: string) {

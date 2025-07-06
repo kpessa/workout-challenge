@@ -26,9 +26,7 @@
   
   function toLocalDate(date: Date | string): string {
     const d = typeof date === 'string' ? parseISO(date) : date;
-    const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
-    return format(localDate, 'yyyy-MM-dd');
+    return format(d, 'yyyy-MM-dd');
   }
 
   $: date = parseISO(dateString);
@@ -40,26 +38,18 @@
   let isInitialized = false;
   $: workoutTypeOptions = $workoutTypes || [];
   
-  // Track state changes
-  $: {
-    console.log('State update:', {
-      selectedWorkoutType,
-      workoutTypeOptions
-    });
-  }
 
   // Initialize workout type when editing
   $: if (!isInitialized && workoutTypeOptions.length > 0 && editMode && workoutId) {
     const workout = workouts.find(w => w.id === workoutId);
     if (workout) {
-      const type = workoutTypeOptions.find(t => t.id === workout.workout_type_id);
+      const type = workoutTypeOptions.find(t => t.id === workout.type);
       if (type) {
         selectedWorkoutType = {
           label: type.name,
           value: type.id
         };
         isInitialized = true;
-        console.log('Initialized workout type:', selectedWorkoutType);
       }
     }
   }
@@ -67,45 +57,27 @@
   let showWorkoutTypeManager = false;
 
   onMount(async () => {
-    console.log('Starting initialization...');
     await Promise.all([
       workoutTypes.initialize(),
       schedule.initialize()
     ]);
-    console.log('Stores initialized');
     
     if (editMode && workoutId) {
       const workout = workouts.find(w => w.id === workoutId);
-      console.log('Found workout:', workout);
       if (workout) {
         dateString = toLocalDate(workout.date);
         duration = workout.duration;
-        selectedWorkoutType = {
-          label: workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.name,
-          value: workout.workout_type_id
-        };
-        isInitialized = true;
-        console.log('Setting initial values:', {
-          date: dateString,
-          duration,
-          workoutType: selectedWorkoutType
-        });
+        // selectedWorkoutType initialization is handled by reactive statement above
       }
     }
   });
 
   function handleSelectedChange(selected: { label: string; value: string }) {
-    console.log('Select value changed:', selected);
     selectedWorkoutType = selected;
   }
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
-    console.log('Form submitted with:', {
-      date: dateString,
-      duration,
-      workoutType: selectedWorkoutType
-    });
     
     if (!selectedWorkoutType) {
       alert("Please select a workout type");
@@ -114,11 +86,13 @@
 
     try {
       const isoDate = new Date(dateString + 'T12:00:00').toISOString();
+      
       if (editMode && workoutId) {
         await schedule.updateWorkout(workoutId, isoDate, Number(duration), selectedWorkoutType.value);
       } else {
         await schedule.addWorkout(isoDate, Number(duration), selectedWorkoutType.value);
       }
+      
       onComplete();
     } catch (error) {
       console.error('Error saving workout:', error);
@@ -133,21 +107,15 @@
   }
 
   function handleEdit(workout: Workout) {
-    console.log('Editing workout:', workout);
     dateString = toLocalDate(workout.date);
     duration = workout.duration;
     workoutId = workout.id;
     selectedWorkoutType = {
-      label: workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.name,
-      value: workout.workout_type_id
+      label: workoutTypeOptions.find(t => t.id === workout.type)?.name,
+      value: workout.type
     };
     isInitialized = true;
     editMode = true;
-    console.log('Set workout values:', {
-      date: dateString,
-      duration,
-      workoutType: selectedWorkoutType
-    });
   }
 
   function handleClose() {

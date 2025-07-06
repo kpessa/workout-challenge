@@ -315,7 +315,7 @@
           date: getStartOfDay(workout.date),
           duration: workout.duration,
           created_at: workout.created_at,
-          workout_type_id: workout.workout_type_id
+          workout_type_id: workout.type
         });
         return acc;
       }, {});

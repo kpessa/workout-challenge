@@ -56,7 +56,9 @@
     // Process workouts
     const workoutsByDate = new Map<string, DayData>();
     ($schedule as Workout[]).forEach(workout => {
-      const date = workout.date.split('T')[0];
+      // Parse the workout date and format as local date to match chart dates
+      const workoutDate = parseISO(workout.date);
+      const date = format(workoutDate, 'yyyy-MM-dd');
       const current = workoutsByDate.get(date) || { total: 0, workouts: [] };
       current.total += workout.duration;
       current.workouts.push(workout);
@@ -293,14 +295,15 @@
         const { actualMinutes, targetMinutes } = generateData(parseISO(startDate));
         const dayData = actualMinutes[workoutItem.dataIndex];
         const targetForDay = targetMinutes[workoutItem.dataIndex];
-        const currentDate = new Date(startDate);
-        currentDate.setDate(currentDate.getDate() + workoutItem.dataIndex);
+        // Parse startDate properly and calculate current date
+        const startDateObj = parseISO(startDate);
+        const currentDate = new Date(startDateObj);
+        currentDate.setDate(startDateObj.getDate() + workoutItem.dataIndex);
 
         // Format date as "Thu, 12/26"
         const formattedDate = format(currentDate, 'EEE, MM/dd');
 
         // Calculate challenge progress
-        const startDateObj = parseISO(startDate);
         const dayOfChallenge = differenceInDays(currentDate, startDateObj) + 1;
         const weekOfChallenge = Math.ceil(dayOfChallenge / 7);
         const monthOfChallenge = Math.ceil(dayOfChallenge / 30);
@@ -341,7 +344,7 @@
           if (dayData.workouts.length > 0) {
             innerHTML += `<div style="border-top: 1px solid var(--border); padding-top: 8px;">`;
             dayData.workouts.forEach(workout => {
-              const type = $workoutTypes.find(t => t.id === workout.workout_type_id);
+              const type = $workoutTypes.find(t => t.id === workout.type);
               if (type) {
                 const workoutPercentage = (workout.duration / maxMinutes) * 100;
                 innerHTML += `

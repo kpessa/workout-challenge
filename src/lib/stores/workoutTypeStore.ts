@@ -41,6 +41,7 @@ function createWorkoutTypeStore() {
         update(types => types.map(t => t.id === id ? { ...t, name, color } : t));
       } catch (error) {
         console.error('Error updating workout type:', error);
+        throw error;
       }
     },
     deleteWorkoutType: async (id: string) => {

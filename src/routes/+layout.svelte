@@ -2,6 +2,12 @@
   import '../app.postcss';
   import AppInit from '$lib/components/AppInit.svelte';
   import { authStore } from '$lib/stores/authStore';
+  import { initializeLogCapture } from '$lib/utils/logCapture';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    initializeLogCapture();
+  });
 </script>
 
 <AppInit />

@@ -41,6 +41,7 @@ async function updateWorkout(id: string, date: string, duration: number, workout
       workout.id === id ? { ...workout, date, duration, type: workout_type_id } : workout
     ));
   } catch (error) {
+    console.error('Error updating workout:', error);
     throw error;
   }
 }

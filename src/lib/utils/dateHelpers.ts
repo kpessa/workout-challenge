@@ -55,7 +55,7 @@ export function isValidDate(date: Date | string): boolean {
  * @returns The start of the day
  */
 export function getStartOfDay(date: Date | string): Date {
-  const dateObj = date instanceof Date ? date : new Date(date);
+  const dateObj = date instanceof Date ? new Date(date) : new Date(date);
   dateObj.setHours(0, 0, 0, 0);
   return dateObj;
 }
@@ -66,7 +66,7 @@ export function getStartOfDay(date: Date | string): Date {
  * @returns The end of the day
  */
 export function getEndOfDay(date: Date | string): Date {
-  const dateObj = date instanceof Date ? date : new Date(date);
+  const dateObj = date instanceof Date ? new Date(date) : new Date(date);
   dateObj.setHours(23, 59, 59, 999);
   return dateObj;
 } 

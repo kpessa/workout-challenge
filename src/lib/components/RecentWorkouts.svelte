@@ -43,13 +43,13 @@
             <div class="p-4 flex items-center justify-between bg-card text-card-foreground">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
-                  {#if workout.workout_type_id}
-                    {#if workoutTypeOptions.find(t => t.id === workout.workout_type_id)}
+                  {#if workout.type}
+                    {#if workoutTypeOptions.find(t => t.id === workout.type)}
                       <div 
                         class="w-3 h-3 rounded-full" 
-                        style="background-color: {workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.color};"
+                        style="background-color: {workoutTypeOptions.find(t => t.id === workout.type)?.color};"
                       />
-                      <p class="text-sm font-medium">{workoutTypeOptions.find(t => t.id === workout.workout_type_id)?.name}</p>
+                      <p class="text-sm font-medium">{workoutTypeOptions.find(t => t.id === workout.type)?.name}</p>
                     {/if}
                   {/if}
                 </div>
