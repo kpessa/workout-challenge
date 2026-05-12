@@ -4,7 +4,7 @@
   import type { PageData } from './$types';
   
   export let data: PageData;
-  export let form: any = undefined;
+  export let form: Record<string, unknown> | undefined = undefined;
 
   onMount(async () => {
     // Firebase Auth handles OAuth redirects automatically

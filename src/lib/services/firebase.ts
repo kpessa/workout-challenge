@@ -1,4 +1,7 @@
 import { auth, db } from '$lib/firebase';
+
+// Re-export auth and db for other modules that need them
+export { auth, db };
 import { 
   collection, 
   doc, 
@@ -130,7 +133,7 @@ export async function getUserPreferences() {
   return null;
 }
 
-export async function saveUserPreferences(preferences: any) {
+export async function saveUserPreferences(preferences: Record<string, unknown>) {
   const user = getCurrentUser();
   
   const preferencesData = {

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
-  import * as Dialog from "$lib/components/UI/dialog";
-  import * as Collapsible from "$lib/components/UI/collapsible";
-  import { Alert, AlertTitle, AlertDescription } from "$lib/components/UI/alert";
-  import { Label } from "$lib/components/UI/label";
-  import { Input } from "$lib/components/UI/input";
+  import { Button } from "$lib/components/ui/button";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Collapsible from "$lib/components/ui/collapsible";
+  import { Alert, AlertTitle, AlertDescription } from "$lib/components/ui/alert";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
   import { createEventDispatcher } from "svelte";
   import { userPreferences } from "$lib/stores/userPreferencesStore";
   import type { UserPreferences } from "$lib/types";

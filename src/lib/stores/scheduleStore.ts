@@ -16,7 +16,6 @@ async function initialize() {
 
 async function addWorkout(date: string, duration: number, workout_type_id?: string) {
   try {
-    console.log('➕ Adding workout:', { date, duration, workout_type_id });
     const data = await saveWorkout({ 
       date, 
       duration, 
@@ -24,7 +23,6 @@ async function addWorkout(date: string, duration: number, workout_type_id?: stri
     });
 
     workouts.update(w => [data, ...w]);
-    console.log('✅ Workout added successfully:', data.id);
     return data;
   } catch (error) {
     console.error('❌ Error adding workout:', error);
@@ -34,7 +32,6 @@ async function addWorkout(date: string, duration: number, workout_type_id?: stri
 
 async function updateWorkout(id: string, date: string, duration: number, workout_type_id?: string) {
   try {
-    console.log('🔄 Updating workout:', { id, date, duration, workout_type_id });
     await updateWorkoutInDB(id, { 
       date, 
       duration, 
@@ -44,7 +41,6 @@ async function updateWorkout(id: string, date: string, duration: number, workout
     workouts.update(w => w.map(workout => 
       workout.id === id ? { ...workout, date, duration, type: workout_type_id } : workout
     ));
-    console.log('✅ Workout updated successfully');
   } catch (error) {
     console.error('❌ Error updating workout:', error);
     throw error;
@@ -53,10 +49,8 @@ async function updateWorkout(id: string, date: string, duration: number, workout
 
 async function deleteWorkout(id: string) {
   try {
-    console.log('🗑️ Deleting workout:', id);
     await deleteWorkoutFromDB(id);
     workouts.update(w => w.filter(workout => workout.id !== id));
-    console.log('✅ Workout deleted successfully');
   } catch (error) {
     console.error('❌ Error deleting workout:', error);
     throw error;

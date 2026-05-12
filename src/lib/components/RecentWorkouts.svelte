@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
-  import * as Collapsible from "$lib/components/UI/collapsible";
+  import { Button } from "$lib/components/ui/button";
+  import * as Collapsible from "$lib/components/ui/collapsible";
   import { ChevronsUpDown } from 'lucide-svelte';
   import { format } from 'date-fns';
   import type { Workout, WorkoutType } from '$lib/types';

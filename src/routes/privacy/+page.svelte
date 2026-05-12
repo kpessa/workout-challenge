@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
+  import { Button } from "$lib/components/ui/button";
   import { ArrowLeft } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import type { PageData } from './$types';
   
   export let data: PageData;
-  export let form: any = undefined;
+  export let form: Record<string, unknown> | undefined = undefined;
 </script>
 
 <div class="container mx-auto px-4 py-8 max-w-3xl">

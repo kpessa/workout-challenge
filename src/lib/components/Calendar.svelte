@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { schedule } from '../stores/scheduleStore';
+  import { schedule, scheduleRealtime } from '../stores/scheduleStoreRealtime';
   import { userPreferences } from '../stores/userPreferencesStore';
   import { calculateSigmoidal } from '$lib/utils/sigmoidal';
   import type { CalendarWorkout, Workout } from '$lib/types';
@@ -68,7 +68,7 @@
 
   function submitWorkout() {
     if (selectedDay && workoutDuration > 0) {
-      schedule.addWorkout(selectedDay.date, workoutDuration);
+      scheduleRealtime.addWorkout(selectedDay.date, workoutDuration);
       showWorkoutForm = false;
       selectedDay = null;
       workoutDuration = 30;
@@ -173,6 +173,11 @@
     border-radius: 4px;
     padding: 0.5rem 1rem;
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .workout-grid {
@@ -205,12 +210,15 @@
   }
 
   .checkmark {
-    width: 24px;
-    height: 24px;
+    width: 44px;
+    height: 44px;
     border: 2px solid hsl(var(--border));
     border-radius: 4px;
     position: relative;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .workout-day.completed .checkmark {
@@ -220,11 +228,8 @@
 
   .workout-day.completed .checkmark::after {
     content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     color: hsl(var(--success-foreground));
+    font-size: 1.2rem;
   }
 
   .day-info {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { authStore } from '$lib/stores/authStore';
-  import { Button } from "$lib/components/UI/button";
-  import { Input } from "$lib/components/UI/input";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
   import type { FirebaseError } from 'firebase/app';
 
   let email = '';
@@ -89,7 +89,7 @@
           </div>
         </div>
         {#if error}
-          <div class="text-sm text-destructive">
+          <div role="alert" aria-live="assertive" class="text-sm text-destructive">
             {error.message}
           </div>
         {/if}

@@ -1,19 +1,19 @@
 <script lang="ts">
   import Calendar from './Calendar.svelte';
-  import ProgressChart from './ProgressChart.svelte';
+  import ProgressChart from './ProgressChartOptimized.svelte';
   import WorkoutLog from './WorkoutLog.svelte';
   import AnalyticsPanel from './AnalyticsPanel.svelte';
   import Auth from './Auth.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import { authStore } from '$lib/stores/authStore';
   import { onMount } from 'svelte';
-  import { schedule } from '$lib/stores/scheduleStore';
-  import { Button } from "$lib/components/UI/button";
+  import { scheduleRealtime } from '$lib/stores/scheduleStoreRealtime';
+  import { Button } from "$lib/components/ui/button";
   import type { WorkoutClickEvent, EditWorkoutEvent } from '$lib/types';
-  import ThemeToggle from '$lib/components/UI/theme-toggle.svelte';
+  import ThemeToggle from '$lib/components/ui/theme-toggle.svelte';
   import { Plus, Settings2, LogOut } from 'lucide-svelte';
-  import * as Dialog from "$lib/components/UI/dialog";
-  import AnalyticsGraph from './AnalyticsGraph.svelte';
+  import * as Dialog from "$lib/components/ui/dialog";
+  import AnalyticsGraph from './AnalyticsGraphOptimized.svelte';
   import { userPreferences } from '$lib/stores/userPreferencesStore';
   import WeeklyAnalyticsPanel from './WeeklyAnalyticsPanel.svelte';
 
@@ -33,7 +33,6 @@
   }
 
   function handleEditWorkout(event: CustomEvent<EditWorkoutEvent>) {
-    console.log('Editing workout with data:', event.detail);
     selectedDate = event.detail.date;
     proposedDuration = event.detail.duration;
     workoutId = event.detail.id;
@@ -76,8 +75,14 @@
   }
 
   onMount(() => {
-    schedule.initialize();
+    // Initialize real-time listeners
+    scheduleRealtime.initialize();
     userPreferences.initialize();
+    
+    // Cleanup on component destroy
+    return () => {
+      scheduleRealtime.destroy();
+    };
   });
 </script>
 

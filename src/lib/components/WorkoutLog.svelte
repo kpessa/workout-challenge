@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
-  import { Input } from "$lib/components/UI/input";
-  import { Label } from "$lib/components/UI/label";
-  import { schedule } from "$lib/stores/scheduleStore";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { schedule, scheduleRealtime } from "$lib/stores/scheduleStoreRealtime";
   import { format, parseISO } from "date-fns";
   import { createEventDispatcher, onMount } from "svelte";
   import { X, Settings } from 'lucide-svelte';
   import { workoutTypes } from "$lib/stores/workoutTypeStore";
   import type { WorkoutType, Workout } from "$lib/types";
-  import * as Select from "$lib/components/UI/select";
+  import * as Select from "$lib/components/ui/select";
   import WorkoutTypeManager from "./WorkoutTypeManager.svelte";
-  import * as Dialog from "$lib/components/UI/dialog";
+  import * as Dialog from "$lib/components/ui/dialog";
   import RecentWorkouts from './RecentWorkouts.svelte';
 
   const dispatch = createEventDispatcher();
@@ -72,6 +72,8 @@
   let isInitialized = false;
   let deleteConfirmState = false; // Track delete confirmation state
   let date: Date = new Date();
+  let errorMessage = '';
+  let successMessage = '';
   $: workoutTypeOptions = $workoutTypes || [];
   
 
@@ -95,7 +97,7 @@
   onMount(async () => {
     await Promise.all([
       workoutTypes.initialize(),
-      schedule.initialize()
+      scheduleRealtime.initialize()
     ]);
     
     if (editMode && workoutId) {
@@ -120,9 +122,11 @@
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
+    errorMessage = '';
+    successMessage = '';
     
     if (!selectedWorkoutType) {
-      alert("Please select a workout type");
+      errorMessage = "Please select a workout type";
       return;
     }
 
@@ -130,15 +134,17 @@
       const isoDate = new Date(dateString + 'T12:00:00').toISOString();
       
       if (editMode && workoutId) {
-        await schedule.updateWorkout(workoutId, isoDate, Number(duration), selectedWorkoutType.value);
+        await scheduleRealtime.updateWorkout(workoutId, isoDate, Number(duration), selectedWorkoutType.value);
+        successMessage = 'Workout updated successfully';
       } else {
-        await schedule.addWorkout(isoDate, Number(duration), selectedWorkoutType.value);
+        await scheduleRealtime.addWorkout(isoDate, Number(duration), selectedWorkoutType.value);
+        successMessage = 'Workout added successfully';
       }
       
-      onComplete();
+      setTimeout(() => onComplete(), 500);
     } catch (error) {
       console.error('Error saving workout:', error);
-      alert('Failed to save workout. Please try again.');
+      errorMessage = 'Failed to save workout. Please try again.';
     }
   }
 
@@ -155,11 +161,12 @@
     } else {
       // Second click - actually delete
       try {
-        await schedule.deleteWorkout(workoutId);
-        onComplete(); // Close the modal after successful deletion
+        await scheduleRealtime.deleteWorkout(workoutId);
+        successMessage = 'Workout deleted successfully';
+        setTimeout(() => onComplete(), 500);
       } catch (error) {
         console.error('Error deleting workout:', error);
-        alert('Failed to delete workout. Please try again.');
+        errorMessage = 'Failed to delete workout. Please try again.';
       }
     }
   }
@@ -183,17 +190,31 @@
 
   async function handleRecentWorkoutDelete(event: CustomEvent) {
     const { id } = event.detail;
+    errorMessage = '';
     try {
-      await schedule.deleteWorkout(id);
-      // No need to close modal since user might want to continue working
+      await scheduleRealtime.deleteWorkout(id);
+      successMessage = 'Workout deleted successfully';
+      setTimeout(() => successMessage = '', 3000);
     } catch (error) {
       console.error('Error deleting workout:', error);
-      alert('Failed to delete workout. Please try again.');
+      errorMessage = 'Failed to delete workout. Please try again.';
     }
   }
 </script>
 
 <div class="space-y-6">
+  {#if errorMessage}
+    <div role="alert" aria-live="assertive" class="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded">
+      {errorMessage}
+    </div>
+  {/if}
+  
+  {#if successMessage}
+    <div role="status" aria-live="polite" class="bg-green-500/10 border border-green-500 text-green-600 dark:text-green-400 px-4 py-3 rounded">
+      {successMessage}
+    </div>
+  {/if}
+  
   <form class="space-y-6" on:submit={handleSubmit}>
     <div class="space-y-4">
       <div class="grid gap-2">

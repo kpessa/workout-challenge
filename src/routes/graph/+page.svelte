@@ -1,8 +1,8 @@
 <script lang="ts">
-  import ProgressChart from '$lib/components/ProgressChart.svelte';
+  import ProgressChart from '$lib/components/ProgressChartOptimized.svelte';
   import WorkoutLog from '$lib/components/WorkoutLog.svelte';
-  import { Button } from "$lib/components/UI/button";
-  import * as Dialog from "$lib/components/UI/dialog";
+  import { Button } from "$lib/components/ui/button";
+  import * as Dialog from "$lib/components/ui/dialog";
   import { onMount } from 'svelte';
   import { schedule } from '$lib/stores/scheduleStore';
   import { userPreferences } from '$lib/stores/userPreferencesStore';
@@ -11,7 +11,7 @@
   import type { PageData } from './$types';
   
   export let data: PageData;
-  export let form: any = undefined;
+  export let form: Record<string, unknown> | undefined = undefined;
 
   let showWorkoutModal = false;
   let selectedDate: string | null = null;

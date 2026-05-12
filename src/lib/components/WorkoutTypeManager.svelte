@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Button } from "$lib/components/UI/button";
-  import { Input } from "$lib/components/UI/input";
-  import { Label } from "$lib/components/UI/label";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import { workoutTypes } from "$lib/stores/workoutTypeStore";
   import type { WorkoutType } from "$lib/types";
   import { onMount } from "svelte";
   import { Plus, X } from 'lucide-svelte';
-  import * as Dialog from "$lib/components/UI/dialog";
+  import * as Dialog from "$lib/components/ui/dialog";
 
   let name = "";
   let color = "#000000";

@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "migrate": "node migration-scripts/migrate.js",
     "migrate:extract": "node migration-scripts/extract-supabase-data.js",
     "migrate:firebase": "node migration-scripts/migrate-to-firebase.js"
@@ -21,11 +24,13 @@
     "@types/d3": "^7.4.3",
     "@types/d3-time-format": "^4.0.3",
     "@types/node": "^20.10.6",
+    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.16",
     "bits-ui": "^0.19.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "firebase-admin": "^13.4.0",
+    "happy-dom": "^18.0.1",
     "lucide-svelte": "^0.344.0",
     "pg": "^8.16.3",
     "postcss": "^8.4.32",
@@ -37,7 +42,9 @@
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.2",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10"
+    "vite": "^5.0.10",
+    "vite-plugin-pwa": "^1.0.2",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@unovis/svelte": "^1.5.0",

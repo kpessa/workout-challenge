@@ -28,3 +28,32 @@ dist-ssr
 migration-data/
 *.backup
 firebase-service-account.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Added by auto-ignore sweep
+node_modules/
+.next/
+.svelte-kit/
+dist/
+build/
+.env.local
+.env.*.local
+.vscode/
+.idea/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.turbo/
+.vercel/
+.cache/
+.parcel-cache/
+coverage/
+.nyc_output/

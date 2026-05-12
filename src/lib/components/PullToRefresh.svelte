@@ -24,6 +24,17 @@
       isAtTop = window.scrollY === 0;
     };
 
+    // Keyboard support for accessibility
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F5 or Ctrl/Cmd + R for refresh
+      if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'r')) {
+        e.preventDefault();
+        if (!isRefreshing) {
+          triggerRefresh();
+        }
+      }
+    };
+
     const handleTouchStart = (e: TouchEvent) => {
       if (!isAtTop || isRefreshing) return;
       
@@ -73,12 +84,16 @@
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Add keyboard listener for accessibility
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   });
 
@@ -125,12 +140,15 @@
   }
 </script>
 
-<div bind:this={container} class="pull-to-refresh-container">
+<div bind:this={container} class="pull-to-refresh-container" role="region" aria-label="Pull to refresh region. Press F5 or Ctrl+R to refresh">
   <!-- Refresh Indicator -->
   <div 
     bind:this={refreshIndicator}
     class="refresh-indicator"
     class:refreshing={isRefreshing}
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
   >
     <div class="refresh-icon">
       {#if isRefreshing}
@@ -144,7 +162,7 @@
         </svg>
       {/if}
     </div>
-    <span class="refresh-text">
+    <span class="refresh-text" aria-label={isRefreshing ? 'Refreshing content' : 'Pull down to refresh'}>
       {#if isRefreshing}
         Refreshing...
       {:else if pullDistance >= triggerDistance}
@@ -157,6 +175,16 @@
     </span>
   </div>
 
+  <!-- Keyboard-accessible refresh button -->
+  <button
+    class="refresh-button sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-50"
+    on:click={triggerRefresh}
+    disabled={isRefreshing}
+    aria-label="Refresh content"
+  >
+    Refresh (F5)
+  </button>
+  
   <!-- Content Slot -->
   <slot />
 </div>
@@ -224,5 +252,48 @@
     .pull-to-refresh-container {
       -webkit-overflow-scrolling: touch;
     }
+  }
+
+  /* Keyboard-accessible refresh button */
+  .refresh-button {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+
+  .refresh-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Screen reader only class, visible on focus */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only:focus {
+    position: fixed;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 </style>

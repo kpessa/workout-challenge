@@ -3,7 +3,7 @@
   import AppInit from '$lib/components/AppInit.svelte';
   import PullToRefresh from '$lib/components/PullToRefresh.svelte';
   import { authStore } from '$lib/stores/authStore';
-  import { schedule } from '$lib/stores/scheduleStore';
+  import { scheduleRealtime } from '$lib/stores/scheduleStoreRealtime';
   import { userPreferences } from '$lib/stores/userPreferencesStore';
   import { workoutTypes } from '$lib/stores/workoutTypeStore';
   import { initializeLogCapture } from '$lib/utils/logCapture';
@@ -19,24 +19,24 @@
     if (!dev && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
+          // Service Worker registered successfully
         })
         .catch((error) => {
-          console.log('Service Worker registration failed:', error);
+          console.error('Service Worker registration failed:', error);
         });
     }
   });
 
   async function handleRefresh() {
     try {
-      // Refresh all stores by re-initializing them
+      // Re-initialize all stores to refresh data
+      // Real-time stores will automatically sync with latest data
       await Promise.all([
-        schedule.initialize(),
+        scheduleRealtime.initialize(),
         userPreferences.initialize(),
         workoutTypes.initialize()
       ]);
       
-      console.log('✅ All stores refreshed successfully');
     } catch (error) {
       console.error('❌ Refresh failed:', error);
       // Stop the refreshing indicator even if refresh fails

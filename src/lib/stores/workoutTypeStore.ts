@@ -48,7 +48,6 @@ function createWorkoutTypeStore() {
       // Don't allow deleting if it's the last workout type
       const currentTypes = get(workoutTypes);
       if (currentTypes.length <= 1) {
-        console.warn('Cannot delete the last workout type');
         return;
       }
 
